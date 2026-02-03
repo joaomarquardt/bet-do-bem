@@ -1,6 +1,7 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Bet;
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateBetRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
@@ -15,10 +16,12 @@ import java.util.List;
 public class BetService {
     private BetRepository betRepository;
     private BetMapper betMapper;
+    private UserService userService;
 
-    public BetService(BetRepository betRepository, BetMapper betMapper) {
+    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService) {
         this.betRepository = betRepository;
         this.betMapper = betMapper;
+        this.userService = userService;
     }
 
     public List<BetResponse> getAllBets() {
@@ -30,8 +33,12 @@ public class BetService {
         if (bet.creatorId().equals(bet.opponentId())) {
             throw new IllegalArgumentException("Creator and opponent cannot be the same user.");
         }
+        User creator = userService.getUserEntityById(bet.creatorId());
+        User opponent = userService.getUserEntityById(bet.opponentId());
         Bet betEntity = betMapper.toBetEntity(bet);
         betEntity.setStatus(BetStatus.OPEN);
+        betEntity.setCreator(creator);
+        betEntity.setOpponent(opponent);
         Bet savedBet = betRepository.save(betEntity);
         return betMapper.toBetResponse(savedBet);
     }
