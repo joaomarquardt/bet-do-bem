@@ -10,8 +10,6 @@ public record UpdateGroupRequest(
         String name,
         @NotBlank(message = "Description cannot be blank")
         String description,
-        @NotNull(message = "Creator ID cannot be null")
-        Long creatorId,
         List<Long> memberIds
 ) {
 }

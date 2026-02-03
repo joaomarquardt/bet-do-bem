@@ -1,6 +1,5 @@
 package com.api.betdobem.dtos.requests;
 
-import com.api.betdobem.enums.ChallengeStatus;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
