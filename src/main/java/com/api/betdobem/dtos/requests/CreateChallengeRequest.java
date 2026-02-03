@@ -1,6 +1,7 @@
 package com.api.betdobem.dtos.requests;
 
 import com.api.betdobem.enums.ChallengeStatus;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,7 @@ public record CreateChallengeRequest(
         Long penaltyValue,
         @NotNull(message = "Proof ID cannot be null")
         Long proofId,
+        @Future(message = "Deadline must be a future date and time")
         Timestamp deadline,
         @NotNull(message = "Status cannot be null")
         ChallengeStatus status
