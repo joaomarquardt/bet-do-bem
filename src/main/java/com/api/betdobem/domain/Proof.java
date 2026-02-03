@@ -2,6 +2,9 @@ package com.api.betdobem.domain;
 
 import jakarta.persistence.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 @Entity
 @Table(name = "proofs")
 public class Proof {
@@ -13,15 +16,18 @@ public class Proof {
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
+    @Column(name = "posted_at")
+    private Timestamp postedAt = Timestamp.from(Instant.now());
 
     public Proof() {
     }
 
-    public Proof(Long id, String imageUrl, String description, User author) {
+    public Proof(Long id, String imageUrl, String description, User author, Timestamp postedAt) {
         this.id = id;
         this.imageUrl = imageUrl;
         this.description = description;
         this.author = author;
+        this.postedAt = postedAt;
     }
 
     public Long getId() {
@@ -54,5 +60,13 @@ public class Proof {
 
     public void setAuthor(User author) {
         this.author = author;
+    }
+
+    public Timestamp getPostedAt() {
+        return postedAt;
+    }
+
+    public void setPostedAt(Timestamp postedAt) {
+        this.postedAt = postedAt;
     }
 }
