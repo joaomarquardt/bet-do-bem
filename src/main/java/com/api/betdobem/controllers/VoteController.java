@@ -4,6 +4,7 @@ import com.api.betdobem.domain.Vote;
 import com.api.betdobem.dtos.requests.VoteRequest;
 import com.api.betdobem.dtos.responses.VoteResponse;
 import com.api.betdobem.services.VoteService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class VoteController {
     }
 
     @PostMapping
-    public ResponseEntity<VoteResponse> createVote(@RequestBody VoteRequest vote) {
+    public ResponseEntity<VoteResponse> createVote(@RequestBody @Valid VoteRequest vote) {
         VoteResponse newVote = voteService.createVote(vote);
         return new ResponseEntity<>(newVote, HttpStatus.CREATED);
     }
@@ -38,7 +39,7 @@ public class VoteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<VoteResponse> updateVote(@PathVariable Long id, @RequestBody VoteRequest vote) {
+    public ResponseEntity<VoteResponse> updateVote(@PathVariable Long id, @RequestBody @Valid VoteRequest vote) {
         VoteResponse updatedVote = voteService.updateVote(id, vote);
         return new ResponseEntity<>(updatedVote, HttpStatus.OK);
     }

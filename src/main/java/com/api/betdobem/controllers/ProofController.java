@@ -4,6 +4,7 @@ import com.api.betdobem.domain.Proof;
 import com.api.betdobem.dtos.requests.ProofRequest;
 import com.api.betdobem.dtos.responses.ProofResponse;
 import com.api.betdobem.services.ProofService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class ProofController {
     }
 
     @PostMapping
-    public ResponseEntity<ProofResponse> createProof(@RequestBody ProofRequest proof) {
+    public ResponseEntity<ProofResponse> createProof(@RequestBody @Valid ProofRequest proof) {
         ProofResponse newProof = proofService.createProof(proof);
         return new ResponseEntity<>(newProof, HttpStatus.CREATED);
     }
@@ -38,7 +39,7 @@ public class ProofController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProofResponse> updateProof(@PathVariable Long id, @RequestBody ProofRequest proof) {
+    public ResponseEntity<ProofResponse> updateProof(@PathVariable Long id, @RequestBody @Valid ProofRequest proof) {
         ProofResponse updatedProof = proofService.updateProof(id, proof);
         return new ResponseEntity<>(updatedProof, HttpStatus.OK);
     }

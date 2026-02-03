@@ -4,6 +4,7 @@ import com.api.betdobem.domain.Challenge;
 import com.api.betdobem.dtos.requests.ChallengeRequest;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
 import com.api.betdobem.services.ChallengeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class ChallengeController {
     }
 
     @PostMapping
-    public ResponseEntity<ChallengeResponse> createChallenge(@RequestBody ChallengeRequest challenge) {
+    public ResponseEntity<ChallengeResponse> createChallenge(@RequestBody @Valid ChallengeRequest challenge) {
         ChallengeResponse newChallenge = challengeService.createChallenge(challenge);
         return new ResponseEntity<>(newChallenge, HttpStatus.CREATED);
     }
@@ -38,7 +39,7 @@ public class ChallengeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ChallengeResponse> updateChallenge(@PathVariable Long id, @RequestBody ChallengeRequest challenge) {
+    public ResponseEntity<ChallengeResponse> updateChallenge(@PathVariable Long id, @RequestBody @Valid ChallengeRequest challenge) {
         ChallengeResponse updatedChallenge = challengeService.updateChallenge(id, challenge);
         return new ResponseEntity<>(updatedChallenge, HttpStatus.OK);
     }
