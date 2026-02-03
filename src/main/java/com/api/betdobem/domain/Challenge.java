@@ -24,7 +24,7 @@ public class Challenge {
     @OneToOne
     @JoinColumn(name = "proof_id", nullable = false)
     private Proof proof;
-    private Timestamp createdOn = Timestamp.from(Instant.now());
+    private Timestamp createdAt;
     private Timestamp deadline;
     @Enumerated(EnumType.STRING)
     private ChallengeStatus status;
@@ -32,14 +32,14 @@ public class Challenge {
     public Challenge() {
     }
 
-    public Challenge(Long id, User challenger, User challenged, String description, Long penaltyValue, Proof proof, Timestamp createdOn, Timestamp deadline, ChallengeStatus status, String title) {
+    public Challenge(Long id, User challenger, User challenged, String description, Long penaltyValue, Proof proof, Timestamp deadline, ChallengeStatus status, String title) {
         this.id = id;
         this.challenger = challenger;
         this.challenged = challenged;
         this.description = description;
         this.penaltyValue = penaltyValue;
         this.proof = proof;
-        this.createdOn = createdOn;
+        this.createdAt = Timestamp.from(Instant.now());
         this.deadline = deadline;
         this.status = status;
         this.title = title;
@@ -85,10 +85,6 @@ public class Challenge {
         this.penaltyValue = penaltyValue;
     }
 
-    public Timestamp getCreatedOn() {
-        return createdOn;
-    }
-
     public Timestamp getDeadline() {
         return deadline;
     }
@@ -113,9 +109,14 @@ public class Challenge {
         this.proof = proof;
     }
 
-    public void setCreatedOn(Timestamp createdOn) {
-        this.createdOn = createdOn;
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
 
     public String getTitle() {
         return title;

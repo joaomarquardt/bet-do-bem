@@ -24,20 +24,21 @@ public class Bet {
     @OneToMany
     @JoinColumn(name = "proof_id", nullable = false)
     private List<Proof> proofs;
-    private final Timestamp createdOn = Timestamp.from(Instant.now());
-    private Timestamp closedOn;
+    private Timestamp createdAt;
+    private Timestamp closedAt;
     @Enumerated(EnumType.STRING)
     private BetStatus status;
 
     public Bet() {
     }
 
-    public Bet(Long id, User creator, User opponent, List<Proof> proofs, Timestamp closedOn, BetStatus status, String title, String description) {
+    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description) {
         this.id = id;
         this.creator = creator;
         this.opponent = opponent;
         this.proofs = proofs;
-        this.closedOn = closedOn;
+        this.createdAt = Timestamp.from(Instant.now());
+        this.closedAt = closedAt;
         this.status = status;
         this.title = title;
         this.description = description;
@@ -67,16 +68,16 @@ public class Bet {
         this.opponent = opponent;
     }
 
-    public Timestamp getCreatedOn() {
-        return createdOn;
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-    public Timestamp getClosedOn() {
-        return closedOn;
+    public Timestamp getClosedAt() {
+        return closedAt;
     }
 
-    public void setClosedOn(Timestamp closedOn) {
-        this.closedOn = closedOn;
+    public void setClosedAt(Timestamp closedAt) {
+        this.closedAt = closedAt;
     }
 
     public BetStatus getStatus() {

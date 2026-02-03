@@ -20,17 +20,17 @@ public class Vote {
     @JoinColumn(name = "proof_id", nullable = false)
     private Proof proof;
     private boolean approved;
-    private Timestamp votedAt = Timestamp.from(Instant.now());
+    private Timestamp votedAt;
 
     public Vote() {
     }
 
-    public Vote(Long id, User voter, Proof proof, boolean approved, Timestamp votedAt) {
+    public Vote(Long id, User voter, Proof proof, boolean approved) {
         this.id = id;
         this.voter = voter;
         this.proof = proof;
         this.approved = approved;
-        this.votedAt = votedAt;
+        this.votedAt = Timestamp.from(Instant.now());
     }
 
     public Long getId() {
