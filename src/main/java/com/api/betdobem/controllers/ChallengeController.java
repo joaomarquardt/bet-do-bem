@@ -1,6 +1,7 @@
 package com.api.betdobem.controllers;
 
 import com.api.betdobem.dtos.requests.CreateChallengeRequest;
+import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
 import com.api.betdobem.services.ChallengeService;
@@ -30,6 +31,12 @@ public class ChallengeController {
     public ResponseEntity<ChallengeResponse> createChallenge(@RequestBody @Valid CreateChallengeRequest challenge) {
         ChallengeResponse newChallenge = challengeService.createChallenge(challenge);
         return new ResponseEntity<>(newChallenge, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{id}/proofs")
+    public ResponseEntity<Void> addProofToChallenge(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
+        challengeService.addProofToChallenge(id, proof);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

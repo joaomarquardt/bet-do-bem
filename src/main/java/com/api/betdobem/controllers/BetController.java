@@ -1,6 +1,7 @@
 package com.api.betdobem.controllers;
 
 import com.api.betdobem.dtos.requests.CreateBetRequest;
+import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
 import com.api.betdobem.services.BetService;
@@ -30,6 +31,12 @@ public class BetController {
     public ResponseEntity<BetResponse> createBet(@RequestBody @Valid CreateBetRequest bet) {
         BetResponse newBet = betService.createBet(bet);
         return new ResponseEntity<>(newBet, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{id}/proofs")
+    public ResponseEntity<Void> addProofToBet(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
+        betService.addProofToBet(id, proof);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

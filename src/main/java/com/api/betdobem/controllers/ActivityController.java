@@ -1,6 +1,7 @@
 package com.api.betdobem.controllers;
 
 import com.api.betdobem.dtos.requests.CreateActivityRequest;
+import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
 import com.api.betdobem.services.ActivityService;
@@ -30,6 +31,12 @@ public class ActivityController {
     public ResponseEntity<ActivityResponse> createActivity(@RequestBody @Valid CreateActivityRequest activity) {
         ActivityResponse newActivity = activityService.createActivity(activity);
         return new ResponseEntity<>(newActivity, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{id}/proofs")
+    public ResponseEntity<Void> addProofToActivity(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
+        activityService.addProofToActivity(id, proof);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

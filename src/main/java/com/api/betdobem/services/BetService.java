@@ -1,8 +1,10 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Bet;
+import com.api.betdobem.domain.Proof;
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateBetRequest;
+import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
 import com.api.betdobem.enums.BetStatus;
@@ -17,11 +19,13 @@ public class BetService {
     private BetRepository betRepository;
     private BetMapper betMapper;
     private UserService userService;
+    private ProofService proofService;
 
-    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService) {
+    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService) {
         this.betRepository = betRepository;
         this.betMapper = betMapper;
         this.userService = userService;
+        this.proofService = proofService;
     }
 
     public List<BetResponse> getAllBets() {
@@ -41,6 +45,20 @@ public class BetService {
         betEntity.setOpponent(opponent);
         Bet savedBet = betRepository.save(betEntity);
         return betMapper.toBetResponse(savedBet);
+    }
+
+    public BetResponse addProofToBet(Long id, CreateProofRequest proof) {
+        Bet bet = getBetEntityById(id);
+        if (bet.getStatus() != BetStatus.OPEN) {
+            throw new IllegalArgumentException("Cannot add proof to a bet that is not open.");
+        }
+        if (!bet.getCreator().getId().equals(proof.authorId()) && !bet.getOpponent().getId().equals(proof.authorId())) {
+            throw new IllegalArgumentException("Only the creator or opponent can add proofs to this bet.");
+        }
+        Proof proofEntity = proofService.createProof(proof);
+        bet.getProofs().add(proofEntity);
+        betRepository.save(bet);
+        return betMapper.toBetResponse(bet);
     }
 
     public Bet getBetEntityById(Long id) {
