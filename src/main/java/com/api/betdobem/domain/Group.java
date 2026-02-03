@@ -19,7 +19,7 @@ public class Group {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    private Timestamp createdAt = Timestamp.from(Instant.now());
+    private final Timestamp createdAt = Timestamp.from(Instant.now());
 
     @ManyToMany
     @JoinTable(
@@ -32,13 +32,12 @@ public class Group {
     public Group() {
     }
 
-    public Group(Long id, String name, String description, User creator, List<User> members, Timestamp createdAt) {
+    public Group(Long id, String name, String description, User creator, List<User> members) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.creator = creator;
         this.members = members;
-        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -83,9 +82,5 @@ public class Group {
 
     public Timestamp getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
     }
 }

@@ -17,17 +17,16 @@ public class Proof {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
     @Column(name = "posted_at")
-    private Timestamp postedAt = Timestamp.from(Instant.now());
+    private final Timestamp postedAt = Timestamp.from(Instant.now());
 
     public Proof() {
     }
 
-    public Proof(Long id, String imageUrl, String description, User author, Timestamp postedAt) {
+    public Proof(Long id, String imageUrl, String description, User author) {
         this.id = id;
         this.imageUrl = imageUrl;
         this.description = description;
         this.author = author;
-        this.postedAt = postedAt;
     }
 
     public Long getId() {
@@ -64,9 +63,5 @@ public class Proof {
 
     public Timestamp getPostedAt() {
         return postedAt;
-    }
-
-    public void setPostedAt(Timestamp postedAt) {
-        this.postedAt = postedAt;
     }
 }

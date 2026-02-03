@@ -20,7 +20,7 @@ public class Vote {
     @JoinColumn(name = "proof_id", nullable = false)
     private Proof proof;
     private boolean approved;
-    private Timestamp votedAt;
+    private final Timestamp votedAt = Timestamp.from(Instant.now());
 
     public Vote() {
     }
@@ -30,7 +30,6 @@ public class Vote {
         this.voter = voter;
         this.proof = proof;
         this.approved = approved;
-        this.votedAt = Timestamp.from(Instant.now());
     }
 
     public Long getId() {
@@ -67,9 +66,5 @@ public class Vote {
 
     public Timestamp getVotedAt() {
         return votedAt;
-    }
-
-    public void setVotedAt(Timestamp votedAt) {
-        this.votedAt = votedAt;
     }
 }

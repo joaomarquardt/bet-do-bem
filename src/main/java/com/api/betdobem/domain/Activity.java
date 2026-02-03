@@ -21,7 +21,7 @@ public class Activity {
     private String description;
     @Enumerated(EnumType.STRING)
     private ActivityStatus status;
-    private Timestamp createdAt;
+    private final Timestamp createdAt = Timestamp.from(Instant.now());
 
     public Activity() {
     }
@@ -32,7 +32,6 @@ public class Activity {
         this.proof = proof;
         this.description = description;
         this.status = status;
-        this.createdAt = Timestamp.from(Instant.now());
     }
 
     public Long getId() {
@@ -77,9 +76,5 @@ public class Activity {
 
     public Timestamp getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
     }
 }

@@ -24,7 +24,7 @@ public class Bet {
     @OneToMany
     @JoinColumn(name = "proof_id", nullable = false)
     private List<Proof> proofs;
-    private Timestamp createdAt;
+    private final Timestamp createdAt = Timestamp.from(Instant.now());
     private Timestamp closedAt;
     @Enumerated(EnumType.STRING)
     private BetStatus status;
@@ -37,8 +37,6 @@ public class Bet {
         this.creator = creator;
         this.opponent = opponent;
         this.proofs = proofs;
-        this.createdAt = Timestamp.from(Instant.now());
-        this.closedAt = closedAt;
         this.status = status;
         this.title = title;
         this.description = description;
