@@ -3,8 +3,6 @@ package com.api.betdobem.dtos.requests;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.sql.Timestamp;
-
 public record CreateBetRequest(
         @NotBlank(message = "Title cannot be blank")
         String title,
@@ -13,7 +11,6 @@ public record CreateBetRequest(
         @NotNull(message = "Creator ID cannot be null")
         Long creatorId,
         @NotNull(message = "Opponent ID cannot be null")
-        Long opponentId,
-        Timestamp closedOn
+        Long opponentId
 ) {
 }

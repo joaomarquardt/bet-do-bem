@@ -10,8 +10,6 @@ public record CreateActivityRequest(
         @NotNull(message = "Proof ID cannot be null")
         Long proofId,
         @NotBlank(message = "Description cannot be blank")
-        String description,
-        @NotNull(message = "Status cannot be null")
-        ActivityStatus status
+        String description
 ) {
 }
