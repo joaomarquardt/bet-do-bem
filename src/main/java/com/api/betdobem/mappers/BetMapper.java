@@ -17,8 +17,12 @@ public interface BetMapper {
 
     Bet toBetEntity(CreateBetRequest request);
 
+    @Mapping(source = "creator.id", target = "creatorId")
+    @Mapping(source = "opponent.id", target = "opponentId")
     BetResponse toBetResponse(Bet bet);
 
+    @Mapping(source = "creator.id", target = "creatorId")
+    @Mapping(source = "opponent.id", target = "opponentId")
     List<BetResponse> toBetResponseList(List<Bet> bets);
 
     @Mapping(target = "id", ignore = true)
