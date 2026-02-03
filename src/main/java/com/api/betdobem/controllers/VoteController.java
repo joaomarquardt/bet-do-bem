@@ -1,6 +1,8 @@
 package com.api.betdobem.controllers;
 
 import com.api.betdobem.domain.Vote;
+import com.api.betdobem.dtos.requests.VoteRequest;
+import com.api.betdobem.dtos.responses.VoteResponse;
 import com.api.betdobem.services.VoteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,26 +20,26 @@ public class VoteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Vote>> getAllVotes() {
-        List<Vote> votes = voteService.getAllVotes();
+    public ResponseEntity<List<VoteResponse>> getAllVotes() {
+        List<VoteResponse> votes = voteService.getAllVotes();
         return new ResponseEntity<>(votes, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Vote> createVote(@RequestBody Vote vote) {
-        Vote newVote = voteService.createVote(vote);
+    public ResponseEntity<VoteResponse> createVote(@RequestBody VoteRequest vote) {
+        VoteResponse newVote = voteService.createVote(vote);
         return new ResponseEntity<>(newVote, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Vote> getVoteById(@PathVariable Long id) {
-        Vote vote = voteService.getVoteById(id);
+    public ResponseEntity<VoteResponse> getVoteById(@PathVariable Long id) {
+        VoteResponse vote = voteService.getVoteById(id);
         return new ResponseEntity<>(vote, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Vote> updateVote(@PathVariable Long id, @RequestBody Vote vote) {
-        Vote updatedVote = voteService.updateVote(id, vote);
+    public ResponseEntity<VoteResponse> updateVote(@PathVariable Long id, @RequestBody VoteRequest vote) {
+        VoteResponse updatedVote = voteService.updateVote(id, vote);
         return new ResponseEntity<>(updatedVote, HttpStatus.OK);
     }
 

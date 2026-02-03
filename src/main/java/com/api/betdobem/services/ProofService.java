@@ -1,6 +1,8 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Proof;
+import com.api.betdobem.dtos.requests.ProofRequest;
+import com.api.betdobem.dtos.responses.ProofResponse;
 import com.api.betdobem.repositories.ProofRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +16,19 @@ public class ProofService {
         this.proofRepository = proofRepository;
     }
 
-    public List<Proof> getAllProofs() {
+    public List<ProofResponse> getAllProofs() {
         return null;
     }
 
-    public Proof createProof(Proof proof) {
+    public ProofResponse createProof(ProofRequest proof) {
         return null;
     }
 
-    public Proof getProofById(Long id) {
+    public ProofResponse getProofById(Long id) {
         return null;
     }
 
-    public Proof updateProof(Long id, Proof proof) {
+    public ProofResponse updateProof(Long id, ProofRequest proof) {
         return null;
     }
 

@@ -1,6 +1,8 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Group;
+import com.api.betdobem.dtos.requests.GroupRequest;
+import com.api.betdobem.dtos.responses.GroupResponse;
 import com.api.betdobem.repositories.GroupRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +16,19 @@ public class GroupService {
         this.groupRepository = groupRepository;
     }
 
-    public List<Group> getAllGroups() {
+    public List<GroupResponse> getAllGroups() {
         return null;
     }
 
-    public Group createGroup(Group group) {
+    public GroupResponse createGroup(GroupRequest group) {
         return null;
     }
 
-    public Group getGroupById(Long id) {
+    public GroupResponse getGroupById(Long id) {
         return null;
     }
 
-    public Group updateGroup(Long id, Group group) {
+    public GroupResponse updateGroup(Long id, GroupRequest group) {
         return null;
     }
 

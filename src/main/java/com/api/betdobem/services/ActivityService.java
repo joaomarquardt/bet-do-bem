@@ -1,6 +1,8 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Activity;
+import com.api.betdobem.dtos.requests.ActivityRequest;
+import com.api.betdobem.dtos.responses.ActivityResponse;
 import com.api.betdobem.repositories.ActivityRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +16,19 @@ public class ActivityService {
         this.activityRepository = activityRepository;
     }
 
-    public List<Activity> getAllActivities() {
+    public List<ActivityResponse> getAllActivities() {
         return null;
     }
 
-    public Activity createActivity(Activity activity) {
+    public ActivityResponse createActivity(ActivityRequest activity) {
         return null;
     }
 
-    public Activity getActivityById(Long id) {
+    public ActivityResponse getActivityById(Long id) {
         return null;
     }
 
-    public Activity updateActivity(Long id, Activity activity) {
+    public ActivityResponse updateActivity(Long id, ActivityRequest activity) {
         return null;
     }
 

@@ -1,6 +1,8 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.User;
+import com.api.betdobem.dtos.requests.UserRequest;
+import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +16,19 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> getAllUsers() {
+    public List<UserResponse> getAllUsers() {
         return null;
     }
 
-    public User createUser(User user) {
+    public UserResponse createUser(UserRequest user) {
         return null;
     }
 
-    public User getUserById(Long id) {
+    public UserResponse getUserById(Long id) {
         return null;
     }
 
-    public User updateUser(Long id, User user) {
+    public UserResponse updateUser(Long id, UserRequest user) {
         return null;
     }
 

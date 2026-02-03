@@ -1,6 +1,8 @@
 package com.api.betdobem.controllers;
 
 import com.api.betdobem.domain.Proof;
+import com.api.betdobem.dtos.requests.ProofRequest;
+import com.api.betdobem.dtos.responses.ProofResponse;
 import com.api.betdobem.services.ProofService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,26 +20,26 @@ public class ProofController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Proof>> getAllProofs() {
-        List<Proof> proofs = proofService.getAllProofs();
+    public ResponseEntity<List<ProofResponse>> getAllProofs() {
+        List<ProofResponse> proofs = proofService.getAllProofs();
         return new ResponseEntity<>(proofs, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Proof> createProof(@RequestBody Proof proof) {
-        Proof newProof = proofService.createProof(proof);
+    public ResponseEntity<ProofResponse> createProof(@RequestBody ProofRequest proof) {
+        ProofResponse newProof = proofService.createProof(proof);
         return new ResponseEntity<>(newProof, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Proof> getProofById(@PathVariable Long id) {
-        Proof proof = proofService.getProofById(id);
+    public ResponseEntity<ProofResponse> getProofById(@PathVariable Long id) {
+        ProofResponse proof = proofService.getProofById(id);
         return new ResponseEntity<>(proof, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Proof> updateProof(@PathVariable Long id, @RequestBody Proof proof) {
-        Proof updatedProof = proofService.updateProof(id, proof);
+    public ResponseEntity<ProofResponse> updateProof(@PathVariable Long id, @RequestBody ProofRequest proof) {
+        ProofResponse updatedProof = proofService.updateProof(id, proof);
         return new ResponseEntity<>(updatedProof, HttpStatus.OK);
     }
 

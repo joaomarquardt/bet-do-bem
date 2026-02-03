@@ -1,6 +1,8 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Bet;
+import com.api.betdobem.dtos.requests.BetRequest;
+import com.api.betdobem.dtos.responses.BetResponse;
 import com.api.betdobem.repositories.BetRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +16,19 @@ public class BetService {
         this.betRepository = betRepository;
     }
 
-    public List<Bet> getAllBets() {
+    public List<BetResponse> getAllBets() {
         return null;
     }
 
-    public Bet createBet(Bet bet) {
+    public BetResponse createBet(BetRequest bet) {
         return null;
     }
 
-    public Bet getBetById(Long id) {
+    public BetResponse getBetById(Long id) {
         return null;
     }
 
-    public Bet updateBet(Long id, Bet bet) {
+    public BetResponse updateBet(Long id, BetRequest bet) {
         return null;
     }
 

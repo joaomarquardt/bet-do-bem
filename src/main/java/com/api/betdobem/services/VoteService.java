@@ -1,6 +1,8 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Vote;
+import com.api.betdobem.dtos.requests.VoteRequest;
+import com.api.betdobem.dtos.responses.VoteResponse;
 import com.api.betdobem.repositories.VoteRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +16,19 @@ public class VoteService {
         this.voteRepository = voteRepository;
     }
 
-    public List<Vote> getAllVotes() {
+    public List<VoteResponse> getAllVotes() {
         return null;
     }
 
-    public Vote createVote(Vote vote) {
+    public VoteResponse createVote(VoteRequest vote) {
         return null;
     }
 
-    public Vote getVoteById(Long id) {
+    public VoteResponse getVoteById(Long id) {
         return null;
     }
 
-    public Vote updateVote(Long id, Vote vote) {
+    public VoteResponse updateVote(Long id, VoteRequest vote) {
         return null;
     }
 
