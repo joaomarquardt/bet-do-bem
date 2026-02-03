@@ -26,12 +26,6 @@ public class ProofController {
         return new ResponseEntity<>(proofs, HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<ProofResponse> createProof(@RequestBody @Valid CreateProofRequest proof) {
-        ProofResponse newProof = proofService.createProof(proof);
-        return new ResponseEntity<>(newProof, HttpStatus.CREATED);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<ProofResponse> getProofById(@PathVariable Long id) {
         ProofResponse proof = proofService.getProofById(id);
