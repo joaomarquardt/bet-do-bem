@@ -25,6 +25,10 @@ public class ProofService {
         return proofMapper.toProofResponseList(proofs);
     }
 
+    public Proof getProofEntityById(Long id) {
+        return proofRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Proof with ID " + id + " not found."));
+    }
+
     public ProofResponse createProof(CreateProofRequest proof) {
         return null;
     }

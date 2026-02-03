@@ -25,6 +25,10 @@ public class VoteService {
         return voteMapper.toVoteResponseList(votes);
     }
 
+    public Vote getVoteEntityById(Long id) {
+        return voteRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Vote with ID " + id + " not found."));
+    }
+
     public VoteResponse createVote(CreateVoteRequest vote) {
         return null;
     }

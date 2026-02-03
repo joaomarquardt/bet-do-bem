@@ -25,6 +25,10 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponseList(challenges);
     }
 
+    public Challenge getChallengeEntityById(Long id) {
+        return challengeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Challenge with ID " + id + " not found."));
+    }
+
     public ChallengeResponse createChallenge(CreateChallengeRequest challenge) {
         return null;
     }

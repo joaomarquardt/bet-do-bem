@@ -25,6 +25,10 @@ public class UserService {
         return userMapper.toUserResponseList(users);
     }
 
+    public User getUserEntityById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User with ID " + id + " not found."));
+    }
+
     public UserResponse createUser(CreateUserRequest user) {
         return null;
     }

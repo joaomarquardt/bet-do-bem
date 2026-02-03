@@ -36,6 +36,10 @@ public class BetService {
         return betMapper.toBetResponse(savedBet);
     }
 
+    public Bet getBetEntityById(Long id) {
+        return betRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Bet with ID " + id + " not found."));
+    }
+
     public BetResponse getBetById(Long id) {
         return null;
     }

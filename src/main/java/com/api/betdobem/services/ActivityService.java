@@ -25,6 +25,10 @@ public class ActivityService {
         return activityMapper.toActivityResponseList(activities);
     }
 
+    public Activity getActivityEntityById(Long id) {
+        return activityRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Activity with ID " + id + " not found."));
+    }
+
     public ActivityResponse createActivity(CreateActivityRequest activity) {
         return null;
     }

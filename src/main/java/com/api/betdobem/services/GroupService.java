@@ -25,6 +25,10 @@ public class GroupService {
         return groupMapper.toGroupResponseList(groups);
     }
 
+    public Group getGroupEntityById(Long id) {
+        return groupRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Group with ID " + id + " not found."));
+    }
+
     public GroupResponse createGroup(CreateGroupRequest group) {
         return null;
     }
