@@ -30,17 +30,22 @@ public class ProofService {
     }
 
     public ProofResponse createProof(CreateProofRequest proof) {
-        return null;
+        Proof proofEntity = proofMapper.toProofEntity(proof);
+        Proof savedProof = proofRepository.save(proofEntity);
+        return proofMapper.toProofResponse(savedProof);
     }
 
     public ProofResponse getProofById(Long id) {
-        return null;
+        Proof proof = getProofEntityById(id);
+        return proofMapper.toProofResponse(proof);
     }
 
+    // Analyze if updateProof is necessary in the application context
     public ProofResponse updateProof(Long id, UpdateProofRequest proof) {
         return null;
     }
 
     public void deleteProof(Long id) {
+        proofRepository.deleteById(id);
     }
 }

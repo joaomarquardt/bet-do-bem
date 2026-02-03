@@ -4,6 +4,7 @@ import com.api.betdobem.domain.Activity;
 import com.api.betdobem.dtos.requests.CreateActivityRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
+import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
 import org.springframework.stereotype.Service;
@@ -30,17 +31,25 @@ public class ActivityService {
     }
 
     public ActivityResponse createActivity(CreateActivityRequest activity) {
-        return null;
+        Activity activityEntity = activityMapper.toActivityEntity(activity);
+        activityEntity.setStatus(ActivityStatus.OPENED);
+        Activity savedActivity = activityRepository.save(activityEntity);
+        return activityMapper.toActivityResponse(savedActivity);
     }
 
     public ActivityResponse getActivityById(Long id) {
-        return null;
+        Activity activity = getActivityEntityById(id);
+        return activityMapper.toActivityResponse(activity);
     }
 
     public ActivityResponse updateActivity(Long id, UpdateActivityRequest activity) {
-        return null;
+        Activity existingActivity = getActivityEntityById(id);
+        activityMapper.updateActivityRequest(activity, existingActivity);
+        Activity updatedActivity = activityRepository.save(existingActivity);
+        return activityMapper.toActivityResponse(updatedActivity);
     }
 
     public void deleteActivity(Long id) {
+        activityRepository.deleteById(id);
     }
 }

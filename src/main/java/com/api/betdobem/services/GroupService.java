@@ -30,17 +30,27 @@ public class GroupService {
     }
 
     public GroupResponse createGroup(CreateGroupRequest group) {
-        return null;
+        if (!group.memberIds().contains(group.creatorId())) {
+            group.memberIds().add(group.creatorId());
+        }
+        Group newGroup = groupMapper.toGroupEntity(group);
+        Group savedGroup = groupRepository.save(newGroup);
+        return groupMapper.toGroupResponse(savedGroup);
     }
 
     public GroupResponse getGroupById(Long id) {
-        return null;
+        Group group = getGroupEntityById(id);
+        return groupMapper.toGroupResponse(group);
     }
 
     public GroupResponse updateGroup(Long id, UpdateGroupRequest group) {
-        return null;
+        Group existingGroup = getGroupEntityById(id);
+        groupMapper.updateGroupRequest(group, existingGroup);
+        Group updatedGroup = groupRepository.save(existingGroup);
+        return groupMapper.toGroupResponse(updatedGroup);
     }
 
     public void deleteGroup(Long id) {
+        groupRepository.deleteById(id);
     }
 }

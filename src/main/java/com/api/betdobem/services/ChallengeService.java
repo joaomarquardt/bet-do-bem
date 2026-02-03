@@ -8,6 +8,8 @@ import com.api.betdobem.mappers.ChallengeMapper;
 import com.api.betdobem.repositories.ChallengeRepository;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -30,17 +32,26 @@ public class ChallengeService {
     }
 
     public ChallengeResponse createChallenge(CreateChallengeRequest challenge) {
-        return null;
+        if (challenge.challengerId().equals(challenge.challengedId())) {
+            throw new IllegalArgumentException("Challenger and challenged cannot be the same user.");
+        }
+        Challenge challengeEntity = challengeMapper.toChallengeEntity(challenge);
+        challengeEntity.setCreatedAt(Timestamp.from(Instant.now()));
+        Challenge savedChallenge = challengeRepository.save(challengeEntity);
+        return challengeMapper.toChallengeResponse(savedChallenge);
     }
 
     public ChallengeResponse getChallengeById(Long id) {
-        return null;
+        Challenge challenge = getChallengeEntityById(id);
+        return challengeMapper.toChallengeResponse(challenge);
     }
 
+    // Analyze if updateChallenge is necessary in the application context
     public ChallengeResponse updateChallenge(Long id, UpdateChallengeRequest challenge) {
         return null;
     }
 
     public void deleteChallenge(Long id) {
+        challengeRepository.deleteById(id);
     }
 }

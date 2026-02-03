@@ -30,17 +30,24 @@ public class UserService {
     }
 
     public UserResponse createUser(CreateUserRequest user) {
-        return null;
+        User userEntity = userMapper.toUserEntity(user);
+        User savedUser = userRepository.save(userEntity);
+        return userMapper.toUserResponse(savedUser);
     }
 
     public UserResponse getUserById(Long id) {
-        return null;
+        User user = getUserEntityById(id);
+        return userMapper.toUserResponse(user);
     }
 
     public UserResponse updateUser(Long id, UpdateUserRequest user) {
-        return null;
+        User existingUser = getUserEntityById(id);
+        userMapper.updateUserRequest(user, existingUser);
+        User updatedUser = userRepository.save(existingUser);
+        return userMapper.toUserResponse(updatedUser);
     }
 
     public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 }

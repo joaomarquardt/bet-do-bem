@@ -1,5 +1,6 @@
 package com.api.betdobem.services;
 
+import com.api.betdobem.domain.Proof;
 import com.api.betdobem.domain.Vote;
 import com.api.betdobem.dtos.requests.CreateVoteRequest;
 import com.api.betdobem.dtos.requests.UpdateVoteRequest;
@@ -8,16 +9,20 @@ import com.api.betdobem.mappers.VoteMapper;
 import com.api.betdobem.repositories.VoteRepository;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 @Service
 public class VoteService {
     private VoteRepository voteRepository;
     private VoteMapper voteMapper;
+    private ProofService proofService;
 
-    public VoteService(VoteRepository voteRepository, VoteMapper voteMapper) {
+    public VoteService(VoteRepository voteRepository, VoteMapper voteMapper, ProofService proofService) {
         this.voteRepository = voteRepository;
         this.voteMapper = voteMapper;
+        this.proofService = proofService;
     }
 
     public List<VoteResponse> getAllVotes() {
@@ -30,17 +35,27 @@ public class VoteService {
     }
 
     public VoteResponse createVote(CreateVoteRequest vote) {
-        return null;
+        Proof proof = proofService.getProofEntityById(vote.proofId());
+        if (vote.voterId().equals(proof.getAuthor().getId())) {
+            throw new IllegalArgumentException("Author of the proof cannot vote on their own proof.");
+        }
+        Vote voteEntity = voteMapper.toVoteEntity(vote);
+        voteEntity.setVotedAt(Timestamp.from(Instant.now()));
+        Vote savedVote = voteRepository.save(voteEntity);
+        return voteMapper.toVoteResponse(savedVote);
     }
 
     public VoteResponse getVoteById(Long id) {
-        return null;
+        Vote vote = getVoteEntityById(id);
+        return voteMapper.toVoteResponse(vote);
     }
 
+    // Analyze if updateVote is necessary in the application context
     public VoteResponse updateVote(Long id, UpdateVoteRequest vote) {
         return null;
     }
 
     public void deleteVote(Long id) {
+        voteRepository.deleteById(id);
     }
 }

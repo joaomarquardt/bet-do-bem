@@ -41,13 +41,20 @@ public class BetService {
     }
 
     public BetResponse getBetById(Long id) {
-        return null;
+        Bet bet = getBetEntityById(id);
+        return betMapper.toBetResponse(bet);
     }
 
     public BetResponse updateBet(Long id, UpdateBetRequest bet) {
+        Bet existingBet = getBetEntityById(id);
+        if (bet.creatorId().equals(bet.opponentId())) {
+            throw new IllegalArgumentException("Creator and opponent cannot be the same user.");
+        }
+        betMapper.updateBetRequest(bet, existingBet);
         return null;
     }
 
     public void deleteBet(Long id) {
+        betRepository.deleteById(id);
     }
 }
