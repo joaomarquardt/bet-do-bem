@@ -12,7 +12,7 @@ public record ChallengeResponse(
         String description,
         Long penaltyValue,
         Long proofId,
-        Timestamp createdOn,
+        Timestamp createdAt,
         Timestamp deadline,
         ChallengeStatus status
 ) {

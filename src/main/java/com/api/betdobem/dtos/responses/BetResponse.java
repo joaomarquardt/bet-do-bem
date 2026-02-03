@@ -12,8 +12,8 @@ public record BetResponse(
         Long creatorId,
         Long opponentId,
         List<Long> proofIds,
-        Timestamp createdOn,
-        Timestamp closedOn,
+        Timestamp createdAt,
+        Timestamp closedAt,
         BetStatus status
 ) {
 }
