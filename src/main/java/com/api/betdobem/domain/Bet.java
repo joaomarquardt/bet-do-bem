@@ -13,6 +13,8 @@ public class Bet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String title;
+    private String description;
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
@@ -30,13 +32,15 @@ public class Bet {
     public Bet() {
     }
 
-    public Bet(Long id, User creator, User opponent, List<Proof> proofs, Timestamp closedOn, BetStatus status) {
+    public Bet(Long id, User creator, User opponent, List<Proof> proofs, Timestamp closedOn, BetStatus status, String title, String description) {
         this.id = id;
         this.creator = creator;
         this.opponent = opponent;
         this.proofs = proofs;
         this.closedOn = closedOn;
         this.status = status;
+        this.title = title;
+        this.description = description;
     }
 
     public Long getId() {
@@ -89,5 +93,21 @@ public class Bet {
 
     public void setProofs(List<Proof> proofs) {
         this.proofs = proofs;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

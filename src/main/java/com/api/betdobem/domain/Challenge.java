@@ -18,6 +18,7 @@ public class Challenge {
     @ManyToOne
     @JoinColumn(name = "challenged_id", nullable = false)
     private User challenged;
+    private String title;
     private String description;
     private Long penaltyValue;
     @OneToOne
@@ -31,7 +32,7 @@ public class Challenge {
     public Challenge() {
     }
 
-    public Challenge(Long id, User challenger, User challenged, String description, Long penaltyValue, Proof proof, Timestamp createdOn, Timestamp deadline, ChallengeStatus status) {
+    public Challenge(Long id, User challenger, User challenged, String description, Long penaltyValue, Proof proof, Timestamp createdOn, Timestamp deadline, ChallengeStatus status, String title) {
         this.id = id;
         this.challenger = challenger;
         this.challenged = challenged;
@@ -41,6 +42,7 @@ public class Challenge {
         this.createdOn = createdOn;
         this.deadline = deadline;
         this.status = status;
+        this.title = title;
     }
 
     public Long getId() {
@@ -113,5 +115,13 @@ public class Challenge {
 
     public void setCreatedOn(Timestamp createdOn) {
         this.createdOn = createdOn;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }
