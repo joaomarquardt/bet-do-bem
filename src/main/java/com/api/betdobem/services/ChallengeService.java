@@ -36,7 +36,6 @@ public class ChallengeService {
             throw new IllegalArgumentException("Challenger and challenged cannot be the same user.");
         }
         Challenge challengeEntity = challengeMapper.toChallengeEntity(challenge);
-        challengeEntity.setCreatedAt(Timestamp.from(Instant.now()));
         Challenge savedChallenge = challengeRepository.save(challengeEntity);
         return challengeMapper.toChallengeResponse(savedChallenge);
     }

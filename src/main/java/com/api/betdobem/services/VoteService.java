@@ -40,7 +40,6 @@ public class VoteService {
             throw new IllegalArgumentException("Author of the proof cannot vote on their own proof.");
         }
         Vote voteEntity = voteMapper.toVoteEntity(vote);
-        voteEntity.setVotedAt(Timestamp.from(Instant.now()));
         Vote savedVote = voteRepository.save(voteEntity);
         return voteMapper.toVoteResponse(savedVote);
     }
