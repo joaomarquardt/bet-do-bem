@@ -1,4 +1,19 @@
 package com.api.betdobem.dtos.responses;
 
-public record ChallengeResponse() {
+import com.api.betdobem.enums.ChallengeStatus;
+
+import java.sql.Timestamp;
+
+public record ChallengeResponse(
+        Long id,
+        Long challengerId,
+        Long challengedId,
+        String title,
+        String description,
+        Long penaltyValue,
+        Long proofId,
+        Timestamp createdOn,
+        Timestamp deadline,
+        ChallengeStatus status
+) {
 }
