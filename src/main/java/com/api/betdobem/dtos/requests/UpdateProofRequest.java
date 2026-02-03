@@ -3,7 +3,7 @@ package com.api.betdobem.dtos.requests;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record ProofRequest(
+public record UpdateProofRequest(
         @NotBlank(message = "Image URL cannot be blank")
         String imageUrl,
         @NotBlank(message = "Description cannot be blank")

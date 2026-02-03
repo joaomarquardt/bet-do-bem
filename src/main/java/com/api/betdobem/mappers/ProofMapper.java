@@ -1,7 +1,8 @@
 package com.api.betdobem.mappers;
 
 import com.api.betdobem.domain.Proof;
-import com.api.betdobem.dtos.requests.ProofRequest;
+import com.api.betdobem.dtos.requests.CreateProofRequest;
+import com.api.betdobem.dtos.requests.UpdateProofRequest;
 import com.api.betdobem.dtos.responses.ProofResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,12 +15,12 @@ import java.util.List;
 public interface ProofMapper {
     ProofMapper INSTANCE = Mappers.getMapper(ProofMapper.class);
 
-    Proof toProofEntity(ProofRequest request);
+    Proof toProofEntity(CreateProofRequest request);
 
     ProofResponse toProofResponse(Proof proof);
 
     List<ProofResponse> toProofResponseList(List<Proof> proofs);
 
     @Mapping(target = "id", ignore = true)
-    void updateProofRequest(ProofRequest request, @MappingTarget Proof proof);
+    void updateProofRequest(UpdateProofRequest request, @MappingTarget Proof proof);
 }

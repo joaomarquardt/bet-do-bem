@@ -1,8 +1,10 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Challenge;
-import com.api.betdobem.dtos.requests.ChallengeRequest;
+import com.api.betdobem.dtos.requests.CreateChallengeRequest;
+import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
+import com.api.betdobem.mappers.ChallengeMapper;
 import com.api.betdobem.repositories.ChallengeRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,16 +13,19 @@ import java.util.List;
 @Service
 public class ChallengeService {
     private ChallengeRepository challengeRepository;
+    private ChallengeMapper challengeMapper;
 
-    public ChallengeService(ChallengeRepository challengeRepository) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper) {
         this.challengeRepository = challengeRepository;
+        this.challengeMapper = challengeMapper;
     }
 
     public List<ChallengeResponse> getAllChallenges() {
-        return null;
+        List<Challenge> challenges = challengeRepository.findAll();
+        return challengeMapper.toChallengeResponseList(challenges);
     }
 
-    public ChallengeResponse createChallenge(ChallengeRequest challenge) {
+    public ChallengeResponse createChallenge(CreateChallengeRequest challenge) {
         return null;
     }
 
@@ -28,7 +33,7 @@ public class ChallengeService {
         return null;
     }
 
-    public ChallengeResponse updateChallenge(Long id, ChallengeRequest challenge) {
+    public ChallengeResponse updateChallenge(Long id, UpdateChallengeRequest challenge) {
         return null;
     }
 

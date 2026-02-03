@@ -1,7 +1,7 @@
 package com.api.betdobem.controllers;
 
-import com.api.betdobem.domain.Activity;
-import com.api.betdobem.dtos.requests.ActivityRequest;
+import com.api.betdobem.dtos.requests.CreateActivityRequest;
+import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
 import com.api.betdobem.services.ActivityService;
 import jakarta.validation.Valid;
@@ -27,7 +27,7 @@ public class ActivityController {
     }
 
     @PostMapping
-    public ResponseEntity<ActivityResponse> createActivity(@RequestBody @Valid ActivityRequest activity) {
+    public ResponseEntity<ActivityResponse> createActivity(@RequestBody @Valid CreateActivityRequest activity) {
         ActivityResponse newActivity = activityService.createActivity(activity);
         return new ResponseEntity<>(newActivity, HttpStatus.CREATED);
     }
@@ -39,7 +39,7 @@ public class ActivityController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ActivityResponse> updateActivity(@PathVariable Long id, @RequestBody @Valid ActivityRequest activity) {
+    public ResponseEntity<ActivityResponse> updateActivity(@PathVariable Long id, @RequestBody @Valid UpdateActivityRequest activity) {
         ActivityResponse updatedActivity = activityService.updateActivity(id, activity);
         return new ResponseEntity<>(updatedActivity, HttpStatus.OK);
     }

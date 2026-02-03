@@ -3,15 +3,17 @@ package com.api.betdobem.dtos.requests;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
+import java.sql.Timestamp;
 
-public record GroupRequest(
-        @NotBlank(message = "Name cannot be blank")
-        String name,
+public record CreateBetRequest(
+        @NotBlank(message = "Title cannot be blank")
+        String title,
         @NotBlank(message = "Description cannot be blank")
         String description,
         @NotNull(message = "Creator ID cannot be null")
         Long creatorId,
-        List<Long> memberIds
+        @NotNull(message = "Opponent ID cannot be null")
+        Long opponentId,
+        Timestamp closedOn
 ) {
 }

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.sql.Timestamp;
 
-public record ChallengeRequest(
+public record CreateChallengeRequest(
         @NotNull(message = "Challenger ID cannot be null")
         Long challengerId,
         @NotNull(message = "Challenged ID cannot be null")

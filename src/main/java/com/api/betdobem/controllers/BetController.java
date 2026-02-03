@@ -1,7 +1,7 @@
 package com.api.betdobem.controllers;
 
-import com.api.betdobem.domain.Bet;
-import com.api.betdobem.dtos.requests.BetRequest;
+import com.api.betdobem.dtos.requests.CreateBetRequest;
+import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
 import com.api.betdobem.services.BetService;
 import jakarta.validation.Valid;
@@ -27,7 +27,7 @@ public class BetController {
     }
 
     @PostMapping
-    public ResponseEntity<BetResponse> createBet(@RequestBody @Valid BetRequest bet) {
+    public ResponseEntity<BetResponse> createBet(@RequestBody @Valid CreateBetRequest bet) {
         BetResponse newBet = betService.createBet(bet);
         return new ResponseEntity<>(newBet, HttpStatus.CREATED);
     }
@@ -39,7 +39,7 @@ public class BetController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BetResponse> updateBet(@PathVariable Long id, @RequestBody @Valid BetRequest bet) {
+    public ResponseEntity<BetResponse> updateBet(@PathVariable Long id, @RequestBody @Valid UpdateBetRequest bet) {
         BetResponse updatedBet = betService.updateBet(id, bet);
         return new ResponseEntity<>(updatedBet, HttpStatus.OK);
     }

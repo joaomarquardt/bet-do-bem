@@ -1,8 +1,10 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.User;
-import com.api.betdobem.dtos.requests.UserRequest;
+import com.api.betdobem.dtos.requests.CreateUserRequest;
+import com.api.betdobem.dtos.requests.UpdateUserRequest;
 import com.api.betdobem.dtos.responses.UserResponse;
+import com.api.betdobem.mappers.UserMapper;
 import com.api.betdobem.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,16 +13,19 @@ import java.util.List;
 @Service
 public class UserService {
     private UserRepository userRepository;
+    private UserMapper userMapper;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     public List<UserResponse> getAllUsers() {
-        return null;
+        List<User> users = userRepository.findAll();
+        return userMapper.toUserResponseList(users);
     }
 
-    public UserResponse createUser(UserRequest user) {
+    public UserResponse createUser(CreateUserRequest user) {
         return null;
     }
 
@@ -28,7 +33,7 @@ public class UserService {
         return null;
     }
 
-    public UserResponse updateUser(Long id, UserRequest user) {
+    public UserResponse updateUser(Long id, UpdateUserRequest user) {
         return null;
     }
 

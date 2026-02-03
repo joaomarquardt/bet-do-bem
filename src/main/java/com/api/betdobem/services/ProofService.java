@@ -1,8 +1,10 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Proof;
-import com.api.betdobem.dtos.requests.ProofRequest;
+import com.api.betdobem.dtos.requests.CreateProofRequest;
+import com.api.betdobem.dtos.requests.UpdateProofRequest;
 import com.api.betdobem.dtos.responses.ProofResponse;
+import com.api.betdobem.mappers.ProofMapper;
 import com.api.betdobem.repositories.ProofRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,16 +13,19 @@ import java.util.List;
 @Service
 public class ProofService {
     private ProofRepository proofRepository;
+    private ProofMapper proofMapper;
 
-    public ProofService(ProofRepository proofRepository) {
+    public ProofService(ProofRepository proofRepository, ProofMapper proofMapper) {
         this.proofRepository = proofRepository;
+        this.proofMapper = proofMapper;
     }
 
     public List<ProofResponse> getAllProofs() {
-        return null;
+        List<Proof> proofs = proofRepository.findAll();
+        return proofMapper.toProofResponseList(proofs);
     }
 
-    public ProofResponse createProof(ProofRequest proof) {
+    public ProofResponse createProof(CreateProofRequest proof) {
         return null;
     }
 
@@ -28,7 +33,7 @@ public class ProofService {
         return null;
     }
 
-    public ProofResponse updateProof(Long id, ProofRequest proof) {
+    public ProofResponse updateProof(Long id, UpdateProofRequest proof) {
         return null;
     }
 

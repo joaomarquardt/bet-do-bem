@@ -1,12 +1,11 @@
 package com.api.betdobem.dtos.requests;
 
-import com.api.betdobem.enums.BetStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.sql.Timestamp;
 
-public record BetRequest(
+public record UpdateBetRequest(
         @NotBlank(message = "Title cannot be blank")
         String title,
         @NotBlank(message = "Description cannot be blank")
@@ -15,8 +14,6 @@ public record BetRequest(
         Long creatorId,
         @NotNull(message = "Opponent ID cannot be null")
         Long opponentId,
-        Timestamp closedOn,
-        @NotNull(message = "Status cannot be null")
-        BetStatus status
+        Timestamp closedOn
 ) {
 }

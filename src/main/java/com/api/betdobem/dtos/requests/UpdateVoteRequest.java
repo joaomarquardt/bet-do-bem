@@ -2,7 +2,7 @@ package com.api.betdobem.dtos.requests;
 
 import jakarta.validation.constraints.NotNull;
 
-public record VoteRequest(
+public record UpdateVoteRequest(
         @NotNull(message = "Voter ID cannot be null")
         Long voterId,
         @NotNull(message = "Proof ID cannot be null")

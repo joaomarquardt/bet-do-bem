@@ -1,7 +1,7 @@
 package com.api.betdobem.controllers;
 
-import com.api.betdobem.domain.Group;
-import com.api.betdobem.dtos.requests.GroupRequest;
+import com.api.betdobem.dtos.requests.CreateGroupRequest;
+import com.api.betdobem.dtos.requests.UpdateGroupRequest;
 import com.api.betdobem.dtos.responses.GroupResponse;
 import com.api.betdobem.services.GroupService;
 import jakarta.validation.Valid;
@@ -27,7 +27,7 @@ public class GroupController {
     }
 
     @PostMapping
-    public ResponseEntity<GroupResponse> createGroup(@RequestBody @Valid GroupRequest group) {
+    public ResponseEntity<GroupResponse> createGroup(@RequestBody @Valid CreateGroupRequest group) {
         GroupResponse newGroup = groupService.createGroup(group);
         return new ResponseEntity<>(newGroup, HttpStatus.CREATED);
     }
@@ -39,7 +39,7 @@ public class GroupController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GroupResponse> updateGroup(@PathVariable Long id, @RequestBody @Valid GroupRequest group) {
+    public ResponseEntity<GroupResponse> updateGroup(@PathVariable Long id, @RequestBody @Valid UpdateGroupRequest group) {
         GroupResponse updatedGroup = groupService.updateGroup(id, group);
         return new ResponseEntity<>(updatedGroup, HttpStatus.OK);
     }
