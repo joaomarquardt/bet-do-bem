@@ -34,9 +34,9 @@ public class BetController {
     }
 
     @PostMapping("/{id}/proofs")
-    public ResponseEntity<Void> addProofToBet(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
-        betService.addProofToBet(id, proof);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<BetResponse> addProofToBet(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
+        BetResponse bet = betService.addProofToBet(id, proof);
+        return new ResponseEntity<>(bet, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

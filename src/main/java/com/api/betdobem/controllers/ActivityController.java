@@ -34,9 +34,9 @@ public class ActivityController {
     }
 
     @PostMapping("/{id}/proofs")
-    public ResponseEntity<Void> addProofToActivity(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
-        activityService.addProofToActivity(id, proof);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<ActivityResponse> addProofToActivity(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
+        ActivityResponse activity = activityService.addProofToActivity(id, proof);
+        return new ResponseEntity<>(activity, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

@@ -34,9 +34,9 @@ public class ChallengeController {
     }
 
     @PostMapping("/{id}/proofs")
-    public ResponseEntity<Void> addProofToChallenge(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
-        challengeService.addProofToChallenge(id, proof);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<ChallengeResponse> addProofToChallenge(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
+        ChallengeResponse challenge = challengeService.addProofToChallenge(id, proof);
+        return new ResponseEntity<>(challenge, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
