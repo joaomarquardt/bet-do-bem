@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ProofMapper.class})
 public interface BetMapper {
     BetMapper INSTANCE = Mappers.getMapper(BetMapper.class);
 
@@ -19,6 +19,7 @@ public interface BetMapper {
 
     @Mapping(source = "creator.id", target = "creatorId")
     @Mapping(source = "opponent.id", target = "opponentId")
+    @Mapping(source = "proofs", target = "proofs")
     BetResponse toBetResponse(Bet bet);
 
     @Mapping(source = "creator.id", target = "creatorId")

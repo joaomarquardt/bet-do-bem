@@ -11,14 +11,16 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ProofMapper.class})
 public interface ActivityMapper {
     ActivityMapper INSTANCE = Mappers.getMapper(ActivityMapper.class);
 
     Activity toActivityEntity(CreateActivityRequest request);
 
+    @Mapping(source = "proof", target = "proof")
     ActivityResponse toActivityResponse(Activity activity);
 
+    @Mapping(source = "proof", target = "proof")
     List<ActivityResponse> toActivityResponseList(List<Activity> activities);
 
     @Mapping(target = "id", ignore = true)

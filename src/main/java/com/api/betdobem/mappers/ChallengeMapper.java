@@ -11,14 +11,16 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ProofMapper.class})
 public interface ChallengeMapper {
     ChallengeMapper INSTANCE = Mappers.getMapper(ChallengeMapper.class);
 
     Challenge toChallengeEntity(CreateChallengeRequest request);
 
+    @Mapping(source = "proof", target = "proof")
     ChallengeResponse toChallengeResponse(Challenge challenge);
 
+    @Mapping(source = "proof", target = "proof")
     List<ChallengeResponse> toChallengeResponseList(List<Challenge> challenges);
 
     @Mapping(target = "id", ignore = true)

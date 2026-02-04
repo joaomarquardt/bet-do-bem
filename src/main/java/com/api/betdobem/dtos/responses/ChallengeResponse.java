@@ -11,7 +11,7 @@ public record ChallengeResponse(
         String title,
         String description,
         Long penaltyValue,
-        Long proofId,
+        ProofResponse proof,
         Timestamp createdAt,
         Timestamp deadline,
         ChallengeStatus status

@@ -17,8 +17,10 @@ public interface ProofMapper {
 
     Proof toProofEntity(CreateProofRequest request);
 
+    @Mapping(source = "author.id", target = "authorId")
     ProofResponse toProofResponse(Proof proof);
 
+    @Mapping(source = "author.id", target = "authorId")
     List<ProofResponse> toProofResponseList(List<Proof> proofs);
 
     @Mapping(target = "id", ignore = true)

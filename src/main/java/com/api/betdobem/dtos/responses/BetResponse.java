@@ -11,7 +11,7 @@ public record BetResponse(
         String description,
         Long creatorId,
         Long opponentId,
-        List<Long> proofIds,
+        List<ProofResponse> proofs,
         Timestamp createdAt,
         Timestamp closedAt,
         BetStatus status
