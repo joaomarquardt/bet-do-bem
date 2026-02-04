@@ -26,16 +26,20 @@ public class Activity {
     @Enumerated(EnumType.STRING)
     private ActivityStatus status;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
     public Activity() {
     }
 
-    public Activity(Long id, User author, Proof proof, String description, ActivityStatus status) {
+    public Activity(Long id, User author, Proof proof, String description, ActivityStatus status, Group group) {
         this.id = id;
         this.author = author;
         this.proof = proof;
         this.description = description;
         this.status = status;
+        this.group = group;
     }
 
     public Long getId() {
@@ -80,5 +84,13 @@ public class Activity {
 
     public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 }

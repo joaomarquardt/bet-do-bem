@@ -32,11 +32,14 @@ public class Challenge {
     private Timestamp deadline;
     @Enumerated(EnumType.STRING)
     private ChallengeStatus status;
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
     public Challenge() {
     }
 
-    public Challenge(Long id, User challenger, User challenged, String description, Long penaltyValue, Proof proof, Timestamp deadline, ChallengeStatus status, String title) {
+    public Challenge(Long id, User challenger, User challenged, String description, Long penaltyValue, Proof proof, Timestamp deadline, ChallengeStatus status, String title, Group group) {
         this.id = id;
         this.challenger = challenger;
         this.challenged = challenged;
@@ -46,6 +49,7 @@ public class Challenge {
         this.deadline = deadline;
         this.status = status;
         this.title = title;
+        this.group = group;
     }
 
     public Long getId() {
@@ -122,5 +126,13 @@ public class Challenge {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 }

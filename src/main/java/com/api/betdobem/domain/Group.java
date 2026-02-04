@@ -14,13 +14,10 @@ public class Group {
     private Long id;
     private String name;
     private String description;
-
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
-
     private final Timestamp createdAt = Timestamp.from(Instant.now());
-
     @ManyToMany
     @JoinTable(
             name = "group_members",
@@ -28,7 +25,6 @@ public class Group {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<User> members;
-
     public Group() {
     }
 

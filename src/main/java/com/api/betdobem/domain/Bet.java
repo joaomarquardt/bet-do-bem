@@ -32,11 +32,14 @@ public class Bet {
     private Timestamp closedAt;
     @Enumerated(EnumType.STRING)
     private BetStatus status;
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
     public Bet() {
     }
 
-    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description) {
+    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description, Group group) {
         this.id = id;
         this.creator = creator;
         this.opponent = opponent;
@@ -44,6 +47,7 @@ public class Bet {
         this.status = status;
         this.title = title;
         this.description = description;
+        this.group = group;
     }
 
     public Long getId() {
@@ -112,5 +116,13 @@ public class Bet {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 }
