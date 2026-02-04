@@ -4,10 +4,10 @@ import jakarta.persistence.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
+import java.util.Set;
 
-@Table
-@Entity(name = "groups")
+@Entity
+@Table(name = "`groups`")
 public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
