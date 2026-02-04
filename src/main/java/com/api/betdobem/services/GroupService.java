@@ -15,7 +15,7 @@ public class GroupService {
     private GroupRepository groupRepository;
     private GroupMapper groupMapper;
 
-    public GroupService(GroupRepository groupRepository) {
+    public GroupService(GroupRepository groupRepository, GroupMapper groupMapper) {
         this.groupRepository = groupRepository;
         this.groupMapper = groupMapper;
     }
