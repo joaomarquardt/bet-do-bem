@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface GroupMapper {
     GroupMapper INSTANCE = Mappers.getMapper(GroupMapper.class);
 
