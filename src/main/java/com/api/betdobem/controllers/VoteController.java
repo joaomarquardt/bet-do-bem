@@ -1,6 +1,5 @@
 package com.api.betdobem.controllers;
 
-import com.api.betdobem.dtos.requests.CreateVoteRequest;
 import com.api.betdobem.dtos.requests.UpdateVoteRequest;
 import com.api.betdobem.dtos.responses.VoteResponse;
 import com.api.betdobem.services.VoteService;
@@ -24,12 +23,6 @@ public class VoteController {
     public ResponseEntity<List<VoteResponse>> getAllVotes() {
         List<VoteResponse> votes = voteService.getAllVotes();
         return new ResponseEntity<>(votes, HttpStatus.OK);
-    }
-
-    @PostMapping
-    public ResponseEntity<VoteResponse> createVote(@RequestBody @Valid CreateVoteRequest vote) {
-        VoteResponse newVote = voteService.createVote(vote);
-        return new ResponseEntity<>(newVote, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
