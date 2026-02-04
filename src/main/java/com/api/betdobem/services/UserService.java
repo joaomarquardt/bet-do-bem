@@ -9,6 +9,7 @@ import com.api.betdobem.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -27,6 +28,10 @@ public class UserService {
 
     public User getUserEntityById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User with ID " + id + " not found."));
+    }
+
+    public List<User> getUserEntitiesByIds(Set<Long> ids) {
+        return userRepository.findAllById(ids);
     }
 
     public UserResponse createUser(CreateUserRequest user) {
