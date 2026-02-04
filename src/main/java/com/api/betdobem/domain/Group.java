@@ -24,11 +24,11 @@ public class Group {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> members;
+    private Set<User> members;
     public Group() {
     }
 
-    public Group(Long id, String name, String description, User creator, List<User> members) {
+    public Group(Long id, String name, String description, User creator, Set<User> members) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -68,11 +68,11 @@ public class Group {
         this.creator = creator;
     }
 
-    public List<User> getMembers() {
+    public Set<User> getMembers() {
         return members;
     }
 
-    public void setMembers(List<User> members) {
+    public void setMembers(Set<User> members) {
         this.members = members;
     }
 
