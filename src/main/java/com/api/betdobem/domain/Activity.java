@@ -15,8 +15,12 @@ public class Activity {
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
-    @OneToOne
-    @JoinColumn(name = "proof_id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "activity_proofs",
+            joinColumns = @JoinColumn(name = "activity_id"),
+            inverseJoinColumns = @JoinColumn(name = "proof_id")
+    )
     private Proof proof;
     private String description;
     @Enumerated(EnumType.STRING)

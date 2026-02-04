@@ -21,8 +21,12 @@ public class Challenge {
     private String title;
     private String description;
     private Long penaltyValue;
-    @OneToOne
-    @JoinColumn(name = "proof_id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "challenge_proofs",
+            joinColumns = @JoinColumn(name = "challenge_id"),
+            inverseJoinColumns = @JoinColumn(name = "proof_id")
+    )
     private Proof proof;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
     private Timestamp deadline;

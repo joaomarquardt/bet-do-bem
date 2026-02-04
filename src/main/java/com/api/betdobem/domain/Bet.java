@@ -21,8 +21,12 @@ public class Bet {
     @ManyToOne
     @JoinColumn(name = "opponent_id", nullable = false)
     private User opponent;
-    @OneToMany
-    @JoinColumn(name = "proof_id", nullable = false)
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "bet_proofs",
+            joinColumns = @JoinColumn(name = "bet_id"),
+            inverseJoinColumns = @JoinColumn(name = "proof_id")
+    )
     private List<Proof> proofs;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
     private Timestamp closedAt;
