@@ -57,4 +57,8 @@ public class VoteService {
     public void deleteVote(Long id) {
         voteRepository.deleteById(id);
     }
+    
+    public boolean hasUserAlreadyVotedInProof(Long proofId, Long voterId) {
+        return voteRepository.existsByProofIdAndVoterId(proofId, voterId);
+    }
 }
