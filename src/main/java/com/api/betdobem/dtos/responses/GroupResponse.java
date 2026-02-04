@@ -7,8 +7,8 @@ public record GroupResponse(
         Long id,
         String name,
         String description,
-        Long creatorId,
-        Timestamp createdAt,
-        List<Long> memberIds
+        UserResponse creator,
+        List<UserResponse> members,
+        Timestamp createdAt
 ) {
 }
