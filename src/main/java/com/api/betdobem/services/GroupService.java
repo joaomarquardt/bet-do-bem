@@ -53,4 +53,12 @@ public class GroupService {
     public void deleteGroup(Long id) {
         groupRepository.deleteById(id);
     }
+
+    public boolean isUserMemberOfGroup(Long groupId, Long userId) {
+        return groupRepository.isUserMemberOfGroup(groupId, userId);
+    }
+
+    public boolean isUserMemberOfGroupLinkedToProof(Long userId, Long proofId) {
+        return groupRepository.isUserMemberOfGroupLinkedToProof(userId, proofId);
+    }
 }
