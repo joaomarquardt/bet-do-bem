@@ -1,6 +1,6 @@
 package com.api.betdobem.controllers;
 
-import com.api.betdobem.dtos.requests.CreateProofRequest;
+import com.api.betdobem.dtos.requests.CreateVoteRequest;
 import com.api.betdobem.dtos.requests.UpdateProofRequest;
 import com.api.betdobem.dtos.responses.ProofResponse;
 import com.api.betdobem.services.ProofService;
@@ -30,6 +30,12 @@ public class ProofController {
     public ResponseEntity<ProofResponse> getProofById(@PathVariable Long id) {
         ProofResponse proof = proofService.getProofById(id);
         return new ResponseEntity<>(proof, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/votes")
+    public ResponseEntity<Void> voteInProof(@PathVariable Long id, @RequestBody @Valid CreateVoteRequest vote) {
+        proofService.voteInProof(id, vote);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
