@@ -57,14 +57,14 @@ public class ChallengeService {
         challengeEntity.setChallenger(challenger);
         challengeEntity.setChallenged(challenged);
         challengeEntity.setGroup(group);
-        challengeEntity.setStatus(ChallengeStatus.OPEN);
+        challengeEntity.setStatus(ChallengeStatus.INVITED);
         Challenge savedChallenge = challengeRepository.save(challengeEntity);
         return challengeMapper.toChallengeResponse(savedChallenge);
     }
 
     public ChallengeResponse addProofToChallenge(Long id, CreateProofRequest proof) {
         Challenge challenge = getChallengeEntityById(id);
-        if (challenge.getStatus() != ChallengeStatus.OPEN) {
+        if (challenge.getStatus() != ChallengeStatus.IN_PROGRESS) {
             throw new IllegalArgumentException("Cannot add proof to a challenge that is not open.");
         }
         if (!challenge.getChallenged().getId().equals(proof.authorId())) {
