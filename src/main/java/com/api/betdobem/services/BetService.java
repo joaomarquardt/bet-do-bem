@@ -1,6 +1,7 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Bet;
+import com.api.betdobem.domain.Group;
 import com.api.betdobem.domain.Proof;
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateBetRequest;
@@ -20,12 +21,14 @@ public class BetService {
     private BetMapper betMapper;
     private UserService userService;
     private ProofService proofService;
+    private GroupService groupService;
 
-    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService) {
+    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService, GroupService groupService) {
         this.betRepository = betRepository;
         this.betMapper = betMapper;
         this.userService = userService;
         this.proofService = proofService;
+        this.groupService = groupService;
     }
 
     public List<BetResponse> getAllBets() {
@@ -39,10 +42,12 @@ public class BetService {
         }
         User creator = userService.getUserEntityById(bet.creatorId());
         User opponent = userService.getUserEntityById(bet.opponentId());
+        Group group = groupService.getGroupEntityById(bet.groupId());
         Bet betEntity = betMapper.toBetEntity(bet);
         betEntity.setStatus(BetStatus.OPEN);
         betEntity.setCreator(creator);
         betEntity.setOpponent(opponent);
+        betEntity.setGroup(group);
         Bet savedBet = betRepository.save(betEntity);
         return betMapper.toBetResponse(savedBet);
     }

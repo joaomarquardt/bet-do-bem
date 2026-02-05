@@ -11,6 +11,8 @@ public record CreateBetRequest(
         @NotNull(message = "Creator ID cannot be null")
         Long creatorId,
         @NotNull(message = "Opponent ID cannot be null")
-        Long opponentId
+        Long opponentId,
+        @NotNull(message = "Group ID cannot be null")
+        Long groupId
 ) {
 }
