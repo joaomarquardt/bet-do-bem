@@ -29,6 +29,7 @@ public class Challenge {
     )
     private Proof proof;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
+    private Timestamp closedAt;
     private Timestamp deadline;
     @Enumerated(EnumType.STRING)
     private ChallengeStatus status;
@@ -118,6 +119,14 @@ public class Challenge {
 
     public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    public Timestamp getClosedAt() {
+        return closedAt;
+    }
+
+    public void setClosedAt(Timestamp closedAt) {
+        this.closedAt = closedAt;
     }
 
     public String getTitle() {

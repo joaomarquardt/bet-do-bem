@@ -26,6 +26,7 @@ public class Activity {
     @Enumerated(EnumType.STRING)
     private ActivityStatus status;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
+    private Timestamp closedAt;
     @ManyToOne
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
@@ -84,6 +85,14 @@ public class Activity {
 
     public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    public Timestamp getClosedAt() {
+        return closedAt;
+    }
+
+    public void setClosedAt(Timestamp closedAt) {
+        this.closedAt = closedAt;
     }
 
     public Group getGroup() {
