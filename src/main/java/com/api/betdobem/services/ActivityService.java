@@ -1,7 +1,9 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Activity;
+import com.api.betdobem.domain.Group;
 import com.api.betdobem.domain.Proof;
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateActivityRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
@@ -18,11 +20,15 @@ public class ActivityService {
     private ActivityRepository activityRepository;
     private ActivityMapper activityMapper;
     private ProofService proofService;
+    private UserService userService;
+    private GroupService groupService;
 
-    public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService) {
+    public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService, UserService userService, GroupService groupService) {
         this.activityRepository = activityRepository;
         this.activityMapper = activityMapper;
         this.proofService = proofService;
+        this.userService = userService;
+        this.groupService = groupService;
     }
 
     public List<ActivityResponse> getAllActivities() {
@@ -36,6 +42,12 @@ public class ActivityService {
 
     public ActivityResponse createActivity(CreateActivityRequest activity) {
         Activity activityEntity = activityMapper.toActivityEntity(activity);
+        User author = userService.getUserEntityById(activity.authorId());
+        Proof proof = proofService.createProof(activity.proof());
+        Group group = groupService.getGroupEntityById(activity.groupId());
+        activityEntity.setAuthor(author);
+        activityEntity.setProof(proof);
+        activityEntity.setGroup(group);
         activityEntity.setStatus(ActivityStatus.OPENED);
         Activity savedActivity = activityRepository.save(activityEntity);
         return activityMapper.toActivityResponse(savedActivity);
