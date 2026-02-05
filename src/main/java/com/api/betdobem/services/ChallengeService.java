@@ -9,8 +9,12 @@ import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
 import com.api.betdobem.enums.ChallengeStatus;
+import com.api.betdobem.enums.ContextType;
+import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.mappers.ChallengeMapper;
 import com.api.betdobem.repositories.ChallengeRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -84,5 +88,22 @@ public class ChallengeService {
 
     public void deleteChallenge(Long id) {
         challengeRepository.deleteById(id);
+    }
+
+    @EventListener
+    @Transactional
+    public void handleProofDecision(ProofDecidedEvent event) {
+        if (event.contextType() != ContextType.CHALLENGE) return;
+        Challenge challenge = challengeRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Challenge associated with proof ID " + event.proofId() + " not found."));
+        if (challenge.getStatus() != ChallengeStatus.IN_JUDGMENT && challenge.getStatus() != ChallengeStatus.IN_PROGRESS) return;
+        if (event.approved()) {
+            // TODO: Pay challenged user
+            challenge.setStatus(ChallengeStatus.SUCCESS);
+        } else {
+            // TODO: Charge challenged user
+            challenge.setStatus(ChallengeStatus.FAILED);
+        }
+        challenge.setClosedAt(Timestamp.from(Instant.now()));
+        challengeRepository.save(challenge);
     }
 }

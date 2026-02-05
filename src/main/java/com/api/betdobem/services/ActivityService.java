@@ -9,10 +9,16 @@ import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
 import com.api.betdobem.enums.ActivityStatus;
+import com.api.betdobem.enums.ContextType;
+import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -48,15 +54,15 @@ public class ActivityService {
         activityEntity.setAuthor(author);
         activityEntity.setProof(proof);
         activityEntity.setGroup(group);
-        activityEntity.setStatus(ActivityStatus.OPENED);
+        activityEntity.setStatus(ActivityStatus.IN_JUDGMENT);
         Activity savedActivity = activityRepository.save(activityEntity);
         return activityMapper.toActivityResponse(savedActivity);
     }
 
     public ActivityResponse addProofToActivity(Long id, CreateProofRequest proof) {
         Activity activity = getActivityEntityById(id);
-        if (activity.getStatus() != ActivityStatus.OPENED) {
-            throw new IllegalArgumentException("Cannot add proof to an activity that is not opened.");
+        if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) {
+            throw new IllegalArgumentException("Cannot add proof to an activity that is not in judgment.");
         }
         Proof proofEntity = proofService.createProof(proof);
         activity.setProof(proofEntity);
@@ -78,5 +84,21 @@ public class ActivityService {
 
     public void deleteActivity(Long id) {
         activityRepository.deleteById(id);
+    }
+
+    @EventListener
+    @Transactional
+    public void handleProofDecision(ProofDecidedEvent event) {
+        if (event.contextType() != ContextType.ACTIVITY) return;
+        Activity activity = activityRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Activity associated with proof ID " + event.proofId() + " not found."));
+        if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) return;
+        if (event.approved()) {
+            // TODO: Pay challenged user
+            activity.setStatus(ActivityStatus.APPROVED);
+        } else {
+            activity.setStatus(ActivityStatus.REJECTED);
+        }
+        activity.setClosedAt(Timestamp.from(Instant.now()));
+        activityRepository.save(activity);
     }
 }

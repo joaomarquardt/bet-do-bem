@@ -9,11 +9,20 @@ import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
 import com.api.betdobem.enums.BetStatus;
+import com.api.betdobem.enums.ContextType;
+import com.api.betdobem.events.ProofDecidedEvent;
+import com.api.betdobem.events.ProofDrawEvent;
 import com.api.betdobem.mappers.BetMapper;
 import com.api.betdobem.repositories.BetRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class BetService {
@@ -44,7 +53,7 @@ public class BetService {
         User opponent = userService.getUserEntityById(bet.opponentId());
         Group group = groupService.getGroupEntityById(bet.groupId());
         Bet betEntity = betMapper.toBetEntity(bet);
-        betEntity.setStatus(BetStatus.OPEN);
+        betEntity.setStatus(BetStatus.INVITED);
         betEntity.setCreator(creator);
         betEntity.setOpponent(opponent);
         betEntity.setGroup(group);
@@ -54,7 +63,7 @@ public class BetService {
 
     public BetResponse addProofToBet(Long id, CreateProofRequest proof) {
         Bet bet = getBetEntityById(id);
-        if (bet.getStatus() != BetStatus.OPEN) {
+        if (bet.getStatus() != BetStatus.IN_PROGRESS) {
             throw new IllegalArgumentException("Cannot add proof to a bet that is not open.");
         }
         if (!bet.getCreator().getId().equals(proof.authorId()) && !bet.getOpponent().getId().equals(proof.authorId())) {
@@ -86,5 +95,40 @@ public class BetService {
 
     public void deleteBet(Long id) {
         betRepository.deleteById(id);
+    }
+
+    @EventListener
+    @Transactional
+    public void handleProofDecision(ProofDecidedEvent event) {
+        if (event.contextType() != ContextType.BET) return;
+        if (!event.approved()) return;
+        Bet bet = betRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Bet associated with proof ID " + event.proofId() + " not found."));
+        if (bet.getStatus() != BetStatus.IN_JUDGMENT) return;
+        Proof winningProof = bet.getProofs().stream().filter(p -> p.getId().equals(event.proofId())).findFirst().orElseThrow();
+        User winner = winningProof.getAuthor();
+        if (bet.getCreator().getId().equals(winner.getId())) {
+            finishBetWinner(bet, BetStatus.FINISHED_WIN_CREATOR, winner);
+        } else {
+            finishBetWinner(bet, BetStatus.FINISHED_WIN_OPPONENT, winner);
+        }
+    }
+
+    @Transactional
+    public void finishBetWinner(Bet bet, BetStatus betStatus, User winner) {
+        bet.setStatus(betStatus);
+        bet.setClosedAt(Timestamp.from(Instant.now()));
+        betRepository.save(bet);
+    }
+
+    @Transactional
+    @EventListener
+    public void finishBetDraw(ProofDrawEvent event) {
+        if (event.contextType() != ContextType.BET) return;
+        Bet bet = betRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Bet associated with proof ID " + event.proofId() + " not found."));
+        if (bet.getStatus() != BetStatus.IN_JUDGMENT && bet.getStatus() != BetStatus.IN_PROGRESS) return;
+        bet.setStatus(BetStatus.FINISHED_DRAW);
+        bet.setClosedAt(Timestamp.from(Instant.now()));
+        betRepository.save(bet);
+        // TODO: return the coins to the players
     }
 }
