@@ -56,4 +56,8 @@ public class VoteService {
     public boolean hasUserAlreadyVotedInProof(Long proofId, Long voterId) {
         return voteRepository.existsByProofIdAndVoterId(proofId, voterId);
     }
+
+    public long countApprovalsByProofId(Long proofId) {
+        return voteRepository.countByProofIdAndApprovedTrue(proofId);
+    }
 }
