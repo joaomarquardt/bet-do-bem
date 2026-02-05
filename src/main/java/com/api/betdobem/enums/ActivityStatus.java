@@ -1,7 +1,7 @@
 package com.api.betdobem.enums;
 
 public enum ActivityStatus {
-    OPENED,
-    ACCEPTED,
-    REFUSED
+    IN_JUDGMENT,
+    APPROVED,
+    REJECTED
 }

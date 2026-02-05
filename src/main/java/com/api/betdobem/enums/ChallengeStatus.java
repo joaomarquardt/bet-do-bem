@@ -1,7 +1,10 @@
 package com.api.betdobem.enums;
 
 public enum ChallengeStatus {
-    OPEN,
-    COMPLETED,
-    REFUSED
+    INVITED,
+    DECLINED,
+    IN_PROGRESS,
+    IN_JUDGMENT,
+    SUCCESS,
+    FAILED
 }
