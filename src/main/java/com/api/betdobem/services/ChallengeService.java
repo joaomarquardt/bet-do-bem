@@ -68,6 +68,7 @@ public class ChallengeService {
         }
         Proof proofEntity = proofService.createProof(proof);
         challenge.setProof(proofEntity);
+        challengeRepository.save(challenge);
         return challengeMapper.toChallengeResponse(challenge);
     }
 
