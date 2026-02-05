@@ -6,8 +6,12 @@ import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.CreateVoteRequest;
 import com.api.betdobem.dtos.requests.UpdateProofRequest;
 import com.api.betdobem.dtos.responses.ProofResponse;
+import com.api.betdobem.enums.ContextType;
+import com.api.betdobem.events.ProofDecidedEvent;
+import com.api.betdobem.events.ProofDrawEvent;
 import com.api.betdobem.mappers.ProofMapper;
 import com.api.betdobem.repositories.ProofRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,13 +23,15 @@ public class ProofService {
     private UserService userService;
     private VoteService voteService;
     private GroupService groupService;
+    private ApplicationEventPublisher eventPublisher;
 
-    public ProofService(ProofRepository proofRepository, ProofMapper proofMapper, UserService userService, VoteService voteService, GroupService groupService) {
+    public ProofService(ProofRepository proofRepository, ProofMapper proofMapper, UserService userService, VoteService voteService, GroupService groupService, ApplicationEventPublisher eventPublisher) {
         this.proofRepository = proofRepository;
         this.proofMapper = proofMapper;
         this.userService = userService;
         this.voteService = voteService;
         this.groupService = groupService;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<ProofResponse> getAllProofs() {
@@ -58,7 +64,9 @@ public class ProofService {
             throw new IllegalArgumentException("User has already voted in this proof.");
         }
         User voter = userService.getUserEntityById(vote.voterId());
+        ContextType contextType = proofRepository.findContextTypeByProofId(id);
         voteService.createVote(proof, voter, vote.approved());
+        checkAndProcessConsensus(proof.getId(), contextType);
     }
 
     public ProofResponse getProofById(Long id) {
@@ -73,5 +81,23 @@ public class ProofService {
 
     public void deleteProof(Long id) {
         proofRepository.deleteById(id);
+    }
+
+    public void checkAndProcessConsensus(Long proofId, ContextType contextType) {
+        Long groupId = groupService.findGroupIdByProofId(proofId);
+        long approvedVotes = voteService.countVotesByProofIdAndApprovedValue(proofId, true);
+        long rejectedVotes = voteService.countVotesByProofIdAndApprovedValue(proofId, false);
+        long totalMembers = groupService.countMembersByGroupId(groupId);
+        long totalVotes = approvedVotes + rejectedVotes;
+        long majorityThreshold = (totalMembers / 2) + 1;
+
+        if (approvedVotes >= majorityThreshold) {
+            eventPublisher.publishEvent(new ProofDecidedEvent(proofId, contextType, true));
+        } else if (rejectedVotes >= majorityThreshold) {
+            eventPublisher.publishEvent(new ProofDecidedEvent(proofId, contextType, false));
+        }
+        if (totalVotes >= totalMembers && approvedVotes == rejectedVotes) {
+            eventPublisher.publishEvent(new ProofDrawEvent(proofId, contextType));
+        }
     }
 }
