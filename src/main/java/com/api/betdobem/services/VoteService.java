@@ -57,7 +57,7 @@ public class VoteService {
         return voteRepository.existsByProofIdAndVoterId(proofId, voterId);
     }
 
-    public long countApprovalsByProofId(Long proofId) {
-        return voteRepository.countByProofIdAndApprovedTrue(proofId);
+    public long countVotesByProofIdAndApprovedValue(Long proofId, boolean approved) {
+        return voteRepository.countByProofIdAndApproved(proofId, approved);
     }
 }
