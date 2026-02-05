@@ -6,8 +6,8 @@ import java.sql.Timestamp;
 
 public record ChallengeResponse(
         Long id,
-        Long challengerId,
-        Long challengedId,
+        UserResponse challenger,
+        UserResponse challenged,
         String title,
         String description,
         Long penaltyValue,

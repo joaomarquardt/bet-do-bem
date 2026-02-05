@@ -1,7 +1,9 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.Challenge;
+import com.api.betdobem.domain.Group;
 import com.api.betdobem.domain.Proof;
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateChallengeRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
@@ -20,11 +22,15 @@ public class ChallengeService {
     private ChallengeRepository challengeRepository;
     private ChallengeMapper challengeMapper;
     private ProofService proofService;
+    private UserService userService;
+    private GroupService groupService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService) {
         this.challengeRepository = challengeRepository;
         this.challengeMapper = challengeMapper;
         this.proofService = proofService;
+        this.userService = userService;
+        this.groupService = groupService;
     }
 
     public List<ChallengeResponse> getAllChallenges() {
@@ -40,7 +46,14 @@ public class ChallengeService {
         if (challenge.challengerId().equals(challenge.challengedId())) {
             throw new IllegalArgumentException("Challenger and challenged cannot be the same user.");
         }
+        Group group = groupService.getGroupEntityById(challenge.groupId());
+        User challenger = userService.getUserEntityById(challenge.challengerId());
+        User challenged = userService.getUserEntityById(challenge.challengedId());
         Challenge challengeEntity = challengeMapper.toChallengeEntity(challenge);
+        challengeEntity.setChallenger(challenger);
+        challengeEntity.setChallenged(challenged);
+        challengeEntity.setGroup(group);
+        challengeEntity.setStatus(ChallengeStatus.OPEN);
         Challenge savedChallenge = challengeRepository.save(challengeEntity);
         return challengeMapper.toChallengeResponse(savedChallenge);
     }
