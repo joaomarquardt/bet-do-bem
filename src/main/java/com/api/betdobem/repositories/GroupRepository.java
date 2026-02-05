@@ -44,4 +44,19 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     )
     """, nativeQuery = true)
     boolean isUserMemberOfGroupLinkedToProof(@Param("userId") Long userId, @Param("proofId") Long proofId);
+
+    @Query(value = "SELECT COUNT(*) FROM group_members WHERE group_id = :groupId", nativeQuery = true)
+    long countMembersByGroupId(@Param("groupId") Long groupId);
+
+    @Query(value = """
+    SELECT b.group_id FROM bets b
+        JOIN bet_proofs bp ON b.id = bp.bet_id WHERE bp.proof_id = :proofId
+    UNION
+    SELECT c.group_id FROM challenges c
+        JOIN challenge_proofs cp ON c.id = cp.challenge_id WHERE cp.proof_id = :proofId
+    UNION
+    SELECT a.group_id FROM activities a
+        JOIN activity_proofs ap ON a.id = ap.activity_id WHERE ap.proof_id = :proofId
+    """, nativeQuery = true)
+    Long findGroupIdByProofId(@Param("proofId") Long proofId);
 }

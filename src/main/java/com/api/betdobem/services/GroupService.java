@@ -71,4 +71,12 @@ public class GroupService {
     public boolean isUserMemberOfGroupLinkedToProof(Long userId, Long proofId) {
         return groupRepository.isUserMemberOfGroupLinkedToProof(userId, proofId);
     }
+
+    public long findGroupIdByProofId(Long proofId) {
+        return groupRepository.findGroupIdByProofId(proofId);
+    }
+
+     public long countMembersByGroupId(Long groupId) {
+        return groupRepository.countMembersByGroupId(groupId);
+    }
 }
