@@ -9,10 +9,6 @@ import java.util.Optional;
 
 public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
-    @Query(value = """
-        SELECT a.* FROM activities a
-        JOIN activity_proofs ap ON a.id = ap.activity_id
-        WHERE ap.proof_id = :proofId
-    """, nativeQuery = true)
+    @Query("SELECT a FROM Activity a WHERE a.proof.id = :proofId")
     Optional<Activity> findByProofId(@Param("proofId") Long proofId);
 }
