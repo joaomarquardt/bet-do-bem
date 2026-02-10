@@ -53,7 +53,7 @@ public class ProofService {
 
     public void voteInProof(Long id, CreateVoteRequest vote) {
         Proof proof = getProofEntityById(id);
-        if (groupService.isUserMemberOfGroupLinkedToProof(vote.voterId(), id)) {
+        if (!groupService.isUserMemberOfGroupLinkedToProof(vote.voterId(), id)) {
             throw new IllegalArgumentException("User must be a member of the group linked to the proof to vote.");
         }
         // TODO: Check if the proof is still open for voting
