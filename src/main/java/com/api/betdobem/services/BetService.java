@@ -21,8 +21,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class BetService {
@@ -63,11 +61,11 @@ public class BetService {
 
     public BetResponse addProofToBet(Long id, CreateProofRequest proof) {
         Bet bet = getBetEntityById(id);
-        if (bet.getStatus() != BetStatus.IN_PROGRESS) {
-            throw new IllegalArgumentException("Cannot add proof to a bet that is not open.");
-        }
         if (!bet.getCreator().getId().equals(proof.authorId()) && !bet.getOpponent().getId().equals(proof.authorId())) {
             throw new IllegalArgumentException("Only the creator or opponent can add proofs to this bet.");
+        }
+        if (bet.getStatus() != BetStatus.IN_PROGRESS) {
+            throw new IllegalArgumentException("Cannot add proof to a bet that is not in progress.");
         }
         Proof proofEntity = proofService.createProof(proof);
         bet.getProofs().add(proofEntity);
