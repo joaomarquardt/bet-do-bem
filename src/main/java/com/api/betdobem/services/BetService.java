@@ -1,13 +1,11 @@
 package com.api.betdobem.services;
 
-import com.api.betdobem.domain.Bet;
-import com.api.betdobem.domain.Group;
-import com.api.betdobem.domain.Proof;
-import com.api.betdobem.domain.User;
+import com.api.betdobem.domain.*;
 import com.api.betdobem.dtos.requests.CreateBetRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
+import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
@@ -43,6 +41,11 @@ public class BetService {
     public List<BetResponse> getAllBets() {
         List<Bet> bets = betRepository.findAll();
         return betMapper.toBetResponseList(bets);
+    }
+
+    public List<Bet> getAllExpiredBets() {
+        Timestamp now = Timestamp.from(Instant.now());
+        return betRepository.findByStatusAndExpiresAtBefore(BetStatus.IN_JUDGMENT, now);
     }
 
     public BetResponse createBet(CreateBetRequest bet) {
@@ -156,5 +159,42 @@ public class BetService {
         bet.setClosedAt(Timestamp.from(Instant.now()));
         betRepository.save(bet);
         walletService.returnsFundsForDrawnBet(bet);
+    }
+
+    @Transactional
+    public void handleExpiredBet(Bet bet) {
+        if (bet.getStatus() != BetStatus.IN_PROGRESS && bet.getStatus() != BetStatus.IN_JUDGMENT) return;
+        Proof proofCreator = bet.getProofs().stream()
+                .filter(p -> p.getAuthor().getId().equals(bet.getCreator().getId()))
+                .findFirst()
+                .orElse(null);
+        Proof proofOpponent = bet.getProofs().stream()
+                .filter(p -> p.getAuthor().getId().equals(bet.getOpponent().getId()))
+                .findFirst()
+                .orElse(null);
+        long votesCreator = 0;
+        if (proofCreator != null) {
+            VotesByProof v = proofService.countVotesByProofId(proofCreator.getId());
+            votesCreator = v.approvedVotes();
+        }
+        long votesOpponent = 0;
+        if (proofOpponent != null) {
+            VotesByProof v = proofService.countVotesByProofId(proofOpponent.getId());
+            votesOpponent = v.approvedVotes();
+        }
+        if (votesCreator == votesOpponent) {
+            bet.setStatus(BetStatus.FINISHED_DRAW);
+            walletService.returnsFundsForDrawnBet(bet);
+        }
+        else if (votesCreator > votesOpponent) {
+            bet.setStatus(BetStatus.FINISHED_WIN_CREATOR);
+            walletService.payBetWinner(bet.getCreator(), bet);
+        }
+        else {
+            bet.setStatus(BetStatus.FINISHED_WIN_OPPONENT);
+            walletService.payBetWinner(bet.getOpponent(), bet);
+        }
+        bet.setClosedAt(Timestamp.from(Instant.now()));
+        betRepository.save(bet);
     }
 }

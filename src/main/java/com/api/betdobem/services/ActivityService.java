@@ -8,6 +8,7 @@ import com.api.betdobem.dtos.requests.CreateActivityRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
+import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
@@ -42,6 +43,11 @@ public class ActivityService {
     public List<ActivityResponse> getAllActivities() {
         List<Activity> activities = activityRepository.findAll();
         return activityMapper.toActivityResponseList(activities);
+    }
+
+    public List<Activity> getAllExpiredActivities() {
+        Timestamp now = Timestamp.from(Instant.now());
+        return activityRepository.findByStatusAndExpiresAtBefore(ActivityStatus.IN_JUDGMENT, now);
     }
 
     public Activity getActivityEntityById(Long id) {
@@ -101,6 +107,22 @@ public class ActivityService {
             activity.setStatus(ActivityStatus.REJECTED);
         }
         activity.setClosedAt(Timestamp.from(Instant.now()));
+        activityRepository.save(activity);
+    }
+
+    public void handleExpiredActivity(Activity activity) {
+        if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) return;
+        VotesByProof proofVotes = proofService.countVotesByProofId(activity.getProof().getId());
+        long approvedVotes = proofVotes.approvedVotes();
+        long rejectedVotes = proofVotes.rejectedVotes();
+        if (approvedVotes > rejectedVotes) {
+            activity.setStatus(ActivityStatus.APPROVED);
+            walletService.payActivityReward(activity);
+        } else if (approvedVotes == 0 && rejectedVotes == 0) {
+            activity.setStatus(ActivityStatus.EXPIRED);
+        } else {
+            activity.setStatus(ActivityStatus.REJECTED);
+        }
         activityRepository.save(activity);
     }
 }
