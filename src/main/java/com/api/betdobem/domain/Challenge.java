@@ -20,7 +20,7 @@ public class Challenge {
     private User challenged;
     private String title;
     private String description;
-    private Long penaltyValue;
+    private Long amount;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinTable(
             name = "challenge_proofs",
@@ -40,12 +40,12 @@ public class Challenge {
     public Challenge() {
     }
 
-    public Challenge(Long id, User challenger, User challenged, String description, Long penaltyValue, Proof proof, Timestamp deadline, ChallengeStatus status, String title, Group group) {
+    public Challenge(Long id, User challenger, User challenged, String description, Long amount, Proof proof, Timestamp deadline, ChallengeStatus status, String title, Group group) {
         this.id = id;
         this.challenger = challenger;
         this.challenged = challenged;
         this.description = description;
-        this.penaltyValue = penaltyValue;
+        this.amount = amount;
         this.proof = proof;
         this.deadline = deadline;
         this.status = status;
@@ -85,12 +85,12 @@ public class Challenge {
         this.description = description;
     }
 
-    public Long getPenaltyValue() {
-        return penaltyValue;
+    public Long getAmount() {
+        return amount;
     }
 
-    public void setPenaltyValue(Long penaltyValue) {
-        this.penaltyValue = penaltyValue;
+    public void setAmount(Long amount) {
+        this.amount = amount;
     }
 
     public Timestamp getDeadline() {
