@@ -106,9 +106,14 @@ public class WalletService {
         processPayment(winner, bet.getBuyIn() * 2L, TransactionType.BET_WIN, ContextType.BET, bet.getId());
     }
 
+    // TODO: Analyze and implement SYSTEM_BANK in case of event entity creation
     @Transactional
     public void payChallengeWinner(User winner, Challenge challenge) {
-        processPayment(winner, challenge.getAmount() * 2L, TransactionType.CHALLENGE_WIN, ContextType.CHALLENGE, challenge.getId());
+        if (challenge.getChallenger().equals(winner)) {
+            processPayment(winner, challenge.getAmount(), TransactionType.CHALLENGE_REFUND, ContextType.CHALLENGE, challenge.getId());
+        } else {
+            processPayment(winner, challenge.getAmount() * 2L, TransactionType.CHALLENGE_WIN, ContextType.CHALLENGE, challenge.getId());
+        }
     }
 
     @Transactional

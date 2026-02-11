@@ -28,13 +28,15 @@ public class ChallengeService {
     private ProofService proofService;
     private UserService userService;
     private GroupService groupService;
+    private WalletService walletService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService) {
         this.challengeRepository = challengeRepository;
         this.challengeMapper = challengeMapper;
         this.proofService = proofService;
         this.userService = userService;
         this.groupService = groupService;
+        this.walletService = walletService;
     }
 
     public List<ChallengeResponse> getAllChallenges() {
@@ -97,10 +99,10 @@ public class ChallengeService {
         Challenge challenge = challengeRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Challenge associated with proof ID " + event.proofId() + " not found."));
         if (challenge.getStatus() != ChallengeStatus.IN_JUDGMENT && challenge.getStatus() != ChallengeStatus.IN_PROGRESS) return;
         if (event.approved()) {
-            // TODO: Pay challenged user
+            walletService.payChallengeWinner(challenge.getChallenged(), challenge);
             challenge.setStatus(ChallengeStatus.SUCCESS);
         } else {
-            // TODO: Charge challenged user
+            walletService.payChallengeWinner(challenge.getChallenger(), challenge);
             challenge.setStatus(ChallengeStatus.FAILED);
         }
         challenge.setClosedAt(Timestamp.from(Instant.now()));
