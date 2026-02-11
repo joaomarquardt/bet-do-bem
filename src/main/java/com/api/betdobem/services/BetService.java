@@ -104,11 +104,8 @@ public class BetService {
         if (bet.getStatus() != BetStatus.IN_JUDGMENT) return;
         Proof winningProof = bet.getProofs().stream().filter(p -> p.getId().equals(event.proofId())).findFirst().orElseThrow();
         User winner = winningProof.getAuthor();
-        if (bet.getCreator().getId().equals(winner.getId())) {
-            finishBetWinner(bet, BetStatus.FINISHED_WIN_CREATOR, winner);
-        } else {
-            finishBetWinner(bet, BetStatus.FINISHED_WIN_OPPONENT, winner);
-        }
+        BetStatus betStatus = bet.getCreator().getId().equals(winner.getId()) ? BetStatus.FINISHED_WIN_CREATOR : BetStatus.FINISHED_WIN_OPPONENT;
+        finishBetWinner(bet, betStatus, winner);
     }
 
     @Transactional
