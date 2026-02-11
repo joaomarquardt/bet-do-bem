@@ -91,13 +91,13 @@ public class WalletService {
 
     @Transactional
     private void subtractAmountFromUser(User user, Long amount) {
-        user.setCoins(user.getCoins() - amount.longValue());
+        user.setCoins(user.getCoins() - amount);
         userRepository.save(user);
     }
 
     @Transactional
     private void addAmountToUser(User user, Long amount) {
-        user.setCoins(user.getCoins() + amount.longValue());
+        user.setCoins(user.getCoins() + amount);
         userRepository.save(user);
     }
 
