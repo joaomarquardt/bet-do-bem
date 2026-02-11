@@ -2,6 +2,7 @@ package com.api.betdobem.services;
 
 import com.api.betdobem.domain.*;
 import com.api.betdobem.enums.BetStatus;
+import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.enums.TransactionType;
 import com.api.betdobem.repositories.TransactionRepository;
@@ -68,6 +69,20 @@ public class WalletService {
         transaction.setTransactionType(TransactionType.BET_REFUND);
         transaction.setContextType(ContextType.BET);
         transaction.setContextId(bet.getId());
+        transactionRepository.save(transaction);
+    }
+
+    @Transactional
+    public void returnsFundsForDeclinedChallenge(Challenge challenge) {
+        if (transactionRepository.existsByTransactionTypeAndContextIdAndUserId(TransactionType.CHALLENGE_REFUND, challenge.getId(), challenge.getChallenger().getId())) return;
+        if (challenge.getStatus() != ChallengeStatus.DECLINED) return;
+        addAmountToUser(challenge.getChallenger(), challenge.getAmount());
+        Transaction transaction = new Transaction();
+        transaction.setUserId(challenge.getChallenger().getId());
+        transaction.setAmount(challenge.getAmount());
+        transaction.setTransactionType(TransactionType.BET_REFUND);
+        transaction.setContextType(ContextType.BET);
+        transaction.setContextId(challenge.getId());
         transactionRepository.save(transaction);
     }
 
