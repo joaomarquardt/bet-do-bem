@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class WalletService {
     private TransactionRepository transactionRepository;
     private UserRepository userRepository;
-    @Value("${app.reward.amount}")
+    @Value("${app.activity.reward.amount}")
     private Long activityRewardAmount;
 
     public WalletService(TransactionRepository transactionRepository, UserRepository userRepository) {
