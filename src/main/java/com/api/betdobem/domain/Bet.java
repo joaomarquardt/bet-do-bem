@@ -31,6 +31,7 @@ public class Bet {
     private Long buyIn;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
     private Timestamp closedAt;
+    private Timestamp expiresAt;
     @Enumerated(EnumType.STRING)
     private BetStatus status;
     @ManyToOne
@@ -40,7 +41,7 @@ public class Bet {
     public Bet() {
     }
 
-    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description, Group group) {
+    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description, Group group, Timestamp expiresAt) {
         this.id = id;
         this.creator = creator;
         this.opponent = opponent;
@@ -49,6 +50,7 @@ public class Bet {
         this.title = title;
         this.description = description;
         this.group = group;
+        this.expiresAt = expiresAt;
     }
 
     public Long getId() {
@@ -133,5 +135,13 @@ public class Bet {
 
     public void setBuyIn(Long buyIn) {
         this.buyIn = buyIn;
+    }
+
+    public Timestamp getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(Timestamp expiresAt) {
+        this.expiresAt = expiresAt;
     }
 }

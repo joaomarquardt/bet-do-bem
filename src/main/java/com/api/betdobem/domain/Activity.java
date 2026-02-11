@@ -27,6 +27,7 @@ public class Activity {
     private ActivityStatus status;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
     private Timestamp closedAt;
+    private final Timestamp expiresAt = Timestamp.from(Instant.now().plusSeconds(2 * 24 * 60 * 60));
     @ManyToOne
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
@@ -101,5 +102,9 @@ public class Activity {
 
     public void setGroup(Group group) {
         this.group = group;
+    }
+
+    public Timestamp getExpiresAt() {
+        return expiresAt;
     }
 }
