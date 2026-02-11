@@ -6,5 +6,6 @@ public enum ChallengeStatus {
     IN_PROGRESS,
     IN_JUDGMENT,
     SUCCESS,
-    FAILED
+    FAILED,
+    EXPIRED
 }

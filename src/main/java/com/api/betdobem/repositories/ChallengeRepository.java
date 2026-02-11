@@ -1,10 +1,13 @@
 package com.api.betdobem.repositories;
 
 import com.api.betdobem.domain.Challenge;
+import com.api.betdobem.enums.ChallengeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
@@ -15,4 +18,6 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
         WHERE cp.proof_id = :proofId
     """, nativeQuery = true)
     Optional<Challenge> findByProofId(@Param("proofId") Long proofId);
+
+    List<Challenge> findByStatusAndDeadlineBefore(ChallengeStatus status, Timestamp now);
 }

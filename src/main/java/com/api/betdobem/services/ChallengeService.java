@@ -44,6 +44,11 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponseList(challenges);
     }
 
+    public List<Challenge> getAllExpiredChallenges() {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        return challengeRepository.findByStatusAndDeadlineBefore(ChallengeStatus.IN_PROGRESS, now);
+    }
+
     public Challenge getChallengeEntityById(Long id) {
         return challengeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Challenge with ID " + id + " not found."));
     }
@@ -132,6 +137,15 @@ public class ChallengeService {
             walletService.payChallengeWinner(challenge.getChallenger(), challenge);
             challenge.setStatus(ChallengeStatus.FAILED);
         }
+        challenge.setClosedAt(Timestamp.from(Instant.now()));
+        challengeRepository.save(challenge);
+    }
+
+    @Transactional
+    public void handleExpiredChallenge(Challenge challenge) {
+        if (challenge.getStatus() != ChallengeStatus.IN_PROGRESS) return;
+        walletService.payChallengeWinner(challenge.getChallenger(), challenge);
+        challenge.setStatus(ChallengeStatus.EXPIRED);
         challenge.setClosedAt(Timestamp.from(Instant.now()));
         challengeRepository.save(challenge);
     }
