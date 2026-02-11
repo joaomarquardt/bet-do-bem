@@ -28,13 +28,15 @@ public class ActivityService {
     private ProofService proofService;
     private UserService userService;
     private GroupService groupService;
+    private WalletService walletService;
 
-    public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService, UserService userService, GroupService groupService) {
+    public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService, UserService userService, GroupService groupService, WalletService walletService) {
         this.activityRepository = activityRepository;
         this.activityMapper = activityMapper;
         this.proofService = proofService;
         this.userService = userService;
         this.groupService = groupService;
+        this.walletService = walletService;
     }
 
     public List<ActivityResponse> getAllActivities() {
@@ -93,8 +95,8 @@ public class ActivityService {
         Activity activity = activityRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Activity associated with proof ID " + event.proofId() + " not found."));
         if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) return;
         if (event.approved()) {
-            // TODO: Pay challenged user
             activity.setStatus(ActivityStatus.APPROVED);
+            walletService.payActivityReward(activity);
         } else {
             activity.setStatus(ActivityStatus.REJECTED);
         }

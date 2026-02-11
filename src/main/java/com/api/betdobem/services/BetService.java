@@ -29,13 +29,15 @@ public class BetService {
     private UserService userService;
     private ProofService proofService;
     private GroupService groupService;
+    private WalletService walletService;
 
-    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService, GroupService groupService) {
+    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService) {
         this.betRepository = betRepository;
         this.betMapper = betMapper;
         this.userService = userService;
         this.proofService = proofService;
         this.groupService = groupService;
+        this.walletService = walletService;
     }
 
     public List<BetResponse> getAllBets() {
@@ -111,6 +113,7 @@ public class BetService {
     @Transactional
     public void finishBetWinner(Bet bet, BetStatus betStatus, User winner) {
         bet.setStatus(betStatus);
+        walletService.payBetWinner(winner, bet);
         bet.setClosedAt(Timestamp.from(Instant.now()));
         betRepository.save(bet);
     }
@@ -124,6 +127,6 @@ public class BetService {
         bet.setStatus(BetStatus.FINISHED_DRAW);
         bet.setClosedAt(Timestamp.from(Instant.now()));
         betRepository.save(bet);
-        // TODO: return the coins to the players
+        walletService.returnsFundsForDrawnBet(bet);
     }
 }
