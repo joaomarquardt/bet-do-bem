@@ -96,6 +96,9 @@ public class BetService {
         }
         Proof proofEntity = proofService.createProof(proof);
         bet.getProofs().add(proofEntity);
+        if (bet.getProofs().size() >= 2) {
+            bet.setStatus(BetStatus.IN_JUDGMENT);
+        }
         betRepository.save(bet);
         return betMapper.toBetResponse(bet);
     }

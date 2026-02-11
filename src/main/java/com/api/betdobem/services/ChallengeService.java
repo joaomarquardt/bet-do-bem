@@ -100,6 +100,7 @@ public class ChallengeService {
         }
         Proof proofEntity = proofService.createProof(proof);
         challenge.setProof(proofEntity);
+        challenge.setStatus(ChallengeStatus.IN_JUDGMENT);
         challengeRepository.save(challenge);
         return challengeMapper.toChallengeResponse(challenge);
     }
