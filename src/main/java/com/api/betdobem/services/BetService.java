@@ -58,7 +58,32 @@ public class BetService {
         betEntity.setOpponent(opponent);
         betEntity.setGroup(group);
         Bet savedBet = betRepository.save(betEntity);
+        walletService.holdsFundsForCreatedBet(savedBet);
         return betMapper.toBetResponse(savedBet);
+    }
+
+    public BetResponse acceptBet(Long id) {
+        // TODO: Only the opponent should be able to accept the bet, need to add authentication and authorization
+        Bet bet = getBetEntityById(id);
+        if (bet.getStatus() != BetStatus.INVITED) {
+            throw new IllegalArgumentException("Only bets with status 'INVITED' can be accepted.");
+        }
+        bet.setStatus(BetStatus.IN_PROGRESS);
+        betRepository.save(bet);
+        walletService.holdsFundsForAcceptedBet(bet);
+        return betMapper.toBetResponse(bet);
+    }
+
+    public BetResponse declineBet(Long id) {
+        // TODO: Only the opponent should be able to decline the bet, need to add authentication and authorization
+        Bet bet = getBetEntityById(id);
+        if (bet.getStatus() != BetStatus.INVITED) {
+            throw new IllegalArgumentException("Only bets with status 'INVITED' can be declined.");
+        }
+        bet.setStatus(BetStatus.DECLINED);
+        betRepository.save(bet);
+        walletService.returnsFundsForDeclinedBet(bet);
+        return betMapper.toBetResponse(bet);
     }
 
     public BetResponse addProofToBet(Long id, CreateProofRequest proof) {

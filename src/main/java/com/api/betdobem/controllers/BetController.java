@@ -39,6 +39,18 @@ public class BetController {
         return new ResponseEntity<>(bet, HttpStatus.CREATED);
     }
 
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<BetResponse> acceptBet(@PathVariable Long id) {
+        BetResponse bet = betService.acceptBet(id);
+        return new ResponseEntity<>(bet, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/decline")
+    public ResponseEntity<BetResponse> declineBet(@PathVariable Long id) {
+        BetResponse bet = betService.declineBet(id);
+        return new ResponseEntity<>(bet, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<BetResponse> getBetById(@PathVariable Long id) {
         BetResponse bet = betService.getBetById(id);

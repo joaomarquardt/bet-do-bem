@@ -61,7 +61,33 @@ public class ChallengeService {
         challengeEntity.setGroup(group);
         challengeEntity.setStatus(ChallengeStatus.INVITED);
         Challenge savedChallenge = challengeRepository.save(challengeEntity);
+        walletService.holdsFundsForCreatedChallenge(savedChallenge);
         return challengeMapper.toChallengeResponse(savedChallenge);
+    }
+
+    public ChallengeResponse acceptChallenge(Long id) {
+        // TODO: Only the challenged should be able to accept the challenge, need to add authentication and authorization
+        Challenge challenge = getChallengeEntityById(id);
+        if (challenge.getStatus() != ChallengeStatus.INVITED) {
+            throw new IllegalArgumentException("Only challenges with status 'INVITED' can be accepted.");
+        }
+        challenge.setStatus(ChallengeStatus.IN_PROGRESS);
+        challengeRepository.save(challenge);
+        walletService.holdsFundsForAcceptedChallenge(challenge);
+        return challengeMapper.toChallengeResponse(challenge);
+    }
+
+    public ChallengeResponse declineChallenge(Long id) {
+        // TODO: Only the challenged should be able to decline the challenge, need to add authentication and authorization
+        Challenge challenge = getChallengeEntityById(id);
+        if (challenge.getStatus() != ChallengeStatus.INVITED) {
+            throw new IllegalArgumentException("Only challenges with status 'INVITED' can be declined.");
+        }
+        challenge.setStatus(ChallengeStatus.DECLINED);
+        challenge.setClosedAt(Timestamp.from(Instant.now()));
+        challengeRepository.save(challenge);
+        walletService.returnsFundsForDeclinedChallenge(challenge);
+        return challengeMapper.toChallengeResponse(challenge);
     }
 
     public ChallengeResponse addProofToChallenge(Long id, CreateProofRequest proof) {

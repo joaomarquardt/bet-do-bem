@@ -39,6 +39,18 @@ public class ChallengeController {
         return new ResponseEntity<>(challenge, HttpStatus.CREATED);
     }
 
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<ChallengeResponse> acceptChallenge(@PathVariable Long id) {
+        ChallengeResponse challenge = challengeService.acceptChallenge(id);
+        return new ResponseEntity<>(challenge, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/decline")
+    public ResponseEntity<ChallengeResponse> declineChallenge(@PathVariable Long id) {
+        ChallengeResponse challenge = challengeService.declineChallenge(id);
+        return new ResponseEntity<>(challenge, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ChallengeResponse> getChallengeById(@PathVariable Long id) {
         ChallengeResponse challenge = challengeService.getChallengeById(id);
