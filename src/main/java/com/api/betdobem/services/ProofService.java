@@ -60,6 +60,7 @@ public class ProofService {
         if (proof.getAuthor().getId().equals(vote.voterId())) {
             throw new IllegalArgumentException("Author of the proof cannot vote on their own proof.");
         }
+        // TODO: Opponent/Challenged should not be able to vote on the proof either, if applicable
         if (voteService.hasUserAlreadyVotedInProof(id, vote.voterId())) {
             throw new IllegalArgumentException("User has already voted in this proof.");
         }
