@@ -6,6 +6,7 @@ import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.CreateVoteRequest;
 import com.api.betdobem.dtos.requests.UpdateProofRequest;
 import com.api.betdobem.dtos.responses.ProofResponse;
+import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.events.ProofDrawEvent;
@@ -100,5 +101,11 @@ public class ProofService {
         if (totalVotes >= totalMembers && approvedVotes == rejectedVotes) {
             eventPublisher.publishEvent(new ProofDrawEvent(proofId, contextType));
         }
+    }
+
+    public VotesByProof countVotesByProofId(Long proofId) {
+        long approvedVotes = voteService.countVotesByProofIdAndApprovedValue(proofId, true);
+        long rejectedVotes = voteService.countVotesByProofIdAndApprovedValue(proofId, false);
+        return new VotesByProof(approvedVotes, rejectedVotes);
     }
 }
