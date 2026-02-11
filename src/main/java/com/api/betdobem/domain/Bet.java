@@ -28,6 +28,7 @@ public class Bet {
             inverseJoinColumns = @JoinColumn(name = "proof_id")
     )
     private List<Proof> proofs;
+    private Long buyIn;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
     private Timestamp closedAt;
     @Enumerated(EnumType.STRING)
@@ -124,5 +125,13 @@ public class Bet {
 
     public void setGroup(Group group) {
         this.group = group;
+    }
+
+    public Long getBuyIn() {
+        return buyIn;
+    }
+
+    public void setBuyIn(Long buyIn) {
+        this.buyIn = buyIn;
     }
 }
