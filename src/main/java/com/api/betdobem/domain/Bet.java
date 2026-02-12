@@ -41,7 +41,7 @@ public class Bet {
     public Bet() {
     }
 
-    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description, Group group, Timestamp expiresAt) {
+    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description, Group group, Timestamp expiresAt, Long buyIn) {
         this.id = id;
         this.creator = creator;
         this.opponent = opponent;
@@ -51,6 +51,7 @@ public class Bet {
         this.description = description;
         this.group = group;
         this.expiresAt = expiresAt;
+        this.buyIn = buyIn;
     }
 
     public Long getId() {
