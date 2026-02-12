@@ -9,11 +9,14 @@ public record BetResponse(
         Long id,
         String title,
         String description,
-        Long creatorId,
-        Long opponentId,
+        UserResponse creator,
+        UserResponse opponent,
         List<ProofResponse> proofs,
+        Long buyIn,
+        BetStatus status,
+        Long groupId,
         Timestamp createdAt,
         Timestamp closedAt,
-        BetStatus status
+        Timestamp expiresAt
 ) {
 }

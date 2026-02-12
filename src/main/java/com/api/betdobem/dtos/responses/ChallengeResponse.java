@@ -10,10 +10,11 @@ public record ChallengeResponse(
         UserResponse challenged,
         String title,
         String description,
-        Long penaltyValue,
+        Long amount,
+        ChallengeStatus status,
+        Long groupId,
         ProofResponse proof,
         Timestamp createdAt,
-        Timestamp deadline,
-        ChallengeStatus status
+        Timestamp deadline
 ) {
 }
