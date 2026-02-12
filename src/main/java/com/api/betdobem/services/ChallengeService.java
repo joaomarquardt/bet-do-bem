@@ -49,6 +49,11 @@ public class ChallengeService {
         return challengeRepository.findByStatusAndDeadlineBefore(ChallengeStatus.IN_PROGRESS, now);
     }
 
+    public List<ChallengeResponse> getChallengesRequiringVotingByUserId(Long userId) {
+        List<Challenge> challenges = challengeRepository.getChallengesRequiringVotingByUserId(userId);
+        return challengeMapper.toChallengeResponseList(challenges);
+    }
+
     public Challenge getChallengeEntityById(Long id) {
         return challengeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Challenge with ID " + id + " not found."));
     }

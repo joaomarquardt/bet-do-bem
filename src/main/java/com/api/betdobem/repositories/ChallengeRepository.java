@@ -1,5 +1,6 @@
 package com.api.betdobem.repositories;
 
+import com.api.betdobem.domain.Bet;
 import com.api.betdobem.domain.Challenge;
 import com.api.betdobem.enums.ChallengeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,18 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     Optional<Challenge> findByProofId(@Param("proofId") Long proofId);
 
     List<Challenge> findByStatusAndDeadlineBefore(ChallengeStatus status, Timestamp now);
+
+    @Query("""
+        SELECT c FROM Challenge c
+        WHERE c.status = 'IN_JUDGMENT'
+        AND c.challenger.id != :userId
+        AND c.challenged.id != :userId
+        AND NOT EXISTS (
+            SELECT v FROM Vote v
+            WHERE v.voter.id = :userId
+            AND v.proof = c.proof
+        )
+        ORDER BY c.createdAt DESC
+    """)
+    List<Challenge> getChallengesRequiringVotingByUserId(@Param("userId") Long userId);
 }

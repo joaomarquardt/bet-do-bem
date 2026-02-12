@@ -50,6 +50,11 @@ public class ActivityService {
         return activityRepository.findByStatusAndExpiresAtBefore(ActivityStatus.IN_JUDGMENT, now);
     }
 
+    public List<ActivityResponse> getActivitiesRequiringVotingByUserId(Long userId) {
+        List<Activity> activities = activityRepository.getActivitiesRequiringVotingByUserId(userId);
+        return activityMapper.toActivityResponseList(activities);
+    }
+
     public Activity getActivityEntityById(Long id) {
         return activityRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Activity with ID " + id + " not found."));
     }

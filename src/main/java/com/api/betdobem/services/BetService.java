@@ -48,6 +48,11 @@ public class BetService {
         return betRepository.findByStatusAndExpiresAtBefore(BetStatus.IN_JUDGMENT, now);
     }
 
+    public List<BetResponse> getBetsRequiringVotingByUserId(Long userId) {
+        List<Bet> bets = betRepository.getBetsRequiringVotingByUserId(userId);
+        return betMapper.toBetResponseList(bets);
+    }
+
     public BetResponse createBet(CreateBetRequest bet) {
         if (bet.creatorId().equals(bet.opponentId())) {
             throw new IllegalArgumentException("Creator and opponent cannot be the same user.");

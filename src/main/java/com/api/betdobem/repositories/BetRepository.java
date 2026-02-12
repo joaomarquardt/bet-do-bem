@@ -20,4 +20,18 @@ public interface BetRepository extends JpaRepository<Bet, Long> {
     Optional<Bet> findByProofId(@Param("proofId") Long proofId);
 
     List<Bet> findByStatusAndExpiresAtBefore(BetStatus status, Timestamp now);
+
+    @Query("""
+        SELECT b FROM Bet b
+        WHERE b.status = 'IN_JUDGMENT'
+        AND b.creator.id != :userId
+        AND b.opponent.id != :userId
+        AND NOT EXISTS (
+            SELECT v FROM Vote v
+            WHERE v.voter.id = :userId
+            AND v.proof MEMBER OF b.proofs
+        )
+        ORDER BY b.createdAt DESC
+    """)
+    List<Bet> getBetsRequiringVotingByUserId(@Param("userId") Long userId);
 }
