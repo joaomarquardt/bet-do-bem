@@ -16,9 +16,9 @@ public record CreateChallengeRequest(
         String title,
         @NotBlank(message = "Description cannot be blank")
         String description,
-        @NotNull(message = "Penalty value cannot be null")
-        @Min(value = 0, message = "Penalty value must be greater than or equal to 0")
-        Long penaltyValue,
+        @NotNull(message = "Amount cannot be null")
+        @Min(value = 1, message = "Amount must be greater than 0")
+        Long amount,
         @Future(message = "Deadline must be a future date and time")
         Timestamp deadline,
         @NotNull(message = "Group ID cannot be null")
