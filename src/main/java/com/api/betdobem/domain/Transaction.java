@@ -13,7 +13,9 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
     private Long amount;
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
@@ -25,8 +27,8 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(Long userId, Long amount, TransactionType transactionType, ContextType contextType, Long contextId) {
-        this.userId = userId;
+    public Transaction(User user, Long amount, TransactionType transactionType, ContextType contextType, Long contextId) {
+        this.user = user;
         this.amount = amount;
         this.transactionType = transactionType;
         this.contextType = contextType;
@@ -41,12 +43,12 @@ public class Transaction {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Long getAmount() {

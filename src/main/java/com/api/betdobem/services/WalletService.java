@@ -50,7 +50,7 @@ public class WalletService {
         }
         subtractAmountFromUser(user, amount);
         Transaction transaction = new Transaction();
-        transaction.setUserId(user.getId());
+        transaction.setUser(user);
         transaction.setAmount(amount * (-1));
         transaction.setTransactionType(transactionType);
         transaction.setContextType(contextType);
@@ -64,7 +64,7 @@ public class WalletService {
         if (bet.getStatus() != BetStatus.DECLINED) return;
         addAmountToUser(bet.getCreator(), bet.getBuyIn());
         Transaction transaction = new Transaction();
-        transaction.setUserId(bet.getCreator().getId());
+        transaction.setUser(bet.getCreator());
         transaction.setAmount(bet.getBuyIn());
         transaction.setTransactionType(TransactionType.BET_REFUND);
         transaction.setContextType(ContextType.BET);
@@ -78,7 +78,7 @@ public class WalletService {
         if (challenge.getStatus() != ChallengeStatus.DECLINED) return;
         addAmountToUser(challenge.getChallenger(), challenge.getAmount());
         Transaction transaction = new Transaction();
-        transaction.setUserId(challenge.getChallenger().getId());
+        transaction.setUser(challenge.getChallenger());
         transaction.setAmount(challenge.getAmount());
         transaction.setTransactionType(TransactionType.BET_REFUND);
         transaction.setContextType(ContextType.BET);
@@ -95,7 +95,7 @@ public class WalletService {
         addAmountToUser(bet.getOpponent(), bet.getBuyIn());
         for (User user : new User[]{bet.getCreator(), bet.getOpponent()}) {
             Transaction transaction = new Transaction();
-            transaction.setUserId(user.getId());
+            transaction.setUser(user);
             transaction.setAmount(bet.getBuyIn());
             transaction.setTransactionType(TransactionType.BET_REFUND);
             transaction.setContextType(ContextType.BET);
@@ -142,7 +142,7 @@ public class WalletService {
         }
         addAmountToUser(user, amount);
         Transaction transaction = new Transaction();
-        transaction.setUserId(user.getId());
+        transaction.setUser(user);
         transaction.setAmount(amount);
         transaction.setTransactionType(transactionType);
         transaction.setContextType(contextType);
