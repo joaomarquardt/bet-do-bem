@@ -1,6 +1,7 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.*;
+import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
@@ -10,6 +11,8 @@ import com.api.betdobem.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class WalletService {
@@ -152,5 +155,17 @@ public class WalletService {
 
     private boolean userHasSufficientFunds(User user, Long amount) {
         return user.getCoins().compareTo(amount) >= 0;
+    }
+
+    public List<TransactionResponse> getUserTransactions(Long userId) {
+        List<Transaction> transactions = transactionRepository.findByUserId(userId);
+        return transactions.stream().map(transaction -> new TransactionResponse(
+                transaction.getId(),
+                transaction.getAmount(),
+                transaction.getContextId(),
+                transaction.getContextType(),
+                transaction.getTransactionType(),
+                transaction.getCreatedAt()
+        )).toList();
     }
 }

@@ -2,6 +2,7 @@ package com.api.betdobem.controllers;
 
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
+import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.services.UserService;
 import jakarta.validation.Valid;
@@ -36,6 +37,12 @@ public class UserController {
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         UserResponse user = userService.getUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("{id}/transactions")
+    public ResponseEntity<List<TransactionResponse>> getUserTransactions(@PathVariable Long id) {
+        List<TransactionResponse> transactions = userService.getUserTransactions(id);
+        return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")

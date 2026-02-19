@@ -3,6 +3,7 @@ package com.api.betdobem.services;
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
+import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.mappers.UserMapper;
 import com.api.betdobem.repositories.UserRepository;
@@ -15,10 +16,12 @@ import java.util.Set;
 public class UserService {
     private UserRepository userRepository;
     private UserMapper userMapper;
+    private WalletService walletService;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, WalletService walletService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.walletService = walletService;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -32,6 +35,10 @@ public class UserService {
 
     public List<User> getUserEntitiesByIds(Set<Long> ids) {
         return userRepository.findAllById(ids);
+    }
+
+    public List<TransactionResponse> getUserTransactions(Long id) {
+        return walletService.getUserTransactions(id);
     }
 
     public UserResponse createUser(CreateUserRequest user) {
