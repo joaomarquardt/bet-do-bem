@@ -7,6 +7,7 @@ import com.api.betdobem.dtos.requests.UpdateGroupRequest;
 import com.api.betdobem.dtos.responses.GroupResponse;
 import com.api.betdobem.mappers.GroupMapper;
 import com.api.betdobem.repositories.GroupRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -31,7 +32,7 @@ public class GroupService {
     }
 
     public Group getGroupEntityById(Long id) {
-        return groupRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Group with ID " + id + " not found."));
+        return groupRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Group with ID " + id + " not found."));
     }
 
     public GroupResponse createGroup(CreateGroupRequest group) {

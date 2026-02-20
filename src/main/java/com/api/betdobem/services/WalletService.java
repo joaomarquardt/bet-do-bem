@@ -6,6 +6,7 @@ import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.enums.TransactionType;
+import com.api.betdobem.exceptions.InsufficientFundsException;
 import com.api.betdobem.repositories.TransactionRepository;
 import com.api.betdobem.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -49,7 +50,7 @@ public class WalletService {
     @Transactional
     private void processHoldFunds(User user, Long amount, TransactionType transactionType, ContextType contextType, Long contextId) {
         if (!userHasSufficientFunds(user, amount)) {
-            throw new IllegalArgumentException("User " + user.getName() + " does not have enough coins to perform this action.");
+            throw new InsufficientFundsException("User " + user.getName() + " does not have enough coins to perform this action.");
         }
         subtractAmountFromUser(user, amount);
         Transaction transaction = new Transaction();

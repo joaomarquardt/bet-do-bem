@@ -31,7 +31,7 @@ public class UserService {
     }
 
     public User getUserEntityById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User with ID " + id + " not found."));
+        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with ID " + id + " not found."));
     }
 
     public List<User> getUserEntitiesByIds(Set<Long> ids) {
@@ -39,7 +39,7 @@ public class UserService {
     }
 
     public User getUserEntityByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User with email " + email + " not found."));
+        return userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User with email " + email + " not found."));
     }
 
     public boolean existsUserByEmail(String email) {

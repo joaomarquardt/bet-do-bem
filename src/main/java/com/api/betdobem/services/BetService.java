@@ -10,6 +10,9 @@ import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.events.ProofDrawEvent;
+import com.api.betdobem.exceptions.InvalidStatusException;
+import com.api.betdobem.exceptions.SelfInteractionException;
+import com.api.betdobem.exceptions.UnauthorizedActionException;
 import com.api.betdobem.mappers.BetMapper;
 import com.api.betdobem.repositories.BetRepository;
 import jakarta.transaction.Transactional;
@@ -55,7 +58,7 @@ public class BetService {
 
     public BetResponse createBet(CreateBetRequest bet) {
         if (bet.creatorId().equals(bet.opponentId())) {
-            throw new IllegalArgumentException("Creator and opponent cannot be the same user.");
+            throw new SelfInteractionException("Creator and opponent cannot be the same user.");
         }
         User creator = userService.getUserEntityById(bet.creatorId());
         User opponent = userService.getUserEntityById(bet.opponentId());
@@ -74,7 +77,7 @@ public class BetService {
         // TODO: Only the opponent should be able to accept the bet, need to add authentication and authorization
         Bet bet = getBetEntityById(id);
         if (bet.getStatus() != BetStatus.INVITED) {
-            throw new IllegalArgumentException("Only bets with status 'INVITED' can be accepted.");
+            throw new InvalidStatusException("Only bets with status 'INVITED' can be accepted.");
         }
         bet.setStatus(BetStatus.IN_PROGRESS);
         betRepository.save(bet);
@@ -86,7 +89,7 @@ public class BetService {
         // TODO: Only the opponent should be able to decline the bet, need to add authentication and authorization
         Bet bet = getBetEntityById(id);
         if (bet.getStatus() != BetStatus.INVITED) {
-            throw new IllegalArgumentException("Only bets with status 'INVITED' can be declined.");
+            throw new InvalidStatusException("Only bets with status 'INVITED' can be declined.");
         }
         bet.setStatus(BetStatus.DECLINED);
         betRepository.save(bet);
@@ -97,10 +100,10 @@ public class BetService {
     public BetResponse addProofToBet(Long id, CreateProofRequest proof) {
         Bet bet = getBetEntityById(id);
         if (!bet.getCreator().getId().equals(proof.authorId()) && !bet.getOpponent().getId().equals(proof.authorId())) {
-            throw new IllegalArgumentException("Only the creator or opponent can add proofs to this bet.");
+            throw new UnauthorizedActionException("Only the creator or opponent can add proofs to this bet.");
         }
         if (bet.getStatus() != BetStatus.IN_PROGRESS) {
-            throw new IllegalArgumentException("Cannot add proof to a bet that is not in progress.");
+            throw new InvalidStatusException("Cannot add proof to a bet that is not in progress.");
         }
         Proof proofEntity = proofService.createProof(proof);
         bet.getProofs().add(proofEntity);
@@ -112,7 +115,7 @@ public class BetService {
     }
 
     public Bet getBetEntityById(Long id) {
-        return betRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Bet with ID " + id + " not found."));
+        return betRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Bet with ID " + id + " not found."));
     }
 
     public BetResponse getBetById(Long id) {
@@ -123,7 +126,7 @@ public class BetService {
     public BetResponse updateBet(Long id, UpdateBetRequest bet) {
         Bet existingBet = getBetEntityById(id);
         if (bet.creatorId().equals(bet.opponentId())) {
-            throw new IllegalArgumentException("Creator and opponent cannot be the same user.");
+            throw new SelfInteractionException("Creator and opponent cannot be the same user.");
         }
         betMapper.updateBetRequest(bet, existingBet);
         return null;
@@ -138,7 +141,7 @@ public class BetService {
     public void handleProofDecision(ProofDecidedEvent event) {
         if (event.contextType() != ContextType.BET) return;
         if (!event.approved()) return;
-        Bet bet = betRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Bet associated with proof ID " + event.proofId() + " not found."));
+        Bet bet = betRepository.findByProofId(event.proofId()).orElseThrow(() -> new EntityNotFoundException("Bet associated with proof ID " + event.proofId() + " not found."));
         if (bet.getStatus() != BetStatus.IN_JUDGMENT) return;
         Proof winningProof = bet.getProofs().stream().filter(p -> p.getId().equals(event.proofId())).findFirst().orElseThrow();
         User winner = winningProof.getAuthor();
@@ -158,7 +161,7 @@ public class BetService {
     @EventListener
     public void finishBetDraw(ProofDrawEvent event) {
         if (event.contextType() != ContextType.BET) return;
-        Bet bet = betRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Bet associated with proof ID " + event.proofId() + " not found."));
+        Bet bet = betRepository.findByProofId(event.proofId()).orElseThrow(() -> new EntityNotFoundException("Bet associated with proof ID " + event.proofId() + " not found."));
         if (bet.getStatus() != BetStatus.IN_JUDGMENT && bet.getStatus() != BetStatus.IN_PROGRESS) return;
         bet.setStatus(BetStatus.FINISHED_DRAW);
         bet.setClosedAt(Timestamp.from(Instant.now()));

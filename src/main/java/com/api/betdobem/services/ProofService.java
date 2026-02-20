@@ -10,8 +10,12 @@ import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.events.ProofDrawEvent;
+import com.api.betdobem.exceptions.DuplicateActionException;
+import com.api.betdobem.exceptions.SelfInteractionException;
+import com.api.betdobem.exceptions.UnauthorizedActionException;
 import com.api.betdobem.mappers.ProofMapper;
 import com.api.betdobem.repositories.ProofRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +45,7 @@ public class ProofService {
     }
 
     public Proof getProofEntityById(Long id) {
-        return proofRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Proof with ID " + id + " not found."));
+        return proofRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Proof with ID " + id + " not found."));
     }
 
     public Proof createProof(CreateProofRequest proof) {
@@ -55,15 +59,15 @@ public class ProofService {
     public void voteInProof(Long id, CreateVoteRequest vote) {
         Proof proof = getProofEntityById(id);
         if (!groupService.isUserMemberOfGroupLinkedToProof(vote.voterId(), id)) {
-            throw new IllegalArgumentException("User must be a member of the group linked to the proof to vote.");
+            throw new UnauthorizedActionException("User must be a member of the group linked to the proof to vote.");
         }
         // TODO: Check if the proof is still open for voting
         if (proof.getAuthor().getId().equals(vote.voterId())) {
-            throw new IllegalArgumentException("Author of the proof cannot vote on their own proof.");
+            throw new SelfInteractionException("Author of the proof cannot vote on their own proof.");
         }
         // TODO: Opponent/Challenged should not be able to vote on the proof either, if applicable
         if (voteService.hasUserAlreadyVotedInProof(id, vote.voterId())) {
-            throw new IllegalArgumentException("User has already voted in this proof.");
+            throw new DuplicateActionException("User has already voted in this proof.");
         }
         User voter = userService.getUserEntityById(vote.voterId());
         ContextType contextType = proofRepository.findContextTypeByProofId(id);

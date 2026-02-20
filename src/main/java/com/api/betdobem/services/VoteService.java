@@ -27,7 +27,7 @@ public class VoteService {
     }
 
     public Vote getVoteEntityById(Long id) {
-        return voteRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Vote with ID " + id + " not found."));
+        return voteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Vote with ID " + id + " not found."));
     }
 
     public VoteResponse createVote(Proof proof, User user, boolean isApproved) {

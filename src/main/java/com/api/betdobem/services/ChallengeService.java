@@ -11,8 +11,12 @@ import com.api.betdobem.dtos.responses.ChallengeResponse;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
+import com.api.betdobem.exceptions.InvalidStatusException;
+import com.api.betdobem.exceptions.SelfInteractionException;
+import com.api.betdobem.exceptions.UnauthorizedActionException;
 import com.api.betdobem.mappers.ChallengeMapper;
 import com.api.betdobem.repositories.ChallengeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -55,12 +59,12 @@ public class ChallengeService {
     }
 
     public Challenge getChallengeEntityById(Long id) {
-        return challengeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Challenge with ID " + id + " not found."));
+        return challengeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Challenge with ID " + id + " not found."));
     }
 
     public ChallengeResponse createChallenge(CreateChallengeRequest challenge) {
         if (challenge.challengerId().equals(challenge.challengedId())) {
-            throw new IllegalArgumentException("Challenger and challenged cannot be the same user.");
+            throw new SelfInteractionException("Challenger and challenged cannot be the same user.");
         }
         Group group = groupService.getGroupEntityById(challenge.groupId());
         User challenger = userService.getUserEntityById(challenge.challengerId());
@@ -79,7 +83,7 @@ public class ChallengeService {
         // TODO: Only the challenged should be able to accept the challenge, need to add authentication and authorization
         Challenge challenge = getChallengeEntityById(id);
         if (challenge.getStatus() != ChallengeStatus.INVITED) {
-            throw new IllegalArgumentException("Only challenges with status 'INVITED' can be accepted.");
+            throw new InvalidStatusException("Only challenges with status 'INVITED' can be accepted.");
         }
         challenge.setStatus(ChallengeStatus.IN_PROGRESS);
         challengeRepository.save(challenge);
@@ -91,7 +95,7 @@ public class ChallengeService {
         // TODO: Only the challenged should be able to decline the challenge, need to add authentication and authorization
         Challenge challenge = getChallengeEntityById(id);
         if (challenge.getStatus() != ChallengeStatus.INVITED) {
-            throw new IllegalArgumentException("Only challenges with status 'INVITED' can be declined.");
+            throw new InvalidStatusException("Only challenges with status 'INVITED' can be declined.");
         }
         challenge.setStatus(ChallengeStatus.DECLINED);
         challenge.setClosedAt(Timestamp.from(Instant.now()));
@@ -103,10 +107,10 @@ public class ChallengeService {
     public ChallengeResponse addProofToChallenge(Long id, CreateProofRequest proof) {
         Challenge challenge = getChallengeEntityById(id);
         if (challenge.getStatus() != ChallengeStatus.IN_PROGRESS) {
-            throw new IllegalArgumentException("Cannot add proof to a challenge that is not open.");
+            throw new InvalidStatusException("Cannot add proof to a challenge that is not open.");
         }
         if (!challenge.getChallenged().getId().equals(proof.authorId())) {
-            throw new IllegalArgumentException("Only the challenged user can add proof to this challenge.");
+            throw new UnauthorizedActionException("Only the challenged user can add proof to this challenge.");
         }
         Proof proofEntity = proofService.createProof(proof);
         challenge.setProof(proofEntity);
@@ -133,7 +137,7 @@ public class ChallengeService {
     @Transactional
     public void handleProofDecision(ProofDecidedEvent event) {
         if (event.contextType() != ContextType.CHALLENGE) return;
-        Challenge challenge = challengeRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Challenge associated with proof ID " + event.proofId() + " not found."));
+        Challenge challenge = challengeRepository.findByProofId(event.proofId()).orElseThrow(() -> new EntityNotFoundException("Challenge associated with proof ID " + event.proofId() + " not found."));
         if (challenge.getStatus() != ChallengeStatus.IN_JUDGMENT && challenge.getStatus() != ChallengeStatus.IN_PROGRESS) return;
         if (event.approved()) {
             walletService.payChallengeWinner(challenge.getChallenged(), challenge);

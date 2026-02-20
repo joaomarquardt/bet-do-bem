@@ -12,8 +12,10 @@ import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
+import com.api.betdobem.exceptions.InvalidStatusException;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,7 @@ public class ActivityService {
     }
 
     public Activity getActivityEntityById(Long id) {
-        return activityRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Activity with ID " + id + " not found."));
+        return activityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Activity with ID " + id + " not found."));
     }
 
     public ActivityResponse createActivity(CreateActivityRequest activity) {
@@ -75,7 +77,7 @@ public class ActivityService {
     public ActivityResponse addProofToActivity(Long id, CreateProofRequest proof) {
         Activity activity = getActivityEntityById(id);
         if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) {
-            throw new IllegalArgumentException("Cannot add proof to an activity that is not in judgment.");
+            throw new InvalidStatusException("Cannot add proof to an activity that is not in judgment.");
         }
         Proof proofEntity = proofService.createProof(proof);
         activity.setProof(proofEntity);
@@ -103,7 +105,7 @@ public class ActivityService {
     @Transactional
     public void handleProofDecision(ProofDecidedEvent event) {
         if (event.contextType() != ContextType.ACTIVITY) return;
-        Activity activity = activityRepository.findByProofId(event.proofId()).orElseThrow(() -> new IllegalArgumentException("Activity associated with proof ID " + event.proofId() + " not found."));
+        Activity activity = activityRepository.findByProofId(event.proofId()).orElseThrow(() -> new EntityNotFoundException("Activity associated with proof ID " + event.proofId() + " not found."));
         if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) return;
         if (event.approved()) {
             activity.setStatus(ActivityStatus.APPROVED);
