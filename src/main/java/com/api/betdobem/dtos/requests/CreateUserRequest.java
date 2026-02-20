@@ -10,7 +10,7 @@ public record CreateUserRequest(
         @NotBlank(message = "Email cannot be blank")
         @Email(message = "Email should be valid")
         String email,
-        @Min(value = 0, message = "Coins must be greater than or equal to 0")
-        Long coins
+        @NotBlank(message = "Password cannot be blank")
+        String password
 ) {
 }
