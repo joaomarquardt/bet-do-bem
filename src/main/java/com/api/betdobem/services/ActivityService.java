@@ -12,7 +12,7 @@ import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
-import com.api.betdobem.exceptions.InvalidStatusException;
+import com.api.betdobem.infra.exceptions.InvalidStatusException;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
 import jakarta.persistence.EntityNotFoundException;

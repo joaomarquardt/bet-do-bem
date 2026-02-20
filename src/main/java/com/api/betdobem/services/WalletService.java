@@ -6,7 +6,7 @@ import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.enums.TransactionType;
-import com.api.betdobem.exceptions.InsufficientFundsException;
+import com.api.betdobem.infra.exceptions.InsufficientFundsException;
 import com.api.betdobem.repositories.TransactionRepository;
 import com.api.betdobem.repositories.UserRepository;
 import jakarta.transaction.Transactional;

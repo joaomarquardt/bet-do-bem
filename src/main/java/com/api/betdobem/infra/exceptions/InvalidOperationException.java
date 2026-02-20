@@ -1,4 +1,4 @@
-package com.api.betdobem.exceptions;
+package com.api.betdobem.infra.exceptions;
 
 public class InvalidOperationException extends RuntimeException {
     public InvalidOperationException(String message) {

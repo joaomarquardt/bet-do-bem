@@ -1,4 +1,4 @@
-package com.api.betdobem.exceptions;
+package com.api.betdobem.infra.exceptions;
 
 public class AuthenticationFailedException extends RuntimeException {
     public AuthenticationFailedException(String message) {
