@@ -5,6 +5,7 @@ import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
 import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
+import com.api.betdobem.enums.UserRole;
 import com.api.betdobem.mappers.UserMapper;
 import com.api.betdobem.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -37,12 +38,21 @@ public class UserService {
         return userRepository.findAllById(ids);
     }
 
+    public User getUserEntityByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User with email " + email + " not found."));
+    }
+
+    public boolean existsUserByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     public List<TransactionResponse> getUserTransactions(Long id) {
         return walletService.getUserTransactions(id);
     }
 
     public UserResponse createUser(CreateUserRequest user) {
         User userEntity = userMapper.toUserEntity(user);
+        userEntity.setRole(UserRole.USER);
         User savedUser = userRepository.save(userEntity);
         return userMapper.toUserResponse(savedUser);
     }
