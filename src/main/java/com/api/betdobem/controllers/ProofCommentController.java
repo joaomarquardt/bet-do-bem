@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/proofs/{proofId}/comments")
+@RequestMapping("/api/proofs/{proofId}/comments")
 public class ProofCommentController {
     private final ProofCommentService commentService;
 

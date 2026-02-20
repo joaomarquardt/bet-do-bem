@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/votes")
+@RequestMapping("/api/votes")
 public class VoteController {
     private VoteService voteService;
 

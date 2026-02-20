@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/bets")
+@RequestMapping("/api/bets")
 public class BetController {
     private BetService betService;
 
