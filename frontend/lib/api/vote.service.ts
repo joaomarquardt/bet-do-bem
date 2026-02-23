@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { Vote, UpdateVoteRequest } from '@/lib/types';
 
 const ENDPOINTS = {
-  VOTES: '/votes',
+  VOTES: '/api/votes',
 } as const;
 
 export const voteService = {

@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { Proof, UpdateProofRequest, CreateVoteRequest } from '@/lib/types';
 
 const ENDPOINTS = {
-  PROOFS: '/proofs',
+  PROOFS: '/api/proofs',
 } as const;
 
 export const proofService = {

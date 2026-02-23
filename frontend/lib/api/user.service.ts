@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { User, CreateUserRequest, UpdateUserRequest, Transaction } from '@/lib/types';
 
 const ENDPOINTS = {
-  USERS: '/users',
+  USERS: '/api/users',
 } as const;
 
 export const userService = {

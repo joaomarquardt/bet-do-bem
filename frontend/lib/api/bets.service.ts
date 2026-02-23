@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { Bet, CreateBetRequest, UpdateBetRequest, CreateProofRequest } from '@/lib/types';
 
 const ENDPOINTS = {
-  BETS: '/bets',
+  BETS: '/api/bets',
   ACCEPT: (id: string) => `/bets/${id}/accept`,
   DECLINE: (id: string) => `/bets/${id}/decline`,
 } as const;

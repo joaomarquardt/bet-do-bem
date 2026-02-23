@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { FeedItem } from '@/lib/types';
 
 const ENDPOINTS = {
-  FEED: '/feed',
+  FEED: '/api/feed',
 } as const;
 
 export const feedService = {

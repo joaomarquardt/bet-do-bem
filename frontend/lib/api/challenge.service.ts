@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { Challenge, CreateChallengeRequest, UpdateChallengeRequest, CreateProofRequest } from '@/lib/types';
 
 const ENDPOINTS = {
-  CHALLENGES: '/challenges',
+  CHALLENGES: '/api/challenges',
 } as const;
 
 export const challengeService = {

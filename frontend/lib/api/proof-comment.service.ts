@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { Comment, CreateCommentRequest } from '@/lib/types';
 
 const ENDPOINTS = {
-  COMMENTS: (proofId: string) => `/proofs/${proofId}/comments`,
+  COMMENTS: (proofId: string) => `/api/proofs/${proofId}/comments`,
 } as const;
 
 export const proofCommentService = {

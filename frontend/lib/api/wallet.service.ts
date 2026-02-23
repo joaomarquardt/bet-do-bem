@@ -2,8 +2,8 @@ import { apiClient } from './client';
 import { Wallet, Transaction, PaginatedResponse } from '@/lib/types';
 
 const ENDPOINTS = {
-  WALLET: '/wallet',
-  TRANSACTIONS: '/wallet/transactions',
+  WALLET: '/api/wallet',
+  TRANSACTIONS: '/api/wallet/transactions',
 } as const;
 
 export const walletService = {

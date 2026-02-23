@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { Activity, CreateActivityRequest, UpdateActivityRequest, CreateProofRequest } from '@/lib/types';
 
 const ENDPOINTS = {
-  ACTIVITIES: '/activities',
+  ACTIVITIES: '/api/activities',
 } as const;
 
 export const activityService = {

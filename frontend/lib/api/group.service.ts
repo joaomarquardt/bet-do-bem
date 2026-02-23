@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { Group, CreateGroupRequest, UpdateGroupRequest } from '@/lib/types';
 
 const ENDPOINTS = {
-  GROUPS: '/groups',
+  GROUPS: '/api/groups',
 } as const;
 
 export const groupService = {
