@@ -1,0 +1,219 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  betMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusText: {
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  timeAgo: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+  },
+  buyInBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  buyInText: {
+    fontSize: 13,
+    fontFamily: 'Inter_700Bold',
+  },
+  betTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter_700Bold',
+    paddingHorizontal: 16,
+    marginBottom: 4,
+  },
+  betDescription: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  vsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+  },
+  playerSide: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  playerInfo: {
+    flex: 1,
+  },
+  playerName: {
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  playerUsername: {
+    fontSize: 11,
+    fontFamily: 'Inter_400Regular',
+  },
+  vsBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginHorizontal: 8,
+  },
+  vsText: {
+    fontSize: 12,
+    fontFamily: 'Inter_700Bold',
+  },
+  proofsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    padding: 16,
+    paddingTop: 12,
+  },
+  proofCard: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 10,
+    gap: 8,
+  },
+  proofHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  proofAuthor: {
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  proofMediaPlaceholder: {
+    height: 80,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  proofText: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 16,
+  },
+  voteResults: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 6,
+  },
+  voteBarContainer: {
+    gap: 4,
+  },
+  voteBarBg: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  voteBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  voteLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  voteLabel: {
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  totalVotes: {
+    fontSize: 11,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
+  },
+  voteButtons: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  voteBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  voteBtnText: {
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+  },
+  footerAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  footerText: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+  },
+  commentsSection: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    gap: 8,
+  },
+  comment: {
+    gap: 2,
+  },
+  commentAuthor: {
+    fontSize: 12,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  commentText: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 18,
+  },
+});
