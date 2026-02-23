@@ -15,6 +15,7 @@ import com.api.betdobem.infra.exceptions.SelfInteractionException;
 import com.api.betdobem.infra.exceptions.UnauthorizedActionException;
 import com.api.betdobem.mappers.BetMapper;
 import com.api.betdobem.repositories.BetRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;

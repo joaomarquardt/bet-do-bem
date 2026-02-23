@@ -7,6 +7,7 @@ import com.api.betdobem.dtos.requests.UpdateVoteRequest;
 import com.api.betdobem.dtos.responses.VoteResponse;
 import com.api.betdobem.mappers.VoteMapper;
 import com.api.betdobem.repositories.VoteRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

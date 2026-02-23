@@ -8,6 +8,7 @@ import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.enums.UserRole;
 import com.api.betdobem.mappers.UserMapper;
 import com.api.betdobem.repositories.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
