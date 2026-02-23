@@ -1,4 +1,11 @@
-export { apiClient } from './client';
-export { authService } from './auth.service';
-export { betsService } from './bets.service';
-export { walletService } from './wallet.service';
+export * from './activity.service';
+export * from './auth.service';
+export * from './bets.service';
+export * from './challenge.service';
+export * from './feed.service';
+export * from './group.service';
+export * from './proof-comment.service';
+export * from './proof.service';
+export * from './user.service';
+export * from './vote.service';
+export * from './wallet.service';

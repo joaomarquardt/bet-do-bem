@@ -128,3 +128,108 @@ export interface ApiError {
   message: string;
   timestamp?: string;
 }
+
+export interface Activity {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface CreateActivityRequest {
+  title: string;
+  description: string;
+}
+
+export interface UpdateActivityRequest {
+  title: string;
+  description: string;
+}
+
+export interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface CreateChallengeRequest {
+  title: string;
+  description: string;
+}
+
+export interface UpdateChallengeRequest {
+  title: string;
+  description: string;
+}
+
+export interface FeedItem {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface CreateGroupRequest {
+  name: string;
+  description: string;
+}
+
+export interface UpdateGroupRequest {
+  name: string;
+  description: string;
+}
+
+export interface CreateProofRequest {
+  description: string;
+  mediaUri: string;
+  mediaType: 'photo' | 'video';
+}
+
+export interface UpdateProofRequest {
+  description: string;
+  mediaUri: string;
+  mediaType: 'photo' | 'video';
+}
+
+export interface CreateVoteRequest {
+  judgeId: string;
+  votedForUserId: string;
+}
+
+export interface UpdateVoteRequest {
+  judgeId: string;
+  votedForUserId: string;
+}
+
+export interface CreateUserRequest {
+  username: string;
+  displayName: string;
+  email: string;
+  password: string;
+}
+
+export interface UpdateUserRequest {
+  displayName: string;
+  email: string;
+}
+
+export interface Comment {
+  id: string;
+  userId: string;
+  username: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface CreateCommentRequest {
+    userId: string;
+    text: string;
+}

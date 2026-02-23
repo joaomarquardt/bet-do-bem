@@ -1,10 +1,6 @@
 import { apiClient } from './client';
 
 export const authService = {
-  login: async (data: any) => {
-    return apiClient.post('/auth/login', data);
-  },
-  register: async (data: any) => {
-    return apiClient.post('/auth/register', data);
-  },
+  login: (data: any) => apiClient.post<{ token: string }>('/api/auth/login', data, { skipAuth: true }),
+  register: (data: any) => apiClient.post<void>('/api/auth/register', data, { skipAuth: true }),
 };

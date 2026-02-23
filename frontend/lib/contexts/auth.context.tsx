@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiClient } from '@/lib/api';
-import { MOCK_CURRENT_USER } from '@/lib/mocks/data';
+import { apiClient } from '@/lib/api/client';
+import { authService } from '@/lib/api/auth.service';
+import { userService } from '@/lib/api/user.service';
 import { User } from '@/lib/types';
 
 interface AuthContextValue {
@@ -11,6 +12,7 @@ interface AuthContextValue {
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, displayName: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (data: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -22,12 +24,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(USER_KEY).then((data) => {
-      if (data) {
-        try { setUser(JSON.parse(data)); } catch {}
+    const initializeAuth = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem(USER_KEY);
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar usuário salvo:", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    });
+    };
+
+    initializeAuth();
   }, []);
 
   const persistUser = useCallback(async (userData: User) => {
@@ -35,34 +45,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
   }, []);
 
-  const login = useCallback(async (username: string, _password: string) => {
-    // TODO: Replace with authService.login({ username, password })
-    // const response = await authService.login({ username, password });
-    // await apiClient.saveTokens(response.tokens);
-    // await persistUser(response.user);
-    const userData = { ...MOCK_CURRENT_USER, username, displayName: username };
-    await persistUser(userData);
+  const login = useCallback(async (username: string, password: string) => {
+    try {
+      const response = await authService.login({ email: username, password });
+      await apiClient.saveTokens({ accessToken: response.token });
+      const me = await userService.getMe();
+      await persistUser(me);
+    } catch (error) {
+      console.error("Erro no login:", error);
+      throw error;
+    }
   }, [persistUser]);
 
-  const register = useCallback(async (username: string, displayName: string, _password: string) => {
-    // TODO: Replace with authService.register({ username, displayName, password })
-    // const response = await authService.register({ username, displayName, password });
-    // await apiClient.saveTokens(response.tokens);
-    // await persistUser(response.user);
-    const userData = { ...MOCK_CURRENT_USER, username, displayName, wins: 0, losses: 0, draws: 0 };
-    await persistUser(userData);
-  }, [persistUser]);
+  const register = useCallback(async (username: string, displayName: string, password: string) => {
+    try {
+      await authService.register({
+        username,
+        password,
+        name: displayName,
+        email: `${username}`
+      });
+
+      await login(username, password);
+    } catch (error) {
+      console.error("Erro no registro:", error);
+      throw error;
+    }
+  }, [login]);
 
   const logout = useCallback(async () => {
-    // TODO: Replace with authService.logout()
     await apiClient.clearTokens();
     await AsyncStorage.removeItem(USER_KEY);
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((newData: Partial<User>) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...newData };
+      AsyncStorage.setItem(USER_KEY, JSON.stringify(updated)).catch(console.error);
+      return updated;
+    });
+  }, []);
+
   const value = useMemo(
-    () => ({ user, isLoading, isAuthenticated: !!user, login, register, logout }),
-    [user, isLoading, login, register, logout],
+    () => ({ user, isLoading, isAuthenticated: !!user, login, register, logout, updateUser }),
+    [user, isLoading, login, register, logout, updateUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
