@@ -1,13 +1,16 @@
 package com.api.betdobem.controllers;
 
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
 import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.services.UserService;
 import jakarta.validation.Valid;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +39,12 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         UserResponse user = userService.getUserById(id);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getMyProfile(@AuthenticationPrincipal User loggedUser) {
+        UserResponse user = userService.getUserById(loggedUser.getId());
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
