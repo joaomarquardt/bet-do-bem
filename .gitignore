@@ -31,3 +31,69 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Frontend (Node/Replit) ###
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.replit
+replit.nix
+
+# Expo
+.expo/
+
+# Replit / Local state
+.local/
+.config/
+
+# Environment types
+expo-env.d.ts
+
+# Non-project assets
+attached_assets/
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+ios/
+android/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+.vercel
+
+.env
+
