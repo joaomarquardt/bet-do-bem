@@ -54,6 +54,12 @@ public class UserController {
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
+    @GetMapping("me/transactions")
+    public ResponseEntity<List<TransactionResponse>> getMyTransactions(@AuthenticationPrincipal User loggedUser) {
+        List<TransactionResponse> transactions = userService.getUserTransactions(loggedUser.getId());
+        return new ResponseEntity<>(transactions, HttpStatus.OK);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserRequest user) {
         UserResponse updatedUser = userService.updateUser(id, user);
