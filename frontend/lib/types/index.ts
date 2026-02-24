@@ -14,6 +14,7 @@ export interface User {
   wins: number;
   losses: number;
   draws: number;
+  coins?: number;
 }
 
 export interface Proof {
@@ -49,7 +50,8 @@ export interface Bet {
   status: BetStatus;
   creatorId: string;
   creator: User;
-  opponentId: string;
+  wallet?: Wallet;
+  coins?: number;
   opponent: User;
   creatorProof?: Proof;
   opponentProof?: Proof;
@@ -62,7 +64,15 @@ export interface Bet {
 
 export interface Transaction {
   id: string;
-  type: 'BET_ENTRY' | 'PRIZE_WON' | 'REFUND_DRAW';
+  type:
+    | 'DEPOSIT'
+    | 'CHALLENGE_ENTRY'
+    | 'CHALLENGE_WIN'
+    | 'CHALLENGE_REFUND'
+    | 'BET_ENTRY'
+    | 'BET_WIN'
+    | 'BET_REFUND'
+    | 'REWARD'
   amount: number;
   description: string;
   betId?: string;
@@ -168,6 +178,13 @@ export interface FeedItem {
   title: string;
   description: string;
   createdAt: string;
+}
+
+export interface FeedItemResponse {
+  id: string;
+  feedItemType: string;
+  createdAt: string;
+  content: any;
 }
 
 export interface Group {
