@@ -9,9 +9,11 @@ import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class FeedService {
@@ -27,84 +29,57 @@ public class FeedService {
 
     public List<FeedItemResponse> getVotingFeed(Long userId) {
         List<FeedItemResponse> feedItems = new ArrayList<>();
-        List<BetResponse> betsRequiringVoting = betService.getBetsRequiringVotingByUserId(userId);
-        for (BetResponse bet : betsRequiringVoting) {
-            FeedItemResponse feedItem = new FeedItemResponse(
-                    bet.id(), ContextType.BET,
-                    bet.createdAt().toLocalDateTime(),
-                    bet
-            );
-            feedItems.add(feedItem);
-        }
-        List<ChallengeResponse> challengesRequiringVoting = challengeService.getChallengesRequiringVotingByUserId(userId);
-        for (ChallengeResponse challenge : challengesRequiringVoting) {
-            FeedItemResponse feedItem = new FeedItemResponse(
-                    challenge.id(), ContextType.CHALLENGE,
-                    challenge.createdAt().toLocalDateTime(),
-                    challenge
-            );
-            feedItems.add(feedItem);
-        }
-        List<ActivityResponse> activitiesRequiringVoting = activityService.getActivitiesRequiringVotingByUserId(userId);
-        for (ActivityResponse activity : activitiesRequiringVoting) {
-            FeedItemResponse feedItem = new FeedItemResponse(
-                    activity.id(), ContextType.ACTIVITY,
-                    activity.createdAt().toLocalDateTime(),
-                    activity
-            );
-            feedItems.add(feedItem);
-        }
+        
+        addFeedItems(feedItems, betService.getBetsRequiringVotingByUserId(userId), 
+                ContextType.BET, BetResponse::id, BetResponse::createdAt);
+        
+        addFeedItems(feedItems, challengeService.getChallengesRequiringVotingByUserId(userId), 
+                ContextType.CHALLENGE, ChallengeResponse::id, ChallengeResponse::createdAt);
+        
+        addFeedItems(feedItems, activityService.getActivitiesRequiringVotingByUserId(userId), 
+                ContextType.ACTIVITY, ActivityResponse::id, ActivityResponse::createdAt);
+
         feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
         return feedItems;
     }
 
     public List<FeedItemResponse> getPendingInvites(Long userId) {
         List<FeedItemResponse> feedItems = new ArrayList<>();
-        List<BetResponse> invitedBets = betService.getBetsByStatusAndOpponentId(BetStatus.INVITED, userId);
-        for (BetResponse bet : invitedBets) {
-            FeedItemResponse feedItem = new FeedItemResponse(
-                    bet.id(), ContextType.BET,
-                    bet.createdAt().toLocalDateTime(),
-                    bet
-            );
-            feedItems.add(feedItem);
-        }
-        List<ChallengeResponse> invitedChallenges = challengeService.getChallengesByStatusAndChallengedId(ChallengeStatus.INVITED, userId);
-        for (ChallengeResponse challenge : invitedChallenges) {
-            FeedItemResponse feedItem = new FeedItemResponse(
-                    challenge.id(), ContextType.CHALLENGE,
-                    challenge.createdAt().toLocalDateTime(),
-                    challenge
-            );
-            feedItems.add(feedItem);
-        }
+        
+        addFeedItems(feedItems, betService.getBetsByStatusAndOpponentId(BetStatus.INVITED, userId), 
+                ContextType.BET, BetResponse::id, BetResponse::createdAt);
+        
+        addFeedItems(feedItems, challengeService.getChallengesByStatusAndChallengedId(ChallengeStatus.INVITED, userId), 
+                ContextType.CHALLENGE, ChallengeResponse::id, ChallengeResponse::createdAt);
+
         feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
         return feedItems;
     }
 
     public List<FeedItemResponse> getInProgressItems(Long userId) {
         List<FeedItemResponse> feedItems = new ArrayList<>();
+        
         List<BetStatus> betStatuses = List.of(BetStatus.IN_PROGRESS, BetStatus.IN_JUDGMENT);
-        List<BetResponse> invitedBets = betService.getBetsByStatusesAndInvolvedUserId(betStatuses, userId);
-        for (BetResponse bet : invitedBets) {
-            FeedItemResponse feedItem = new FeedItemResponse(
-                    bet.id(), ContextType.BET,
-                    bet.createdAt().toLocalDateTime(),
-                    bet
-            );
-            feedItems.add(feedItem);
-        }
+        addFeedItems(feedItems, betService.getBetsByStatusesAndInvolvedUserId(betStatuses, userId), 
+                ContextType.BET, BetResponse::id, BetResponse::createdAt);
+
         List<ChallengeStatus> challengeStatuses = List.of(ChallengeStatus.IN_PROGRESS, ChallengeStatus.IN_JUDGMENT);
-        List<ChallengeResponse> invitedChallenges = challengeService.getChallengesByStatusesAndInvolvedUserId(challengeStatuses, userId);
-        for (ChallengeResponse challenge : invitedChallenges) {
-            FeedItemResponse feedItem = new FeedItemResponse(
-                    challenge.id(), ContextType.CHALLENGE,
-                    challenge.createdAt().toLocalDateTime(),
-                    challenge
-            );
-            feedItems.add(feedItem);
-        }
+        addFeedItems(feedItems, challengeService.getChallengesByStatusesAndInvolvedUserId(challengeStatuses, userId), 
+                ContextType.CHALLENGE, ChallengeResponse::id, ChallengeResponse::createdAt);
+
         feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
         return feedItems;
+    }
+
+    private <T> void addFeedItems(List<FeedItemResponse> feedItems, List<T> items, ContextType type, 
+                                  Function<T, Long> idExtractor, Function<T, Timestamp> dateExtractor) {
+        for (T item : items) {
+            feedItems.add(new FeedItemResponse(
+                    idExtractor.apply(item),
+                    type,
+                    dateExtractor.apply(item).toLocalDateTime(),
+                    item
+            ));
+        }
     }
 }
