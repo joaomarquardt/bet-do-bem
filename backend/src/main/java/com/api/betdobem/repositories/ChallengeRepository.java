@@ -45,7 +45,7 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 
     @Query("""
             SELECT c FROM Challenge c
-            WHERE c.status = :statuses
+            WHERE c.status IN :statuses
             AND c.challenged.id = :userId
             OR c.challenger.id = :userId
             ORDER BY c.createdAt DESC
