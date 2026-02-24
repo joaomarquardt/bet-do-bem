@@ -16,11 +16,16 @@ interface TransactionItemProps {
 function getTransactionConfig(type: Transaction['type']) {
   switch (type) {
     case 'BET_ENTRY':
+    case 'CHALLENGE_ENTRY':
       return { icon: 'arrow-up-circle' as const, color: c.loss };
-    case 'PRIZE_WON':
-      return { icon: 'arrow-down-circle' as const, color: c.win };
-    case 'REFUND_DRAW':
+    case 'BET_WIN':
+    case 'CHALLENGE_WIN':
+    case 'REWARD':
+    case 'BET_REFUND':
+    case 'CHALLENGE_REFUND':
       return { icon: 'swap-horizontal' as const, color: c.draw };
+    default:
+      return { icon: 'receipt-outline' as const, color: c.textTertiary };
   }
 }
 
