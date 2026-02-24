@@ -19,19 +19,19 @@ public class FeedController {
         this.feedService = feedService;
     }
 
-    @GetMapping("/home/me")
+    @GetMapping("/me/home")
     public ResponseEntity<List<FeedItemResponse>> getMyFeed(@AuthenticationPrincipal User loggedUser) {
         List<FeedItemResponse> feedItems = feedService.getVotingFeed(loggedUser.getId());
         return new ResponseEntity<>(feedItems, HttpStatus.OK);
     }
 
-    @GetMapping("/pending-invites/me")
+    @GetMapping("/me/pending-invites")
     public ResponseEntity<List<FeedItemResponse>> getMyPendingInvites(@AuthenticationPrincipal User loggedUser) {
         List<FeedItemResponse> pendingInvites = feedService.getPendingInvites(loggedUser.getId());
         return new ResponseEntity<>(pendingInvites, HttpStatus.OK);
     }
 
-    @GetMapping
+    @GetMapping("/me/in-progress-items")
     public ResponseEntity<List<FeedItemResponse>> getMyInProgressItems(@AuthenticationPrincipal User loggedUser) {
         List<FeedItemResponse> inProgressItems = feedService.getInProgressItems(loggedUser.getId());
         return new ResponseEntity<>(inProgressItems, HttpStatus.OK);
