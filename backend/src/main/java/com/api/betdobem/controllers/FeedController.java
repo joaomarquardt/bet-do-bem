@@ -1,9 +1,11 @@
 package com.api.betdobem.controllers;
 
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.responses.FeedItemResponse;
 import com.api.betdobem.services.FeedService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,9 +19,9 @@ public class FeedController {
         this.feedService = feedService;
     }
 
-    @GetMapping("/home/{userId}")
-    public ResponseEntity<List<FeedItemResponse>> getMyFeed(@PathVariable(value = "userId") Long userId) {
-        List<FeedItemResponse> feedItems = feedService.getVotingFeed(userId);
+    @GetMapping("/home/me")
+    public ResponseEntity<List<FeedItemResponse>> getMyFeed(@AuthenticationPrincipal User loggedUser) {
+        List<FeedItemResponse> feedItems = feedService.getVotingFeed(loggedUser.getId());
         return new ResponseEntity<>(feedItems, HttpStatus.OK);
     }
 
