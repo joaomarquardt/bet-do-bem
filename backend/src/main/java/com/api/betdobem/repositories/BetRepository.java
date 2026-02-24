@@ -34,4 +34,12 @@ public interface BetRepository extends JpaRepository<Bet, Long> {
         ORDER BY b.createdAt DESC
     """)
     List<Bet> getBetsRequiringVotingByUserId(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT b FROM Bet b
+            WHERE b.status = :status
+            AND b.opponent.id = :opponentId
+            ORDER BY b.createdAt DESC
+            """)
+    List<Bet> findByStatusAndOpponentId(@Param("status") BetStatus status, @Param("opponentId") Long opponentId);
 }

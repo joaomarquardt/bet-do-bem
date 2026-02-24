@@ -1,6 +1,5 @@
 package com.api.betdobem.repositories;
 
-import com.api.betdobem.domain.Bet;
 import com.api.betdobem.domain.Challenge;
 import com.api.betdobem.enums.ChallengeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,4 +34,12 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
         ORDER BY c.createdAt DESC
     """)
     List<Challenge> getChallengesRequiringVotingByUserId(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT c FROM Challenge c
+            WHERE c.status = :status
+            AND c.challenged.id = :challengedId
+            ORDER BY c.createdAt DESC
+            """)
+    List<Challenge> findByStatusAndChallengedId(@Param("status") ChallengeStatus status, @Param("challengedId") Long challengedId);
 }

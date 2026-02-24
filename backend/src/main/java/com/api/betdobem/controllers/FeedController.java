@@ -22,4 +22,10 @@ public class FeedController {
         List<FeedItemResponse> feedItems = feedService.getVotingFeed(userId);
         return new ResponseEntity<>(feedItems, HttpStatus.OK);
     }
+
+    @GetMapping("/pending-invites/me")
+    public ResponseEntity<List<FeedItemResponse>> getMyPendingInvites(@AuthenticationPrincipal User loggedUser) {
+        List<FeedItemResponse> pendingInvites = feedService.getPendingInvites(loggedUser.getId());
+        return new ResponseEntity<>(pendingInvites, HttpStatus.OK);
+    }
 }

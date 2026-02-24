@@ -1,12 +1,11 @@
 package com.api.betdobem.services;
 
-import com.api.betdobem.domain.Activity;
-import com.api.betdobem.domain.Bet;
-import com.api.betdobem.domain.Challenge;
 import com.api.betdobem.dtos.responses.ActivityResponse;
 import com.api.betdobem.dtos.responses.BetResponse;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
 import com.api.betdobem.dtos.responses.FeedItemResponse;
+import com.api.betdobem.enums.BetStatus;
+import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +51,30 @@ public class FeedService {
                     activity.id(), ContextType.ACTIVITY,
                     activity.createdAt().toLocalDateTime(),
                     activity
+            );
+            feedItems.add(feedItem);
+        }
+        feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
+        return feedItems;
+    }
+
+    public List<FeedItemResponse> getPendingInvites(Long userId) {
+        List<FeedItemResponse> feedItems = new ArrayList<>();
+        List<BetResponse> invitedBets = betService.getBetsByStatusAndOpponentId(BetStatus.INVITED, userId);
+        for (BetResponse bet : invitedBets) {
+            FeedItemResponse feedItem = new FeedItemResponse(
+                    bet.id(), ContextType.BET,
+                    bet.createdAt().toLocalDateTime(),
+                    bet
+            );
+            feedItems.add(feedItem);
+        }
+        List<ChallengeResponse> invitedChallenges = challengeService.getChallengesByStatusAndChallengedId(ChallengeStatus.INVITED, userId);
+        for (ChallengeResponse challenge : invitedChallenges) {
+            FeedItemResponse feedItem = new FeedItemResponse(
+                    challenge.id(), ContextType.CHALLENGE,
+                    challenge.createdAt().toLocalDateTime(),
+                    challenge
             );
             feedItems.add(feedItem);
         }

@@ -1,9 +1,6 @@
 package com.api.betdobem.services;
 
-import com.api.betdobem.domain.Challenge;
-import com.api.betdobem.domain.Group;
-import com.api.betdobem.domain.Proof;
-import com.api.betdobem.domain.User;
+import com.api.betdobem.domain.*;
 import com.api.betdobem.dtos.requests.CreateChallengeRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
@@ -55,6 +52,11 @@ public class ChallengeService {
 
     public List<ChallengeResponse> getChallengesRequiringVotingByUserId(Long userId) {
         List<Challenge> challenges = challengeRepository.getChallengesRequiringVotingByUserId(userId);
+        return challengeMapper.toChallengeResponseList(challenges);
+    }
+
+    public List<ChallengeResponse> getChallengesByStatusAndChallengedId(ChallengeStatus status, Long userId) {
+        List<Challenge> challenges = challengeRepository.findByStatusAndChallengedId(status, userId);
         return challengeMapper.toChallengeResponseList(challenges);
     }
 
