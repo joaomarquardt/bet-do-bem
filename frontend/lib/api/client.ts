@@ -24,7 +24,18 @@ class ApiClient {
   async getTokens(): Promise<AuthTokens | null> {
     try {
       const data = await AsyncStorage.getItem(TOKEN_KEY);
-      return data ? JSON.parse(data) : null;
+
+      if (!data) return null;
+      const parsed = JSON.parse(data);
+      if (typeof parsed === 'string') {
+        return { accessToken: parsed } as AuthTokens;
+      }
+      if (Array.isArray(parsed)) {
+        const obj = parsed.find((p) => p && typeof p === 'object' && p.accessToken);
+        if (obj) return obj as AuthTokens;
+        return null;
+      }
+      return parsed as AuthTokens;
     } catch {
       return null;
     }
@@ -61,6 +72,7 @@ class ApiClient {
         headers['Authorization'] = `Bearer ${tokens.accessToken}`;
       }
     }
+
 
     return headers;
   }
