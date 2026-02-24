@@ -81,4 +81,30 @@ public class FeedService {
         feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
         return feedItems;
     }
+
+    public List<FeedItemResponse> getInProgressItems(Long userId) {
+        List<FeedItemResponse> feedItems = new ArrayList<>();
+        List<BetStatus> betStatuses = List.of(BetStatus.IN_PROGRESS, BetStatus.IN_JUDGMENT);
+        List<BetResponse> invitedBets = betService.getBetsByStatusesAndInvolvedUserId(betStatuses, userId);
+        for (BetResponse bet : invitedBets) {
+            FeedItemResponse feedItem = new FeedItemResponse(
+                    bet.id(), ContextType.BET,
+                    bet.createdAt().toLocalDateTime(),
+                    bet
+            );
+            feedItems.add(feedItem);
+        }
+        List<ChallengeStatus> challengeStatuses = List.of(ChallengeStatus.IN_PROGRESS, ChallengeStatus.IN_JUDGMENT);
+        List<ChallengeResponse> invitedChallenges = challengeService.getChallengesByStatusesAndInvolvedUserId(challengeStatuses, userId);
+        for (ChallengeResponse challenge : invitedChallenges) {
+            FeedItemResponse feedItem = new FeedItemResponse(
+                    challenge.id(), ContextType.CHALLENGE,
+                    challenge.createdAt().toLocalDateTime(),
+                    challenge
+            );
+            feedItems.add(feedItem);
+        }
+        feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
+        return feedItems;
+    }
 }

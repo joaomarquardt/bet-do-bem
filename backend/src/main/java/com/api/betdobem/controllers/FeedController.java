@@ -30,4 +30,10 @@ public class FeedController {
         List<FeedItemResponse> pendingInvites = feedService.getPendingInvites(loggedUser.getId());
         return new ResponseEntity<>(pendingInvites, HttpStatus.OK);
     }
+
+    @GetMapping
+    public ResponseEntity<List<FeedItemResponse>> getMyInProgressItems(@AuthenticationPrincipal User loggedUser) {
+        List<FeedItemResponse> inProgressItems = feedService.getInProgressItems(loggedUser.getId());
+        return new ResponseEntity<>(inProgressItems, HttpStatus.OK);
+    }
 }

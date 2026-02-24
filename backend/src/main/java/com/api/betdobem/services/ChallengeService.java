@@ -60,6 +60,11 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponseList(challenges);
     }
 
+    public List<ChallengeResponse> getChallengesByStatusesAndInvolvedUserId(List<ChallengeStatus> statuses, Long userId) {
+        List<Challenge> challenges = challengeRepository.findByStatusesAndInvolvedUserId(statuses, userId);
+        return challengeMapper.toChallengeResponseList(challenges);
+    }
+
     public Challenge getChallengeEntityById(Long id) {
         return challengeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Challenge with ID " + id + " not found."));
     }
