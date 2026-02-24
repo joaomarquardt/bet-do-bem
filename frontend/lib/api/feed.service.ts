@@ -1,12 +1,18 @@
 import { apiClient } from './client';
-import { FeedItem } from '@/lib/types';
+import { FeedItemResponse } from '@/lib/types';
 
 const ENDPOINTS = {
   FEED: '/api/feed',
 } as const;
 
 export const feedService = {
-  getMyFeed(userId: string): Promise<FeedItem[]> {
-    return apiClient.get(`${ENDPOINTS.FEED}/home/${userId}`);
+  getMyFeed(): Promise<FeedItemResponse[]> {
+    return apiClient.get(`${ENDPOINTS.FEED}/me/home`);
+  },
+  getMyPendingInvites(): Promise<FeedItemResponse[]> {
+    return apiClient.get(`${ENDPOINTS.FEED}/me/pending-invites`);
+  },
+  getMyInProgressItems(): Promise<FeedItemResponse[]> {
+    return apiClient.get(`${ENDPOINTS.FEED}/me/in-progress-items`);
   },
 };
