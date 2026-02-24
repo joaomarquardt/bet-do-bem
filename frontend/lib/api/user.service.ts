@@ -22,8 +22,16 @@ export const userService = {
     return apiClient.get(`${ENDPOINTS.USERS}/${id}`);
   },
 
+  getMyProfile(): Promise<User> {
+    return apiClient.get(`${ENDPOINTS.USERS}/me`);
+  },
+
   getUserTransactions(id: string): Promise<Transaction[]> {
     return apiClient.get(`${ENDPOINTS.USERS}/${id}/transactions`);
+  },
+
+  getMyTransactions(): Promise<Transaction[]> {
+    return apiClient.get(`${ENDPOINTS.USERS}/me/transactions`);
   },
 
   updateUser(id: string, data: UpdateUserRequest): Promise<User> {
