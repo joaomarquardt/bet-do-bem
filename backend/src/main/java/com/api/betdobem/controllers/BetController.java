@@ -1,5 +1,6 @@
 package com.api.betdobem.controllers;
 
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateBetRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
@@ -8,6 +9,7 @@ import com.api.betdobem.services.BetService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,14 +42,14 @@ public class BetController {
     }
 
     @PostMapping("/{id}/accept")
-    public ResponseEntity<BetResponse> acceptBet(@PathVariable Long id) {
-        BetResponse bet = betService.acceptBet(id);
+    public ResponseEntity<BetResponse> acceptBet(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        BetResponse bet = betService.acceptBet(id, user.getId());
         return new ResponseEntity<>(bet, HttpStatus.OK);
     }
 
     @PostMapping("/{id}/decline")
-    public ResponseEntity<BetResponse> declineBet(@PathVariable Long id) {
-        BetResponse bet = betService.declineBet(id);
+    public ResponseEntity<BetResponse> declineBet(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        BetResponse bet = betService.declineBet(id, user.getId());
         return new ResponseEntity<>(bet, HttpStatus.OK);
     }
 

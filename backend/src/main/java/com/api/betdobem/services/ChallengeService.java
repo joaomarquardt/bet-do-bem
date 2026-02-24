@@ -16,6 +16,7 @@ import com.api.betdobem.repositories.ChallengeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -86,9 +87,11 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponse(savedChallenge);
     }
 
-    public ChallengeResponse acceptChallenge(Long id) {
-        // TODO: Only the challenged should be able to accept the challenge, need to add authentication and authorization
+    public ChallengeResponse acceptChallenge(Long id, Long userId) {
         Challenge challenge = getChallengeEntityById(id);
+        if (!challenge.getChallenged().getId().equals(userId)) {
+            throw new AccessDeniedException("Only the challenged can accept challenge invite");
+        }
         if (challenge.getStatus() != ChallengeStatus.INVITED) {
             throw new InvalidStatusException("Only challenges with status 'INVITED' can be accepted.");
         }
@@ -98,9 +101,11 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponse(challenge);
     }
 
-    public ChallengeResponse declineChallenge(Long id) {
-        // TODO: Only the challenged should be able to decline the challenge, need to add authentication and authorization
+    public ChallengeResponse declineChallenge(Long id, Long userId) {
         Challenge challenge = getChallengeEntityById(id);
+        if (!challenge.getChallenged().getId().equals(userId)) {
+            throw new AccessDeniedException("Only the challenged can decline challenge invite");
+        }
         if (challenge.getStatus() != ChallengeStatus.INVITED) {
             throw new InvalidStatusException("Only challenges with status 'INVITED' can be declined.");
         }

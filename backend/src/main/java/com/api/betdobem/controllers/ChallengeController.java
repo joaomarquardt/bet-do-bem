@@ -1,5 +1,6 @@
 package com.api.betdobem.controllers;
 
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateChallengeRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
@@ -8,6 +9,7 @@ import com.api.betdobem.services.ChallengeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,14 +42,14 @@ public class ChallengeController {
     }
 
     @PostMapping("/{id}/accept")
-    public ResponseEntity<ChallengeResponse> acceptChallenge(@PathVariable Long id) {
-        ChallengeResponse challenge = challengeService.acceptChallenge(id);
+    public ResponseEntity<ChallengeResponse> acceptChallenge(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        ChallengeResponse challenge = challengeService.acceptChallenge(id, user.getId());
         return new ResponseEntity<>(challenge, HttpStatus.OK);
     }
 
     @PostMapping("/{id}/decline")
-    public ResponseEntity<ChallengeResponse> declineChallenge(@PathVariable Long id) {
-        ChallengeResponse challenge = challengeService.declineChallenge(id);
+    public ResponseEntity<ChallengeResponse> declineChallenge(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        ChallengeResponse challenge = challengeService.declineChallenge(id, user.getId());
         return new ResponseEntity<>(challenge, HttpStatus.OK);
     }
 

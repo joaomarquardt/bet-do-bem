@@ -18,6 +18,7 @@ import com.api.betdobem.repositories.BetRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -84,9 +85,11 @@ public class BetService {
         return betMapper.toBetResponse(savedBet);
     }
 
-    public BetResponse acceptBet(Long id) {
-        // TODO: Only the opponent should be able to accept the bet, need to add authentication and authorization
+    public BetResponse acceptBet(Long id, Long userId) {
         Bet bet = getBetEntityById(id);
+        if (!bet.getOpponent().getId().equals(userId)) {
+            throw new AccessDeniedException("Only the opponent can accept bet invite");
+        }
         if (bet.getStatus() != BetStatus.INVITED) {
             throw new InvalidStatusException("Only bets with status 'INVITED' can be accepted.");
         }
@@ -96,9 +99,11 @@ public class BetService {
         return betMapper.toBetResponse(bet);
     }
 
-    public BetResponse declineBet(Long id) {
-        // TODO: Only the opponent should be able to decline the bet, need to add authentication and authorization
+    public BetResponse declineBet(Long id, Long userId) {
         Bet bet = getBetEntityById(id);
+        if (!bet.getOpponent().getId().equals(userId)) {
+            throw new AccessDeniedException("Only the opponent can decline bet invite");
+        }
         if (bet.getStatus() != BetStatus.INVITED) {
             throw new InvalidStatusException("Only bets with status 'INVITED' can be declined.");
         }
