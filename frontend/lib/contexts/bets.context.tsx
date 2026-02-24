@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
-import { MOCK_FEED_BETS, MOCK_MY_BETS, MOCK_WALLET, MOCK_CURRENT_USER } from '@/lib/mocks/data';
-import { Bet, Wallet } from '@/lib/types';
+import { Bet, Wallet, FeedItemResponse } from '@/lib/types';
+import { feedService } from '@/lib/api/feed.service';
+import { betsService } from '@/lib/api/bets.service';
+import { useAuth } from '@/lib/contexts';
 
 interface BetsContextValue {
   feedBets: Bet[];
@@ -25,9 +27,10 @@ const STORAGE_KEYS = {
 } as const;
 
 export function BetsProvider({ children }: { children: ReactNode }) {
-  const [feedBets, setFeedBets] = useState<Bet[]>(MOCK_FEED_BETS);
-  const [myBets, setMyBets] = useState<Bet[]>(MOCK_MY_BETS);
-  const [wallet, setWallet] = useState<Wallet>(MOCK_WALLET);
+  const { user } = useAuth();
+  const [feedBets, setFeedBets] = useState<Bet[]>([]);
+  const [myBets, setMyBets] = useState<Bet[]>([]);
+  const [wallet, setWallet] = useState<Wallet>({ balance: 0, transactions: [] });
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -47,6 +50,27 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     } catch {}
   }
 
+  useEffect(() => {
+    let mounted = true;
+    async function loadMyBetsFromApi() {
+      try {
+        const [pending, inProgress] = await Promise.all([
+          feedService.getMyPendingInvites(),
+          feedService.getMyInProgressItems(),
+        ]);
+
+        const mapped: Bet[] = [...pending, ...inProgress].map((it) => mapFeedItemToBet(it, user?.id));
+        if (!mounted) return;
+        setMyBets(mapped);
+        persistBets(mapped);
+      } catch (e) {
+      }
+    }
+
+    loadMyBetsFromApi();
+    return () => { mounted = false; };
+  }, [user?.id]);
+
   function persistFeed(data: Bet[]) {
     AsyncStorage.setItem(STORAGE_KEYS.FEED, JSON.stringify(data));
   }
@@ -57,7 +81,52 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEYS.WALLET, JSON.stringify(data));
   }
 
-  // TODO: Replace with betsService.vote() when connecting to real API
+  function mapFeedItemToBet(item: FeedItemResponse | any, currentUserId?: string | number | null): Bet {
+    const content = item.content || item;
+    const creator = content.creator || content.creatorResponse || content.creatorUser || { id: String(content.creatorId || ''), username: content.creatorUsername || '', displayName: content.creatorDisplayName || '', avatarColor: '#CCCCCC', wins: 0, losses: 0, draws: 0 };
+    const opponent = content.opponent || content.opponentResponse || { id: String(content.opponentId || ''), username: content.opponentUsername || '', displayName: content.opponentDisplayName || '', avatarColor: '#CCCCCC', wins: 0, losses: 0, draws: 0 };
+    const proofs = content.proofs || content.proofsList || [];
+    let status = String(content.status ?? content.betStatus ?? 'PENDING');
+    if (status === 'INVITED') status = 'PENDING';
+
+    const creatorIdRaw = String(creator.id ?? '');
+    const opponentIdRaw = String(opponent.id ?? '');
+    const creatorId = currentUserId && String(currentUserId) === creatorIdRaw ? 'me' : creatorIdRaw;
+    const opponentId = currentUserId && String(currentUserId) === opponentIdRaw ? 'me' : opponentIdRaw;
+
+    return {
+      id: String(content.id ?? item.id ?? ''),
+      title: content.title ?? content.name ?? '',
+      description: content.description ?? '',
+      buyIn: Number(content.buyIn ?? content.buy_in ?? 0),
+      status: (status as any),
+      creatorId,
+      opponentId,
+      creator: {
+        id: String(creator.id ?? ''),
+        username: creator.username ?? creator.displayName ?? 'user',
+        displayName: creator.displayName ?? creator.username ?? 'User',
+        avatarColor: creator.avatarColor ?? '#CCCCCC',
+        wins: creator.wins ?? 0,
+        losses: creator.losses ?? 0,
+        draws: creator.draws ?? 0,
+      },
+      opponent: {
+        id: String(opponent.id ?? ''),
+        username: opponent.username ?? opponent.displayName ?? 'opponent',
+        displayName: opponent.displayName ?? opponent.username ?? 'Opponent',
+        avatarColor: opponent.avatarColor ?? '#CCCCCC',
+        wins: opponent.wins ?? 0,
+        losses: opponent.losses ?? 0,
+        draws: opponent.draws ?? 0,
+      },
+      comments: [],
+      votes: { creatorVotes: 0, opponentVotes: 0 },
+      deadline: content.expiresAt ? new Date(content.expiresAt).toISOString() : content.deadline ? new Date(content.deadline).toISOString() : new Date().toISOString(),
+      createdAt: content.createdAt ? new Date(content.createdAt).toISOString() : new Date().toISOString(),
+    } as Bet;
+  }
+
   const voteBet = useCallback((betId: string, votedForUserId: string) => {
     setFeedBets((prev) => {
       const updated = prev.map((bet) => {
@@ -77,105 +146,78 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // TODO: Replace with betsService.acceptBet() when connecting to real API
-  const acceptBet = useCallback((betId: string) => {
-    setMyBets((prev) => {
-      const updated = prev.map((bet) =>
-        bet.id === betId ? { ...bet, status: 'IN_PROGRESS' as const } : bet,
-      );
-      persistBets(updated);
-      return updated;
-    });
-    setWallet((prev) => {
-      const bet = myBets.find((b) => b.id === betId);
-      if (!bet) return prev;
-      const updated: Wallet = {
-        ...prev,
-        balance: prev.balance - bet.buyIn,
-        transactions: [
-          {
-            id: Crypto.randomUUID(),
-            type: 'BET_ENTRY',
-            amount: -bet.buyIn,
-            description: `Entrada - ${bet.title}`,
-            betId,
-            createdAt: new Date().toISOString(),
-          },
-          ...prev.transactions,
-        ],
-      };
-      persistWallet(updated);
-      return updated;
-    });
-  }, [myBets]);
-
-  // TODO: Replace with betsService.declineBet() when connecting to real API
-  const declineBet = useCallback((betId: string) => {
-    setMyBets((prev) => {
-      const updated = prev.filter((bet) => bet.id !== betId);
-      persistBets(updated);
-      return updated;
-    });
+  const acceptBet = useCallback(async (betId: string) => {
+    try {
+      await betsService.acceptBet(betId);
+      setMyBets((prev) => {
+        const updated = prev.map((bet) => (bet.id === betId ? { ...bet, status: 'IN_PROGRESS' as const } : bet));
+        persistBets(updated);
+        return updated;
+      });
+    } catch (e) {
+    }
   }, []);
 
-  // TODO: Replace with betsService.createBet() when connecting to real API
-  const createBet = useCallback((title: string, description: string, buyIn: number, opponentUsername: string) => {
-    const newBet: Bet = {
-      id: Crypto.randomUUID(),
-      title,
-      description,
-      buyIn,
-      status: 'PENDING',
-      creatorId: 'me',
-      creator: MOCK_CURRENT_USER,
-      opponentId: 'opponent-new',
-      opponent: {
-        id: 'opponent-new',
-        username: opponentUsername,
-        displayName: opponentUsername,
-        avatarColor: '#45B7D1',
-        wins: 0, losses: 0, draws: 0,
-      },
-      comments: [],
-      votes: { creatorVotes: 0, opponentVotes: 0 },
-      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: new Date().toISOString(),
-    };
-
-    setMyBets((prev) => {
-      const updated = [newBet, ...prev];
-      persistBets(updated);
-      return updated;
-    });
-
-    setWallet((prev) => {
-      const updated: Wallet = {
-        ...prev,
-        balance: prev.balance - buyIn,
-        transactions: [
-          {
-            id: Crypto.randomUUID(),
-            type: 'BET_ENTRY',
-            amount: -buyIn,
-            description: `Entrada - ${title}`,
-            betId: newBet.id,
-            createdAt: new Date().toISOString(),
-          },
-          ...prev.transactions,
-        ],
-      };
-      persistWallet(updated);
-      return updated;
-    });
+  const declineBet = useCallback(async (betId: string) => {
+    try {
+      await betsService.declineBet(betId);
+      setMyBets((prev) => {
+        const updated = prev.filter((bet) => bet.id !== betId);
+        persistBets(updated);
+        return updated;
+      });
+    } catch (e) {
+    }
   }, []);
 
-  const refreshData = useCallback(() => {
-    // TODO: Replace with API calls:
-    // queryClient.invalidateQueries({ queryKey: FEED_QUERY_KEY });
-    // queryClient.invalidateQueries({ queryKey: MY_BETS_QUERY_KEY });
-    // queryClient.invalidateQueries({ queryKey: WALLET_QUERY_KEY });
+  const createBet = useCallback(async (title: string, description: string, buyIn: number, opponentUsername: string) => {
+    try {
+      const created = await betsService.createBet({ title, description, buyIn, opponentUsername });
+      const mapped = mapFeedItemToBet({ content: created, id: created.id });
+      setMyBets((prev) => {
+        const updated = [mapped, ...prev];
+        persistBets(updated);
+        return updated;
+      });
+      setWallet((prev) => {
+        const updated: Wallet = {
+          ...prev,
+          balance: prev.balance - buyIn,
+          transactions: [
+            {
+              id: Crypto.randomUUID(),
+              type: 'BET_ENTRY',
+              amount: -buyIn,
+              description: `Entrada - ${title}`,
+              betId: String(created.id),
+              createdAt: new Date().toISOString(),
+            },
+            ...prev.transactions,
+          ],
+        };
+        persistWallet(updated);
+        return updated;
+      });
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  const refreshData = useCallback(async () => {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 800);
+    try {
+      const [pending, inProgress] = await Promise.all([
+        feedService.getMyPendingInvites(),
+        feedService.getMyInProgressItems(),
+      ]);
+      const mapped: Bet[] = [...pending, ...inProgress].map(mapFeedItemToBet);
+      setMyBets(mapped);
+      persistBets(mapped);
+    } catch (e) {
+      // ignore
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const value = useMemo(

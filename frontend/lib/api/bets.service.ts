@@ -3,8 +3,6 @@ import { Bet, CreateBetRequest, UpdateBetRequest, CreateProofRequest } from '@/l
 
 const ENDPOINTS = {
   BETS: '/api/bets',
-  ACCEPT: (id: string) => `/bets/${id}/accept`,
-  DECLINE: (id: string) => `/bets/${id}/decline`,
 } as const;
 
 export const betsService = {
@@ -24,12 +22,12 @@ export const betsService = {
     return apiClient.post(`${ENDPOINTS.BETS}/${id}/proofs`, data);
   },
 
-  acceptBet(betId: string): Promise<Bet> {
-    return apiClient.post(ENDPOINTS.ACCEPT(betId));
+  acceptBet(id: string): Promise<Bet> {
+    return apiClient.post(`${ENDPOINTS.BETS}/${id}/accept`);
   },
 
-  declineBet(betId: string): Promise<void> {
-    return apiClient.post(ENDPOINTS.DECLINE(betId));
+  declineBet(id: string): Promise<void> {
+    return apiClient.post(`${ENDPOINTS.BETS}/${id}/decline`);
   },
 
   updateBet(id: string, data: UpdateBetRequest): Promise<Bet> {
