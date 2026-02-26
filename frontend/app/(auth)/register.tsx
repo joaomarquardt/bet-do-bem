@@ -15,22 +15,23 @@ export default function RegisterScreen() {
   const { register } = useAuth();
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
-  const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const isValid = displayName.trim() && username.trim() && password.trim() && password.length >= 4;
+  const isValid = email.trim() && username.trim() && password.trim() && password.length >= 4;
 
   const handleRegister = useCallback(async () => {
     if (!isValid) return;
     setIsLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
-      await register(username.trim(), displayName.trim(), password);
+      await register(username.trim(), email.trim(), password, passwordConfirmation);
     } catch {}
     setIsLoading(false);
-  }, [isValid, username, displayName, password, register]);
+  }, [isValid, username, email, password, passwordConfirmation, register]);
 
   return (
     <KeyboardAvoidingView
@@ -53,8 +54,8 @@ export default function RegisterScreen() {
               style={[styles.input, { backgroundColor: c.surfaceElevated, color: c.text, borderColor: c.border }]}
               placeholder="Nome completo"
               placeholderTextColor={c.textTertiary}
-              value={displayName}
-              onChangeText={setDisplayName}
+              value={username}
+              onChangeText={setUsername}
             />
           </View>
 
@@ -62,10 +63,10 @@ export default function RegisterScreen() {
             <Ionicons name="at" size={18} color={c.textTertiary} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { backgroundColor: c.surfaceElevated, color: c.text, borderColor: c.border }]}
-              placeholder="Nome de usuario"
+              placeholder="Email"
               placeholderTextColor={c.textTertiary}
-              value={username}
-              onChangeText={setUsername}
+              value={email}
+              onChangeText={setEmail}
               autoCapitalize="none"
               autoCorrect={false}
             />
@@ -79,6 +80,18 @@ export default function RegisterScreen() {
               placeholderTextColor={c.textTertiary}
               value={password}
               onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <Ionicons name="lock-closed-outline" size={18} color={c.textTertiary} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, { backgroundColor: c.surfaceElevated, color: c.text, borderColor: c.border }]}
+              placeholder="Confirme a sua senha"
+              placeholderTextColor={c.textTertiary}
+              value={passwordConfirmation}
+              onChangeText={setPasswordConfirmation}
               secureTextEntry
             />
           </View>
