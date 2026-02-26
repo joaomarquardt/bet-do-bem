@@ -92,8 +92,16 @@ class ApiClient {
       throw { status: response.status, message: errorMessage } as ApiError;
     }
 
-    if (response.status === 204) {
-      return undefined as T;
+    if (response.status === 204 || response.status === 201) {
+      try {
+        const text = await response.text();
+        if (!text || text.trim() === '') {
+          return undefined as T;
+        }
+        return JSON.parse(text) as T;
+      } catch {
+        return undefined as T;
+      }
     }
 
     return response.json() as Promise<T>;

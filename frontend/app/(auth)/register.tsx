@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, TextInput, Pressable, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, Pressable, Platform, KeyboardAvoidingView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -15,23 +15,52 @@ export default function RegisterScreen() {
   const { register } = useAuth();
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [feedback, setFeedback] = useState<null | { type: 'success' | 'error'; text: string }>(null);
 
-  const isValid = email.trim() && username.trim() && password.trim() && password.length >= 4;
+  const isValid = email.trim() && name.trim() && password.trim() && password.length >= 4;
 
   const handleRegister = useCallback(async () => {
     if (!isValid) return;
+
+    if (password !== passwordConfirmation) {
+      Alert.alert('Erro', 'As senhas não conferem');
+      return;
+    }
+
     setIsLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
     try {
-      await register(username.trim(), email.trim(), password, passwordConfirmation);
-    } catch {}
-    setIsLoading(false);
-  }, [isValid, username, email, password, passwordConfirmation, register]);
+      await register(name.trim(), email.trim(), password, passwordConfirmation);
+      console.log('Registro bem-sucedido!');
+      setIsLoading(false);
+
+      const successText = 'Conta criada com sucesso!';
+      setFeedback({ type: 'success', text: successText });
+      try {
+        Alert.alert('Sucesso!', successText);
+      } catch {}
+
+      setTimeout(() => router.replace('/(auth)/login'), 2200);
+      setTimeout(() => setFeedback(null), 5000);
+    } catch (error: any) {
+      console.error('Erro capturado:', error);
+      setIsLoading(false);
+      const status = error?.status;
+      const message = error?.message || 'Erro ao criar conta. Tente novamente.';
+      const text = status ? `Erro ${status}: ${message}` : message;
+      setFeedback({ type: 'error', text });
+      try {
+        Alert.alert('Erro no Registro', text);
+      } catch {}
+      setTimeout(() => setFeedback(null), 6000);
+    }
+  }, [isValid, name, email, password, passwordConfirmation, register]);
 
   return (
     <KeyboardAvoidingView
@@ -48,14 +77,48 @@ export default function RegisterScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(200).duration(500)} style={styles.formSection}>
+          {feedback ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: 12,
+                paddingHorizontal: 14,
+                borderRadius: 12,
+                marginBottom: 14,
+                backgroundColor: feedback.type === 'success' ? c.surfaceElevated : c.surfaceElevated,
+                borderWidth: 1,
+                borderColor: feedback.type === 'success' ? c.accentBorder : c.dangerDim || 'rgba(255,71,87,0.15)',
+                shadowColor: '#000',
+                shadowOpacity: 0.2,
+                shadowRadius: 6,
+              }}
+            >
+              <View style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: feedback.type === 'success' ? c.accentDim : c.dangerDim,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 12,
+              }}>
+                <MaterialCommunityIcons name={feedback.type === 'success' ? 'check' : 'alert-circle'} size={18} color={feedback.type === 'success' ? '#000' : c.danger} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: c.text, fontWeight: '600' }}>{feedback.type === 'success' ? 'Sucesso' : 'Erro'}</Text>
+                <Text style={{ color: c.textSecondary, marginTop: 4 }}>{feedback.text}</Text>
+              </View>
+            </View>
+          ) : null}
           <View style={styles.inputWrapper}>
             <Ionicons name="person-outline" size={18} color={c.textTertiary} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { backgroundColor: c.surfaceElevated, color: c.text, borderColor: c.border }]}
               placeholder="Nome completo"
               placeholderTextColor={c.textTertiary}
-              value={username}
-              onChangeText={setUsername}
+              value={name}
+              onChangeText={setName}
             />
           </View>
 
