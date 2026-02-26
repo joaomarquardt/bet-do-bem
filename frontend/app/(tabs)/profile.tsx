@@ -27,7 +27,7 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const authUser: any = user;
   const displayName = authUser?.displayName ?? authUser?.name ?? authUser?.email ?? 'Usuário';
-  const username = authUser?.username ?? (typeof authUser?.email === 'string' ? authUser.email.split('@')[0] : `user${authUser?.id ?? ''}`);
+  const username = authUser?.name ?? (typeof authUser?.email === 'string' ? authUser.email.split('@')[0] : `user${authUser?.id ?? ''}`);
   const avatarColor = authUser?.avatarColor ?? stringToColor(displayName);
   const wins: number | undefined = typeof authUser?.wins === 'number' ? authUser.wins : undefined;
   const losses: number | undefined = typeof authUser?.losses === 'number' ? authUser.losses : undefined;

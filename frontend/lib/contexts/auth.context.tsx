@@ -9,8 +9,8 @@ interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, displayName: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
 }
@@ -45,9 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
   }, []);
 
-  const login = useCallback(async (username: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     try {
-      const response = await authService.login({ email: username, password });
+      const response = await authService.login({ email: email, password });
       await apiClient.saveTokens({ accessToken: response.token });
       const me = await userService.getMe();
       await persistUser(me);
@@ -57,21 +57,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [persistUser]);
 
-  const register = useCallback(async (username: string, displayName: string, password: string) => {
+  const register = useCallback(async (name: string, email: string, password: string, passwordConfirmation: string) => {
     try {
       await authService.register({
-        username,
+        name,
+        email,
         password,
-        name: displayName,
-        email: `${username}`
+        passwordConfirmation
       });
-
-      await login(username, password);
     } catch (error) {
       console.error("Erro no registro:", error);
       throw error;
     }
-  }, [login]);
+  }, []);
 
   const logout = useCallback(async () => {
     await apiClient.clearTokens();
