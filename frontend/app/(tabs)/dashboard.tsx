@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, SectionList, RefreshControl, Pressable, Platform, TextInput, Modal, KeyboardAvoidingView } from 'react-native';
+import { View, Text, SectionList, RefreshControl, Pressable, Platform, TextInput, Modal, KeyboardAvoidingView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -8,6 +8,8 @@ import { MyBetCard } from '@/components/dashboard/MyBetCard';
 import { useBets } from '@/lib/contexts';
 import { Bet } from '@/lib/types';
 import { styles } from '@/styles/tabs/dashboard.styles';
+import * as ImagePicker from 'expo-image-picker';
+import { betsService } from '@/lib/api/bets.service';
 
 const c = Colors.dark;
 
@@ -50,7 +52,63 @@ export default function DashboardScreen() {
 
   const renderItem = useCallback(
     ({ item, index }: { item: Bet; index: number }) => {
-      const isPending = item.status === 'PENDING' && item.opponentId === 'me';
+      const isPending = item.status === 'INVITED' && (item.opponent.id === 'me' || (item as any).opponentId === 'me');
+      const handleSendProof = async (betId: string) => {
+        try {
+          const pickFileWebFile = (): Promise<File | null> => new Promise((resolve) => {
+            try {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'image/*,video/*';
+              input.onchange = () => {
+                const file = input.files?.[0] ?? null;
+                resolve(file);
+              };
+              input.click();
+            } catch (e) {
+              resolve(null);
+            }
+          });
+
+          if (Platform.OS === 'web') {
+            const file = await pickFileWebFile();
+            if (!file) { Alert.alert('Nenhum arquivo selecionado'); return; }
+            await betsService.addProofToBet(betId, { fileName: file.name, contentType: file.type } as any);
+            refreshData();
+            Alert.alert('Prova enviada');
+            return;
+          }
+
+          Alert.alert('Enviar Prova', 'Escolha a origem da foto', [
+            { text: 'Câmera', onPress: async () => {
+                const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                if (status !== 'granted') { Alert.alert('Permissão negada'); return; }
+                const result: any = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.All, quality: 0.8 });
+                const uri = result.assets?.[0]?.uri ?? result.uri;
+                if (!uri) return;
+                await betsService.addProofToBet(betId, { fileName: result.assets?.[0]?.fileName ?? result.name, contentType: result.assets?.[0]?.mimeType ?? 'image/jpeg' } as any);
+                refreshData();
+                Alert.alert('Prova enviada');
+              }
+            },
+            { text: 'Galeria', onPress: async () => {
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (status !== 'granted') { Alert.alert('Permissão negada'); return; }
+                const result: any = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.All, quality: 0.8 });
+                const uri = result.assets?.[0]?.uri ?? result.uri;
+                if (!uri) return;
+                await betsService.addProofToBet(betId, { fileName: result.assets?.[0]?.fileName ?? result.name, contentType: result.assets?.[0]?.mimeType ?? 'image/jpeg' } as any);
+                refreshData();
+                Alert.alert('Prova enviada');
+              }
+            },
+            { text: 'Cancelar', style: 'cancel' }
+          ]);
+        } catch (e) {
+          console.error('Erro ao enviar prova', e);
+          Alert.alert('Erro ao enviar prova');
+        }
+      };
       return (
         <View style={styles.cardWrapper}>
           <MyBetCard
@@ -58,6 +116,7 @@ export default function DashboardScreen() {
             index={index}
             onAccept={isPending ? () => acceptBet(item.id) : undefined}
             onDecline={isPending ? () => declineBet(item.id) : undefined}
+            onSendProof={() => handleSendProof(item.id)}
           />
         </View>
       );
