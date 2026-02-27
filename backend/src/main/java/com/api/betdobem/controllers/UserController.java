@@ -7,7 +7,6 @@ import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.services.UserService;
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

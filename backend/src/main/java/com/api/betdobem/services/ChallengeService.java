@@ -5,6 +5,8 @@ import com.api.betdobem.dtos.requests.CreateChallengeRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
+import com.api.betdobem.dtos.responses.ProofResponse;
+import com.api.betdobem.dtos.responses.ProofUploadResponse;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
@@ -31,14 +33,16 @@ public class ChallengeService {
     private UserService userService;
     private GroupService groupService;
     private WalletService walletService;
+    private S3StorageService s3StorageService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService) {
         this.challengeRepository = challengeRepository;
         this.challengeMapper = challengeMapper;
         this.proofService = proofService;
         this.userService = userService;
         this.groupService = groupService;
         this.walletService = walletService;
+        this.s3StorageService = s3StorageService;
     }
 
     public List<ChallengeResponse> getAllChallenges() {
@@ -116,19 +120,28 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponse(challenge);
     }
 
-    public ChallengeResponse addProofToChallenge(Long id, CreateProofRequest proof) {
+    @Transactional
+    public ProofUploadResponse addProofToChallenge(Long id, CreateProofRequest proof, Long userId) {
         Challenge challenge = getChallengeEntityById(id);
         if (challenge.getStatus() != ChallengeStatus.IN_PROGRESS) {
             throw new InvalidStatusException("Cannot add proof to a challenge that is not open.");
         }
-        if (!challenge.getChallenged().getId().equals(proof.authorId())) {
+        if (!challenge.getChallenged().getId().equals(userId)) {
             throw new UnauthorizedActionException("Only the challenged user can add proof to this challenge.");
         }
-        Proof proofEntity = proofService.createProof(proof);
+        // TODO: Check if user already posted a proof in this challenge
+        String uniqueObjectKey = String.format("proofs/challenges/user_%d_%d_%s",
+                userId,
+                System.currentTimeMillis(),
+                proof.fileName().replaceAll("[^a-zA-Z0-9.-]", "_"));
+        CreateProofRequest proofUpdated = new CreateProofRequest(proof.fileName(), proof.contentType(), uniqueObjectKey);
+        Proof proofEntity = proofService.createProof(proofUpdated, userId);
         challenge.setProof(proofEntity);
         challenge.setStatus(ChallengeStatus.IN_JUDGMENT);
         challengeRepository.save(challenge);
-        return challengeMapper.toChallengeResponse(challenge);
+        String uploadUrl = s3StorageService.generatePresignedUploadUrl(uniqueObjectKey, proof.contentType());
+        ProofResponse proofResponse = proofService.getProofById(proofEntity.getId());
+        return new ProofUploadResponse(proofResponse, uploadUrl);
     }
 
     public ChallengeResponse getChallengeById(Long id) {

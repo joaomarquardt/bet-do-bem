@@ -5,6 +5,8 @@ import com.api.betdobem.dtos.requests.CreateBetRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
+import com.api.betdobem.dtos.responses.ProofResponse;
+import com.api.betdobem.dtos.responses.ProofUploadResponse;
 import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ContextType;
@@ -33,14 +35,16 @@ public class BetService {
     private ProofService proofService;
     private GroupService groupService;
     private WalletService walletService;
+    private S3StorageService s3StorageService;
 
-    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService) {
+    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService) {
         this.betRepository = betRepository;
         this.betMapper = betMapper;
         this.userService = userService;
         this.proofService = proofService;
         this.groupService = groupService;
         this.walletService = walletService;
+        this.s3StorageService = s3StorageService;
     }
 
     public List<BetResponse> getAllBets() {
@@ -113,21 +117,30 @@ public class BetService {
         return betMapper.toBetResponse(bet);
     }
 
-    public BetResponse addProofToBet(Long id, CreateProofRequest proof) {
+    @Transactional
+    public ProofUploadResponse addProofToBet(Long id, CreateProofRequest proof, Long userId) {
         Bet bet = getBetEntityById(id);
-        if (!bet.getCreator().getId().equals(proof.authorId()) && !bet.getOpponent().getId().equals(proof.authorId())) {
+        if (!bet.getCreator().getId().equals(userId) && !bet.getOpponent().getId().equals(userId)) {
             throw new UnauthorizedActionException("Only the creator or opponent can add proofs to this bet.");
         }
         if (bet.getStatus() != BetStatus.IN_PROGRESS) {
             throw new InvalidStatusException("Cannot add proof to a bet that is not in progress.");
         }
-        Proof proofEntity = proofService.createProof(proof);
+        // TODO: Check if user already posted a proof in this bet
+        String uniqueObjectKey = String.format("proofs/bets/user_%d_%d_%s",
+                userId,
+                System.currentTimeMillis(),
+                proof.fileName().replaceAll("[^a-zA-Z0-9.-]", "_"));
+        CreateProofRequest proofUpdated = new CreateProofRequest(proof.fileName(), proof.contentType(), uniqueObjectKey);
+        Proof proofEntity = proofService.createProof(proofUpdated, userId);
         bet.getProofs().add(proofEntity);
         if (bet.getProofs().size() >= 2) {
             bet.setStatus(BetStatus.IN_JUDGMENT);
         }
         betRepository.save(bet);
-        return betMapper.toBetResponse(bet);
+        String uploadUrl = s3StorageService.generatePresignedUploadUrl(uniqueObjectKey, proof.contentType());
+        ProofResponse proofResponse = proofService.getProofById(proofEntity.getId());
+        return new ProofUploadResponse(proofResponse, uploadUrl);
     }
 
     public Bet getBetEntityById(Long id) {

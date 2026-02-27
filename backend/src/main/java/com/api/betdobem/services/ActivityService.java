@@ -8,11 +8,11 @@ import com.api.betdobem.dtos.requests.CreateActivityRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
+import com.api.betdobem.dtos.responses.CreatedActivityResponse;
 import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
-import com.api.betdobem.infra.exceptions.InvalidStatusException;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,14 +32,16 @@ public class ActivityService {
     private UserService userService;
     private GroupService groupService;
     private WalletService walletService;
+    private S3StorageService s3StorageService;
 
-    public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService, UserService userService, GroupService groupService, WalletService walletService) {
+    public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService, UserService userService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService) {
         this.activityRepository = activityRepository;
         this.activityMapper = activityMapper;
         this.proofService = proofService;
         this.userService = userService;
         this.groupService = groupService;
         this.walletService = walletService;
+        this.s3StorageService = s3StorageService;
     }
 
     public List<ActivityResponse> getAllActivities() {
@@ -61,28 +63,25 @@ public class ActivityService {
         return activityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Activity with ID " + id + " not found."));
     }
 
-    public ActivityResponse createActivity(CreateActivityRequest activity) {
+    @Transactional
+    public CreatedActivityResponse createActivity(CreateActivityRequest activity, Long userId) {
         Activity activityEntity = activityMapper.toActivityEntity(activity);
-        User author = userService.getUserEntityById(activity.authorId());
-        Proof proof = proofService.createProof(activity.proof());
+        User author = userService.getUserEntityById(userId);
+        String uniqueObjectKey = String.format("proofs/activities/user_%d_%d_%s",
+                userId,
+                System.currentTimeMillis(),
+                activity.proof().fileName().replaceAll("[^a-zA-Z0-9.-]", "_"));
+        CreateProofRequest proofUpdated = new CreateProofRequest(activity.proof().fileName(), activity.proof().contentType(), uniqueObjectKey);
+        Proof proofEntity = proofService.createProof(proofUpdated, userId);
         Group group = groupService.getGroupEntityById(activity.groupId());
         activityEntity.setAuthor(author);
-        activityEntity.setProof(proof);
+        activityEntity.setProof(proofEntity);
         activityEntity.setGroup(group);
         activityEntity.setStatus(ActivityStatus.IN_JUDGMENT);
         Activity savedActivity = activityRepository.save(activityEntity);
-        return activityMapper.toActivityResponse(savedActivity);
-    }
-
-    public ActivityResponse addProofToActivity(Long id, CreateProofRequest proof) {
-        Activity activity = getActivityEntityById(id);
-        if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) {
-            throw new InvalidStatusException("Cannot add proof to an activity that is not in judgment.");
-        }
-        Proof proofEntity = proofService.createProof(proof);
-        activity.setProof(proofEntity);
-        Activity updatedActivity = activityRepository.save(activity);
-        return activityMapper.toActivityResponse(updatedActivity);
+        String uploadUrl = s3StorageService.generatePresignedUploadUrl(uniqueObjectKey, activity.proof().contentType());
+        ActivityResponse activityResponse = activityMapper.toActivityResponse(savedActivity);
+        return new CreatedActivityResponse(activityResponse, uploadUrl);
     }
 
     public ActivityResponse getActivityById(Long id) {
