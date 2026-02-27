@@ -71,7 +71,7 @@ export function MyBetCard({ bet, index, onAccept, onDecline }: MyBetCardProps) {
         <Text style={[styles.deadline, { color: c.textTertiary }]}>{formatDeadline(bet.deadline)}</Text>
       </View>
 
-      {bet.status === 'PENDING' && !isCreator && onAccept && onDecline && (
+      {bet.status === 'INVITED' && !isCreator && onAccept && onDecline && (
         <View style={styles.actionRow}>
           <Pressable
             style={({ pressed }) => [styles.declineBtn, { borderColor: c.danger, opacity: pressed ? 0.7 : 1 }]}

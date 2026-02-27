@@ -1,10 +1,26 @@
+export type ActivityStatus =
+  | 'IN_JUDGMENT'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'EXPIRED';
+
 export type BetStatus =
-  | 'PENDING'
+  | 'INVITED'
+  | 'DECLINED'
   | 'IN_PROGRESS'
   | 'IN_JUDGMENT'
   | 'FINISHED_WIN_CREATOR'
   | 'FINISHED_WIN_OPPONENT'
   | 'FINISHED_DRAW';
+
+export type ChallengeStatus =
+  | 'INVITED'
+  | 'DECLINED'
+  | 'IN_PROGRESS'
+  | 'IN_JUDGMENT'
+  | 'SUCCESS'
+  | 'FAILED'
+  | 'EXPIRED';
 
 export interface User {
   id: string;
@@ -205,9 +221,8 @@ export interface UpdateGroupRequest {
 }
 
 export interface CreateProofRequest {
-  description: string;
-  mediaUri: string;
-  mediaType: 'photo' | 'video';
+  fileName: string;
+  contentType: string;
 }
 
 export interface UpdateProofRequest {

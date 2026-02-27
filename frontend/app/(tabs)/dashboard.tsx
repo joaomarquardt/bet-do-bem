@@ -22,10 +22,10 @@ export default function DashboardScreen() {
   const [newOpponent, setNewOpponent] = useState('');
 
   const sections = useMemo(() => {
-    const pending = myBets.filter((b) => b.status === 'PENDING' && b.opponentId === 'me');
+    const pending = myBets.filter((b) => b.status === 'INVITED' && (b.opponent.id === 'me' || (b as any).opponentId === 'me'));
     const inProgress = myBets.filter((b) => b.status === 'IN_PROGRESS' || b.status === 'IN_JUDGMENT');
     const finished = myBets.filter((b) => b.status.startsWith('FINISHED'));
-    const created = myBets.filter((b) => b.status === 'PENDING' && b.creatorId === 'me');
+    const created = myBets.filter((b) => b.status === 'INVITED' && b.creatorId === 'me');
 
     const result = [];
     if (pending.length > 0) result.push({ title: 'Convites Pendentes', data: pending, key: 'pending' });

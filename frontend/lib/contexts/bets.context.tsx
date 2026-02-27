@@ -86,8 +86,7 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     const creator = content.creator || content.creatorResponse || content.creatorUser || { id: String(content.creatorId || ''), username: content.creatorUsername || '', displayName: content.creatorDisplayName || '', avatarColor: '#CCCCCC', wins: 0, losses: 0, draws: 0 };
     const opponent = content.opponent || content.opponentResponse || { id: String(content.opponentId || ''), username: content.opponentUsername || '', displayName: content.opponentDisplayName || '', avatarColor: '#CCCCCC', wins: 0, losses: 0, draws: 0 };
     const proofs = content.proofs || content.proofsList || [];
-    let status = String(content.status ?? content.betStatus ?? 'PENDING');
-    if (status === 'INVITED') status = 'PENDING';
+    let status = String(content.status ?? content.betStatus ?? 'INVITED');
 
     const creatorIdRaw = String(creator.id ?? '');
     const opponentIdRaw = String(opponent.id ?? '');
