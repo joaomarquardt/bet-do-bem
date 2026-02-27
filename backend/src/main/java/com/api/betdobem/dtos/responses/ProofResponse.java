@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 public record ProofResponse(
         Long id,
         String imageUrl,
-        String description,
+        String contentType,
         Long authorId,
         Timestamp postedAt
 ) {

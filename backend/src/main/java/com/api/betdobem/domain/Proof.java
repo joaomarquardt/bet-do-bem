@@ -12,8 +12,9 @@ public class Proof {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String fileName;
+    private String contentType;
     private String imageUrl;
-    private String description;
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
@@ -25,10 +26,11 @@ public class Proof {
     public Proof() {
     }
 
-    public Proof(Long id, String imageUrl, String description, User author) {
+    public Proof(Long id, String imageUrl, String fileName, String contentType, User author) {
         this.id = id;
         this.imageUrl = imageUrl;
-        this.description = description;
+        this.fileName = fileName;
+        this.contentType = contentType;
         this.author = author;
     }
 
@@ -48,12 +50,28 @@ public class Proof {
         this.imageUrl = imageUrl;
     }
 
-    public String getDescription() {
-        return description;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public List<ProofComment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<ProofComment> comments) {
+        this.comments = comments;
     }
 
     public User getAuthor() {
