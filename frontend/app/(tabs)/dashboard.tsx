@@ -10,6 +10,7 @@ import { Bet } from '@/lib/types';
 import { styles } from '@/styles/tabs/dashboard.styles';
 import * as ImagePicker from 'expo-image-picker';
 import { betsService } from '@/lib/api/bets.service';
+import uploadFileToAWS from '@/lib/utils/uploadFileToAWS';
 
 const c = Colors.dark;
 
@@ -73,7 +74,10 @@ export default function DashboardScreen() {
           if (Platform.OS === 'web') {
             const file = await pickFileWebFile();
             if (!file) { Alert.alert('Nenhum arquivo selecionado'); return; }
-            await betsService.addProofToBet(betId, { fileName: file.name, contentType: file.type } as any);
+            const mime = file.type === 'video' ? 'video/mp4' : (file.type === 'image' ? 'image/jpeg' : 'application/octet-stream');
+            const resp: any = await betsService.addProofToBet(betId, { fileName: file.name, contentType: mime } as any);
+            const uploadUrl: string | undefined = resp?.uploadUrl;
+            if (uploadUrl) await uploadFileToAWS(uploadUrl, file, mime);
             refreshData();
             Alert.alert('Prova enviada');
             return;
@@ -84,9 +88,14 @@ export default function DashboardScreen() {
                 const { status } = await ImagePicker.requestCameraPermissionsAsync();
                 if (status !== 'granted') { Alert.alert('Permissão negada'); return; }
                 const result: any = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.All, quality: 0.8 });
-                const uri = result.assets?.[0]?.uri ?? result.uri;
+                const asset = result.assets?.[0] ?? result;
+                const uri = asset.uri;
                 if (!uri) return;
-                await betsService.addProofToBet(betId, { fileName: result.assets?.[0]?.fileName ?? result.name, contentType: result.assets?.[0]?.mimeType ?? 'image/jpeg' } as any);
+                const fileName = asset.fileName ?? uri.split('/').pop();
+                const mime = asset.type === 'video' ? 'video/mp4' : (asset.type === 'image' ? 'image/jpeg' : 'application/octet-stream');
+                const respCam: any = await betsService.addProofToBet(betId, { fileName, contentType: mime } as any);
+                const uploadUrlCam: string | undefined = respCam?.uploadUrl;
+                if (uploadUrlCam) await uploadFileToAWS(uploadUrlCam, { uri, type: mime }, mime);
                 refreshData();
                 Alert.alert('Prova enviada');
               }
@@ -95,9 +104,14 @@ export default function DashboardScreen() {
                 const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
                 if (status !== 'granted') { Alert.alert('Permissão negada'); return; }
                 const result: any = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.All, quality: 0.8 });
-                const uri = result.assets?.[0]?.uri ?? result.uri;
+                const asset = result.assets?.[0] ?? result;
+                const uri = asset.uri;
                 if (!uri) return;
-                await betsService.addProofToBet(betId, { fileName: result.assets?.[0]?.fileName ?? result.name, contentType: result.assets?.[0]?.mimeType ?? 'image/jpeg' } as any);
+                const fileName = asset.fileName ?? uri.split('/').pop();
+                const mime = asset.type === 'video' ? 'video/mp4' : (asset.type === 'image' ? 'image/jpeg' : 'application/octet-stream');
+                const respGal: any = await betsService.addProofToBet(betId, { fileName, contentType: mime } as any);
+                const uploadUrlGal: string | undefined = respGal?.uploadUrl;
+                if (uploadUrlGal) await uploadFileToAWS(uploadUrlGal, { uri, type: mime }, mime);
                 refreshData();
                 Alert.alert('Prova enviada');
               }
