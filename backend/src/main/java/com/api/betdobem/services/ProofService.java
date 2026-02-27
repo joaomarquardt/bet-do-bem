@@ -48,8 +48,8 @@ public class ProofService {
         return proofRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Proof with ID " + id + " not found."));
     }
 
-    public Proof createProof(CreateProofRequest proof) {
-        User author = userService.getUserEntityById(proof.authorId());
+    public Proof createProof(CreateProofRequest proof, Long userId) {
+        User author = userService.getUserEntityById(userId);
         Proof proofEntity = proofMapper.toProofEntity(proof);
         proofEntity.setAuthor(author);
         Proof savedProof = proofRepository.save(proofEntity);
