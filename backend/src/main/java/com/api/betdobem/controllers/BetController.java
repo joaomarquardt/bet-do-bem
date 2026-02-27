@@ -5,6 +5,7 @@ import com.api.betdobem.dtos.requests.CreateBetRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
+import com.api.betdobem.dtos.responses.ProofUploadResponse;
 import com.api.betdobem.services.BetService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -36,9 +37,9 @@ public class BetController {
     }
 
     @PostMapping("/{id}/proofs")
-    public ResponseEntity<BetResponse> addProofToBet(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
-        BetResponse bet = betService.addProofToBet(id, proof);
-        return new ResponseEntity<>(bet, HttpStatus.CREATED);
+    public ResponseEntity<ProofUploadResponse> addProofToBet(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof, @AuthenticationPrincipal User loggedUser) {
+        ProofUploadResponse proofUpload = betService.addProofToBet(id, proof, loggedUser.getId());
+        return new ResponseEntity<>(proofUpload, HttpStatus.CREATED);
     }
 
     @PostMapping("/{id}/accept")

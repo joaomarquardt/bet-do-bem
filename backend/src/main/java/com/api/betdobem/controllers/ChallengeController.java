@@ -5,6 +5,7 @@ import com.api.betdobem.dtos.requests.CreateChallengeRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
+import com.api.betdobem.dtos.responses.ProofUploadResponse;
 import com.api.betdobem.services.ChallengeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -36,9 +37,9 @@ public class ChallengeController {
     }
 
     @PostMapping("/{id}/proofs")
-    public ResponseEntity<ChallengeResponse> addProofToChallenge(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
-        ChallengeResponse challenge = challengeService.addProofToChallenge(id, proof);
-        return new ResponseEntity<>(challenge, HttpStatus.CREATED);
+    public ResponseEntity<ProofUploadResponse> addProofToChallenge(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof, @AuthenticationPrincipal User loggedUser) {
+        ProofUploadResponse proofUpload = challengeService.addProofToChallenge(id, proof, loggedUser.getId());
+        return new ResponseEntity<>(proofUpload, HttpStatus.CREATED);
     }
 
     @PostMapping("/{id}/accept")

@@ -1,13 +1,16 @@
 package com.api.betdobem.controllers;
 
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateActivityRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
+import com.api.betdobem.dtos.responses.CreatedActivityResponse;
 import com.api.betdobem.services.ActivityService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,15 +31,9 @@ public class ActivityController {
     }
 
     @PostMapping
-    public ResponseEntity<ActivityResponse> createActivity(@RequestBody @Valid CreateActivityRequest activity) {
-        ActivityResponse newActivity = activityService.createActivity(activity);
+    public ResponseEntity<CreatedActivityResponse> createActivity(@RequestBody @Valid CreateActivityRequest activity, @AuthenticationPrincipal User loggedUser) {
+        CreatedActivityResponse newActivity = activityService.createActivity(activity, loggedUser.getId());
         return new ResponseEntity<>(newActivity, HttpStatus.CREATED);
-    }
-
-    @PostMapping("/{id}/proofs")
-    public ResponseEntity<ActivityResponse> addProofToActivity(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof) {
-        ActivityResponse activity = activityService.addProofToActivity(id, proof);
-        return new ResponseEntity<>(activity, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
