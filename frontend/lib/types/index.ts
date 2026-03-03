@@ -1,3 +1,4 @@
+
 export type ActivityStatus =
   | 'IN_JUDGMENT'
   | 'APPROVED'
@@ -22,122 +23,343 @@ export type ChallengeStatus =
   | 'FAILED'
   | 'EXPIRED';
 
+export type TransactionType =
+  | 'DEPOSIT'
+  | 'CHALLENGE_ENTRY'
+  | 'CHALLENGE_WIN'
+  | 'CHALLENGE_REFUND'
+  | 'BET_ENTRY'
+  | 'BET_WIN'
+  | 'BET_REFUND'
+  | 'REWARD';
+
+export type ContextType = 
+  | 'ACTIVITY'
+  | 'BET'
+  | 'CHALLENGE'
+  | 'GROUP'
+  | 'PROOF'
+  | 'TRANSACTION'
+  | 'USER'
+  | 'VOTE';
+
+export type UserRole = 
+  | 'USER'
+  | 'ADMIN';
+
 export interface User {
-  id: string;
-  username: string;
-  displayName: string;
-  avatarColor: string;
-  wins: number;
-  losses: number;
-  draws: number;
-  coins?: number;
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  coins: number;
 }
 
 export interface Proof {
-  id: string;
-  userId: string;
-  description: string;
-  mediaType: 'photo' | 'video';
-  mediaUri: string;
-  createdAt: string;
+  id: number;
+  fileName: string;
+  contentType: string;
+  imageUrl: string;
+  author: User;
+  comments: ProofComment[];
+  postedAt: string;
 }
 
 export interface ProofComment {
-  id: string;
-  userId: string;
-  username: string;
-  text: string;
-  createdAt: string;
+  id: number;
+  proof: Proof;
+  author: User;
+  content: string;
+  postedAt: string;
 }
 
 export interface Vote {
-  id: string;
-  judgeId: string;
-  betId: string;
-  votedForUserId: string;
-  createdAt: string;
+  id: number;
+  voter: User;
+  proof: Proof;
+  approved: boolean;
+  votedAt: string;
 }
 
 export interface Bet {
-  id: string;
+  id: number;
   title: string;
   description: string;
-  buyIn: number;
-  status: BetStatus;
-  creatorId: string;
   creator: User;
-  wallet?: Wallet;
-  coins?: number;
   opponent: User;
-  creatorProof?: Proof;
-  opponentProof?: Proof;
-  comments: ProofComment[];
-  votes: { creatorVotes: number; opponentVotes: number };
-  deadline: string;
+  proofs: Proof[];
+  buyIn: number;
   createdAt: string;
-  myVote?: string;
+  closedAt: string;
+  expiresAt: string;
+  status: BetStatus;
+  group: Group;
 }
 
 export interface Transaction {
-  id: string;
-  type:
-    | 'DEPOSIT'
-    | 'CHALLENGE_ENTRY'
-    | 'CHALLENGE_WIN'
-    | 'CHALLENGE_REFUND'
-    | 'BET_ENTRY'
-    | 'BET_WIN'
-    | 'BET_REFUND'
-    | 'REWARD'
+  id: number;
+  user: User;
   amount: number;
-  description: string;
-  betId?: string;
+  transactionType: TransactionType;
+  contextType: ContextType;
+  contextId: number;
   createdAt: string;
 }
 
-export interface Wallet {
-  balance: number;
-  transactions: Transaction[];
+export interface Group {
+    id: number;
+    name: string;
+    description: string;
+    creator: User;
+    createdAt: string;
+    members: User[];
 }
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken?: string;
+export interface Activity {
+    id: number;
+    author: User;
+    proof: Proof;
+    description: string;
+    status: ActivityStatus;
+    createdAt: string;
+    closedAt: string;
+    expiresAt: string;
+    group: Group;
+}
+
+export interface Challenge {
+    id: number;
+    challenger: User;
+    challenged: User;
+    title: string;
+    description: string;
+    amount: number;
+    proof: Proof;
+    createdAt: string;
+    closedAt: string;
+    deadline: string;
+    status: ChallengeStatus;
+    group: Group;
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface RegisterRequest {
-  username: string;
-  displayName: string;
+  name: string;
+  email: string;
   password: string;
-}
-
-export interface AuthResponse {
-  user: User;
-  tokens: AuthTokens;
+  passwordConfirmation: string;
 }
 
 export interface CreateBetRequest {
   title: string;
   description: string;
   buyIn: number;
-  opponentUsername: string;
+  creatorId: number;
+  opponentId: number;
+  groupId: number;
 }
 
-export interface VoteRequest {
-  betId: string;
-  votedForUserId: string;
+export interface CreateVoteRequest {
+    voterId: number;
+    approved: boolean;
 }
 
-export interface UploadProofRequest {
-  betId: string;
-  description: string;
-  mediaUri: string;
-  mediaType: 'photo' | 'video';
+export interface CreateProofRequest {
+    fileName: string;
+    contentType: string;
+    imageUrl?: string;
+}
+
+export interface CreateCommentRequest {
+    content: string;
+    authorId: number;
+}
+
+export interface CreateActivityRequest {
+    proof: CreateProofRequest;
+    description: string;
+    groupId: number;
+}
+
+export interface CreateChallengeRequest {
+    challengerId: number;
+    challengedId: number;
+    title: string;
+    description: string;
+    amount: number;
+    deadline: string;
+    groupId: number;
+}
+
+export interface CreateGroupRequest {
+    name: string;
+    description: string;
+    creatorId: number;
+    memberIds: number[];
+}
+
+export interface CreateUserRequest {
+    name: string;
+    email: string;
+    password: string;
+}
+
+export interface UpdateActivityRequest {
+    description: string;
+}
+
+export interface UpdateBetRequest {
+    title: string;
+    description: string;
+    creatorId: number;
+    opponentId: number;
+}
+
+export interface UpdateChallengeRequest {
+    title: string;
+    description: string;
+    penaltyValue: number;
+    proofId: number;
+    deadline: string;
+    status: ChallengeStatus;
+}
+
+export interface UpdateProofRequest {
+    imageUrl: string;
+    description: string;
+    authorId: number;
+}
+
+export interface UpdateUserRequest {
+    name: string;
+    email: string;
+    coins: number;
+}
+
+export interface UpdateVoteRequest {
+    voterId: number;
+    proofId: number;
+    approved: boolean;
+}
+
+export interface ActivityResponse {
+    id: number;
+    author: UserResponse;
+    proof: Proof;
+    description: string;
+    status: ActivityStatus;
+    groupId: number;
+    createdAt: string;
+    closedAt: string;
+    expiresAt: string;
+}
+
+export interface BetResponse {
+    id: number;
+    title: string;
+    description: string;
+    creator: UserResponse;
+    opponent: UserResponse;
+    proofs: ProofResponse[];
+    buyIn: number;
+    status: BetStatus;
+    groupId: number;
+    createdAt: string;
+    closedAt: string;
+    expiresAt: string;
+}
+
+export interface ChallengeResponse {
+    id: number;
+    challenger: UserResponse;
+    challenged: UserResponse;
+    title: string;
+    description: string;
+    amount: number;
+    status: ChallengeStatus;
+    groupId: number;
+    proof: ProofResponse;
+    createdAt: string;
+    deadline: string;
+}
+
+export interface CommentResponse {
+    id: number;
+    content: string;
+    authorId: number;
+    authorName: string;
+    postedAt: string;
+}
+
+export interface CreatedActivityResponse {
+    activity: ActivityResponse;
+    uploadUrl: string;
+}
+
+export interface FeedItemResponse {
+    id: number;
+    feedItemType: ContextType;
+    createdAt: string;
+    content: any;
+}
+
+export interface GroupResponse {
+    id: number;
+    name: string;
+    description: string;
+    creator: UserResponse;
+    members: UserResponse[];
+    createdAt: string;
+}
+
+export interface ProofResponse {
+    id: number;
+    imageUrl: string;
+    contentType: string;
+    authorId: number;
+    postedAt: string;
+}
+
+export interface ProofUploadResponse {
+    proofResponse: ProofResponse;
+    uploadUrl: string;
+}
+
+export interface TokenResponse {
+    token: string;
+}
+
+export interface TransactionResponse {
+    id: number;
+    amount: number;
+    contextId: number;
+    contextType: ContextType;
+    transactionType: TransactionType;
+    createdAt: string;
+}
+
+export interface UserResponse {
+    id: number;
+    name: string;
+    email: string;
+    coins: number;
+}
+
+export interface VoteResponse {
+    id: number;
+    voterId: number;
+    proofId: number;
+    approved: boolean;
+    votedAt: string;
+}
+
+export interface VotesByProof {
+    approvedVotes: number;
+    rejectedVotes: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -155,113 +377,12 @@ export interface ApiError {
   timestamp?: string;
 }
 
-export interface Activity {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken?: string;
 }
 
-export interface CreateActivityRequest {
-  title: string;
-  description: string;
-}
-
-export interface UpdateActivityRequest {
-  title: string;
-  description: string;
-}
-
-export interface Challenge {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-}
-
-export interface CreateChallengeRequest {
-  title: string;
-  description: string;
-}
-
-export interface UpdateChallengeRequest {
-  title: string;
-  description: string;
-}
-
-export interface FeedItem {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-}
-
-export interface FeedItemResponse {
-  id: string;
-  feedItemType: string;
-  createdAt: string;
-  content: any;
-}
-
-export interface Group {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-}
-
-export interface CreateGroupRequest {
-  name: string;
-  description: string;
-}
-
-export interface UpdateGroupRequest {
-  name: string;
-  description: string;
-}
-
-export interface CreateProofRequest {
-  fileName: string;
-  contentType: string;
-}
-
-export interface UpdateProofRequest {
-  description: string;
-  mediaUri: string;
-  mediaType: 'photo' | 'video';
-}
-
-export interface CreateVoteRequest {
-  judgeId: string;
-  votedForUserId: string;
-}
-
-export interface UpdateVoteRequest {
-  judgeId: string;
-  votedForUserId: string;
-}
-
-export interface CreateUserRequest {
-  username: string;
-  displayName: string;
-  email: string;
-  password: string;
-}
-
-export interface UpdateUserRequest {
-  displayName: string;
-  email: string;
-}
-
-export interface Comment {
-  id: string;
-  userId: string;
-  username: string;
-  text: string;
-  createdAt: string;
-}
-
-export interface CreateCommentRequest {
-    userId: string;
-    text: string;
+export interface AuthResponse {
+  user: User;
+  tokens: AuthTokens;
 }
