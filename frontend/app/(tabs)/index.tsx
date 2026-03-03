@@ -1,25 +1,47 @@
-import { useCallback } from 'react';
+
+import { useCallback, useMemo } from 'react';
 import { View, Text, FlatList, RefreshControl, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/colors';
 import { BetCard } from '@/components/feed/BetCard';
-import { useBets } from '@/lib/contexts';
-import { Bet } from '@/lib/types';
+import { ActivityCard } from '@/components/feed/ActivityCard';
+import { ChallengeCard } from '@/components/feed/ChallengeCard';
+import { useBets, useActivity, useChallenge } from '@/lib/contexts';
+import { Bet, Activity, Challenge } from '@/lib/types';
 import { styles } from '@/styles/tabs/feed.styles';
 
 const c = Colors.dark;
 
 export default function FeedScreen() {
-  const { feedBets, isLoading, refreshData } = useBets();
+  const { feedBets, isLoading: betsLoading, refreshData: refreshBets } = useBets();
+  const { activities, isLoading: activitiesLoading, refreshData: refreshActivities } = useActivity();
+  const { challenges, isLoading: challengesLoading, refreshData: refreshChallenges } = useChallenge();
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
 
-  const renderItem = useCallback(({ item, index }: { item: Bet; index: number }) => {
-    return <BetCard bet={item} index={index} />;
+  const feed = useMemo(() => {
+    const betsWithFeedType = feedBets.map(bet => ({ ...bet, feedItemType: 'BET' as const }));
+    const activitiesWithFeedType = activities.map(activity => ({ ...activity, feedItemType: 'ACTIVITY' as const }));
+    const challengesWithFeedType = challenges.map(challenge => ({ ...challenge, feedItemType: 'CHALLENGE' as const }));
+    return [...betsWithFeedType, ...activitiesWithFeedType, ...challengesWithFeedType].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [feedBets, activities, challenges]);
+  
+  const isLoading = betsLoading || activitiesLoading || challengesLoading;
+
+  const refreshData = useCallback(() => {
+    refreshBets();
+    refreshActivities();
+    refreshChallenges();
+  }, [refreshBets, refreshActivities, refreshChallenges]);
+
+  const renderItem = useCallback(({ item, index }: { item: (Bet | Activity | Challenge) & { feedItemType: 'BET' | 'ACTIVITY' | 'CHALLENGE' }; index: number }) => {
+    if (item.feedItemType === 'ACTIVITY') return <ActivityCard activity={item as Activity} index={index} />;
+    if (item.feedItemType === 'CHALLENGE') return <ChallengeCard challenge={item as Challenge} index={index} />;
+    return <BetCard bet={item as Bet} index={index} />;
   }, []);
 
-  const keyExtractor = useCallback((item: Bet) => item.id, []);
+  const keyExtractor = useCallback((item: (Bet | Activity | Challenge) & { feedItemType: 'BET' | 'ACTIVITY' | 'CHALLENGE' }) => `${item.feedItemType}-${item.id.toString()}`, []);
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
@@ -34,12 +56,12 @@ export default function FeedScreen() {
         </View>
       </View>
       <FlatList
-        data={feedBets}
+        data={feed}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={[styles.list, { paddingBottom: Platform.OS === 'web' ? 84 : 100 }]}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={!!feedBets.length}
+        scrollEnabled={!!feed.length}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refreshData} tintColor={c.accent} />
         }
