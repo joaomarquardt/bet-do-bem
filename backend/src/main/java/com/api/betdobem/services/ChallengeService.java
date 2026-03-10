@@ -74,12 +74,12 @@ public class ChallengeService {
         return challengeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Challenge with ID " + id + " not found."));
     }
 
-    public ChallengeResponse createChallenge(CreateChallengeRequest challenge) {
-        if (challenge.challengerId().equals(challenge.challengedId())) {
+    public ChallengeResponse createChallenge(CreateChallengeRequest challenge, Long userId) {
+        if (userId.equals(challenge.challengedId())) {
             throw new SelfInteractionException("Challenger and challenged cannot be the same user.");
         }
         Group group = groupService.getGroupEntityById(challenge.groupId());
-        User challenger = userService.getUserEntityById(challenge.challengerId());
+        User challenger = userService.getUserEntityById(userId);
         User challenged = userService.getUserEntityById(challenge.challengedId());
         Challenge challengeEntity = challengeMapper.toChallengeEntity(challenge);
         challengeEntity.setChallenger(challenger);

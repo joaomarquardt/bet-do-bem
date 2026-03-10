@@ -31,8 +31,8 @@ public class ChallengeController {
     }
 
     @PostMapping
-    public ResponseEntity<ChallengeResponse> createChallenge(@RequestBody @Valid CreateChallengeRequest challenge) {
-        ChallengeResponse newChallenge = challengeService.createChallenge(challenge);
+    public ResponseEntity<ChallengeResponse> createChallenge(@RequestBody @Valid CreateChallengeRequest challenge, @AuthenticationPrincipal User loggedUser) {
+        ChallengeResponse newChallenge = challengeService.createChallenge(challenge, loggedUser.getId());
         return new ResponseEntity<>(newChallenge, HttpStatus.CREATED);
     }
 

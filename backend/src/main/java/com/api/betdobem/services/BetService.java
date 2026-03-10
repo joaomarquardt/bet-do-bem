@@ -72,11 +72,11 @@ public class BetService {
         return betMapper.toBetResponseList(bets);
     }
 
-    public BetResponse createBet(CreateBetRequest bet) {
-        if (bet.creatorId().equals(bet.opponentId())) {
+    public BetResponse createBet(CreateBetRequest bet, Long userId) {
+        if (userId.equals(bet.opponentId())) {
             throw new SelfInteractionException("Creator and opponent cannot be the same user.");
         }
-        User creator = userService.getUserEntityById(bet.creatorId());
+        User creator = userService.getUserEntityById(userId);
         User opponent = userService.getUserEntityById(bet.opponentId());
         Group group = groupService.getGroupEntityById(bet.groupId());
         Bet betEntity = betMapper.toBetEntity(bet);

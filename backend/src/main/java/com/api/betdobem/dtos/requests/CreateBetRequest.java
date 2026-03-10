@@ -12,8 +12,6 @@ public record CreateBetRequest(
         @NotNull(message = "Buy-in amount cannot be null")
         @Min(value = 1, message = "Buy-in amount must be greater than zero")
         Long buyIn,
-        @NotNull(message = "Creator ID cannot be null")
-        Long creatorId,
         @NotNull(message = "Opponent ID cannot be null")
         Long opponentId,
         @NotNull(message = "Group ID cannot be null")

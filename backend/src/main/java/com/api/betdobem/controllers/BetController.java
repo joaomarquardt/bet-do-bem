@@ -31,8 +31,8 @@ public class BetController {
     }
 
     @PostMapping
-    public ResponseEntity<BetResponse> createBet(@RequestBody @Valid CreateBetRequest bet) {
-        BetResponse newBet = betService.createBet(bet);
+    public ResponseEntity<BetResponse> createBet(@RequestBody @Valid CreateBetRequest bet, @AuthenticationPrincipal User loggedUser) {
+        BetResponse newBet = betService.createBet(bet, loggedUser.getId());
         return new ResponseEntity<>(newBet, HttpStatus.CREATED);
     }
 
