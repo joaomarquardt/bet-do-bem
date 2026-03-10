@@ -33,7 +33,7 @@ export type TransactionType =
   | 'BET_REFUND'
   | 'REWARD';
 
-export type ContextType = 
+export type ContextType =
   | 'ACTIVITY'
   | 'BET'
   | 'CHALLENGE'
@@ -43,7 +43,7 @@ export type ContextType =
   | 'USER'
   | 'VOTE';
 
-export type UserRole = 
+export type UserRole =
   | 'USER'
   | 'ADMIN';
 
@@ -164,7 +164,6 @@ export interface CreateBetRequest {
 }
 
 export interface CreateVoteRequest {
-    voterId: number;
     approved: boolean;
 }
 

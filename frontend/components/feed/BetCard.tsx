@@ -7,6 +7,7 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { Image } from 'react-native';
 import { Avatar } from '@/components/ui/Avatar';
+import { proofService } from '@/lib/api/proof.service';
 import { Bet } from '@/lib/types';
 import { formatTimeAgo, formatDeadline } from '@/lib/utils/formatters';
 import { useBets } from '@/lib/contexts';
@@ -29,9 +30,14 @@ export function BetCard({ bet, index }: BetCardProps) {
   const c = Colors.dark;
 
   const handleVote = useCallback(
-    (userId: string) => {
+    async (proofId: any, userId: string) => {
       if (hasVoted) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      try {
+        await proofService.voteInProof(String(proofId), { approved: true } as any);
+      } catch (e) {
+        return;
+      }
       setHasVoted(true);
       setVotedFor(userId);
       voteBet(bet.id.toString(), userId);
@@ -161,14 +167,14 @@ export function BetCard({ bet, index }: BetCardProps) {
         <View style={styles.voteButtons}>
           <Pressable
             style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
-            onPress={() => handleVote(bet.creator.id.toString())}
+            onPress={() => handleVote(creatorProof?.id ?? bet.proofs?.[0]?.id, String(bet.creator.id))}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
             <Text style={[styles.voteBtnText, { color: c.accent }]}>{bet.creator.name}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
-            onPress={() => handleVote(bet.opponent.id.toString())}
+            onPress={() => handleVote(opponentProof?.id ?? bet.proofs?.[1]?.id, String(bet.opponent.id))}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
             <Text style={[styles.voteBtnText, { color: c.accent }]}>{bet.opponent.name}</Text>
