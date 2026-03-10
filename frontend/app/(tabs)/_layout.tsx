@@ -1,3 +1,4 @@
+
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Tabs } from "expo-router";
 import { NativeTabs, Icon, Label } from "expo-router/unstable-native-tabs";
@@ -7,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import Colors from "@/constants/colors";
+import { BetsProvider, ActivityProvider, ChallengeProvider } from "@/lib/contexts";
 
 const c = Colors.dark;
 
@@ -88,8 +90,14 @@ function ClassicTabLayout() {
 }
 
 export default function TabLayout() {
-  if (isLiquidGlassAvailable()) {
-    return <NativeTabLayout />;
-  }
-  return <ClassicTabLayout />;
+    const layout = isLiquidGlassAvailable() ? <NativeTabLayout /> : <ClassicTabLayout />;
+    return (
+        <BetsProvider>
+            <ActivityProvider>
+                <ChallengeProvider>
+                    {layout}
+                </ChallengeProvider>
+            </ActivityProvider>
+        </BetsProvider>
+    )
 }
