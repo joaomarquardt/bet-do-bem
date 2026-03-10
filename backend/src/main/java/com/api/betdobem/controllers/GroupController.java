@@ -1,5 +1,6 @@
 package com.api.betdobem.controllers;
 
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateGroupRequest;
 import com.api.betdobem.dtos.requests.UpdateGroupRequest;
 import com.api.betdobem.dtos.responses.GroupResponse;
@@ -7,6 +8,7 @@ import com.api.betdobem.services.GroupService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,8 +29,8 @@ public class GroupController {
     }
 
     @PostMapping
-    public ResponseEntity<GroupResponse> createGroup(@RequestBody @Valid CreateGroupRequest group) {
-        GroupResponse newGroup = groupService.createGroup(group);
+    public ResponseEntity<GroupResponse> createGroup(@RequestBody @Valid CreateGroupRequest group, @AuthenticationPrincipal User loggedUser) {
+        GroupResponse newGroup = groupService.createGroup(group, loggedUser.getId());
         return new ResponseEntity<>(newGroup, HttpStatus.CREATED);
     }
 

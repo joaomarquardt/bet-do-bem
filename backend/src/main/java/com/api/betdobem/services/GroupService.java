@@ -35,11 +35,11 @@ public class GroupService {
         return groupRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Group with ID " + id + " not found."));
     }
 
-    public GroupResponse createGroup(CreateGroupRequest group) {
-        if (!group.memberIds().contains(group.creatorId())) {
-            group.memberIds().add(group.creatorId());
+    public GroupResponse createGroup(CreateGroupRequest group, Long userId) {
+        if (!group.memberIds().contains(userId)) {
+            group.memberIds().add(userId);
         }
-        User creator = userService.getUserEntityById(group.creatorId());
+        User creator = userService.getUserEntityById(userId);
         List<User> membersList = userService.getUserEntitiesByIds(group.memberIds());
         Set<User> membersSet = new HashSet<>(membersList);
         Group newGroup = groupMapper.toGroupEntity(group);
