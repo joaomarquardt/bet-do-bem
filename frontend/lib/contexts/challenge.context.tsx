@@ -41,6 +41,7 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     async function loadChallengesFromApi() {
+      if (!user?.id) return;
       try {
         const feedItems = await feedService.getMyFeed();
         const mappedChallenges: Challenge[] = (feedItems || [])
@@ -147,6 +148,7 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
+        if (!user?.id) return;
         const feedItems = await feedService.getMyFeed();
         const mappedChallenges: Challenge[] = (feedItems || [])
             .filter(it => it.feedItemType === 'CHALLENGE')

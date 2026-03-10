@@ -53,6 +53,7 @@ export function BetsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     async function loadMyBetsFromApi() {
+      if (!user?.id) return;
       try {
         const [pending, inProgress] = await Promise.all([
           feedService.getMyPendingInvites(),
@@ -203,6 +204,7 @@ export function BetsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshData = useCallback(async () => {
+    if (!user?.id) return;
     setIsLoading(true);
     try {
       const [pending, inProgress] = await Promise.all([

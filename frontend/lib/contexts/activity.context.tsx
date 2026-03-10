@@ -39,6 +39,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     async function loadActivitiesFromApi() {
+      if (!user?.id) return;
       try {
         const feedItems = await feedService.getMyFeed();
         const mappedActivities: Activity[] = (feedItems || [])
@@ -116,6 +117,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
+        if (!user?.id) return;
         const feedItems = await feedService.getMyFeed();
         const mappedActivities: Activity[] = (feedItems || [])
           .filter(it => it.feedItemType === 'ACTIVITY')
