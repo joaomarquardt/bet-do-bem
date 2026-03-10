@@ -126,6 +126,39 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  proofImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  proofMediaOverlay: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    padding: 6,
+    borderRadius: 20,
+  },
+  mediaRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  mediaWrapper: {
+    flex: 1,
+    height: 180,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  mediaImageLarge: {
+    width: '100%',
+    height: '100%',
+  },
+  mediaImageHalf: {
+    width: '100%',
+    height: '100%',
+  },
   proofText: {
     fontSize: 12,
     fontFamily: 'Inter_400Regular',

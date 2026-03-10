@@ -1,10 +1,11 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { View, Text, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
+import { Image } from 'react-native';
 import { Avatar } from '@/components/ui/Avatar';
 import { Bet } from '@/lib/types';
 import { formatTimeAgo, formatDeadline } from '@/lib/utils/formatters';
@@ -43,8 +44,29 @@ export function BetCard({ bet, index }: BetCardProps) {
     setShowComments((prev) => !prev);
   }, []);
 
-  const creatorProof = bet.proofs?.find(p => p.author?.id === bet.creator?.id);
-  const opponentProof = bet.proofs?.find(p => p.author?.id === bet.opponent?.id);
+  const creatorProof = bet.proofs && bet.proofs.length > 0 ? bet.proofs[0] : undefined;
+  const opponentProof = bet.proofs && bet.proofs.length > 1 ? bet.proofs[1] : undefined;
+
+  const getMediaInfo = (p: any) => {
+    if (!p) return { uri: '', isVideo: false, label: '' };
+    const uri = p.imageUrl ?? p.image_url ?? '';
+    const ct = String(p.contentType ?? p.content_type ?? '').toLowerCase();
+    const isVideo = ct.startsWith('video') || /\.(mp4|mov|webm|mkv)$/i.test(uri);
+    const label = p.fileName ?? p.file_name ?? uri.split('/').pop() ?? p.postedAt ?? '';
+    return { uri, isVideo, label };
+  };
+
+  const creatorMedia = getMediaInfo(creatorProof);
+  const opponentMedia = getMediaInfo(opponentProof);
+
+  useEffect(() => {
+    if (creatorMedia.uri) {
+      Image.prefetch(creatorMedia.uri).catch(() => {});
+    }
+    if (opponentMedia.uri) {
+      Image.prefetch(opponentMedia.uri).catch(() => {});
+    }
+  }, [creatorMedia.uri, opponentMedia.uri]);
 
   return (
     <Animated.View entering={FadeInDown.delay(index * 80).duration(400)} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
@@ -84,32 +106,50 @@ export function BetCard({ bet, index }: BetCardProps) {
           <Avatar name={bet.opponent?.name ?? '?'} color={"#CCCCCC"} size={36} />
         </View>
       </View>
-
-      {creatorProof && opponentProof && (
-        <View style={styles.proofsContainer}>
-          <View style={[styles.proofCard, { backgroundColor: c.surfaceElevated, borderColor: c.border }]}>
-            <View style={styles.proofHeader}>
-              <Avatar name={bet.creator?.name ?? '?'} color={"#CCCCCC"} size={24} />
-              <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{bet.creator?.name ?? '...'}</Text>
+      {(creatorMedia.uri || opponentMedia.uri) && (
+        <View style={styles.mediaRow}>
+          {creatorMedia.uri && opponentMedia.uri ? (
+            <>
+              <View style={styles.mediaWrapper}>
+                <Image source={{ uri: creatorMedia.uri }} style={styles.mediaImageHalf} />
+                {creatorMedia.isVideo && (
+                  <View style={styles.proofMediaOverlay}>
+                    <Ionicons name="play" size={20} color="#fff" />
+                  </View>
+                )}
+              </View>
+              <View style={styles.mediaWrapper}>
+                <Image source={{ uri: opponentMedia.uri }} style={styles.mediaImageHalf} />
+                {opponentMedia.isVideo && (
+                  <View style={styles.proofMediaOverlay}>
+                    <Ionicons name="play" size={20} color="#fff" />
+                  </View>
+                )}
+              </View>
+            </>
+          ) : creatorMedia.uri ? (
+            <View style={styles.mediaWrapper}>
+              <Image source={{ uri: creatorMedia.uri }} style={styles.mediaImageLarge} />
+              {creatorMedia.isVideo && (
+                <View style={styles.proofMediaOverlay}>
+                  <Ionicons name="play" size={20} color="#fff" />
+                </View>
+              )}
             </View>
-            <View style={[styles.proofMediaPlaceholder, { backgroundColor: c.surfaceHighlight }]}>
-              <Ionicons name="videocam" size={28} color={c.textTertiary} />
+          ) : (
+            <View style={styles.mediaWrapper}>
+              <Image source={{ uri: opponentMedia.uri }} style={styles.mediaImageLarge} />
+              {opponentMedia.isVideo && (
+                <View style={styles.proofMediaOverlay}>
+                  <Ionicons name="play" size={20} color="#fff" />
+                </View>
+              )}
             </View>
-            <Text style={[styles.proofText, { color: c.text }]}>{creatorProof.imageUrl}</Text>
-          </View>
-
-          <View style={[styles.proofCard, { backgroundColor: c.surfaceElevated, borderColor: c.border }]}>
-            <View style={styles.proofHeader}>
-              <Avatar name={bet.opponent?.name ?? '?'} color={"#CCCCCC"} size={24} />
-              <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{bet.opponent?.name ?? '...'}</Text>
-            </View>
-            <View style={[styles.proofMediaPlaceholder, { backgroundColor: c.surfaceHighlight }]}>
-              <Ionicons name="videocam" size={28} color={c.textTertiary} />
-            </View>
-            <Text style={[styles.proofText, { color: c.text }]}>{opponentProof.imageUrl}</Text>
-          </View>
+          )}
         </View>
       )}
+
+
 
       {hasVoted && (
         <Animated.View entering={FadeIn.duration(300)} style={styles.voteResults}>
