@@ -56,20 +56,20 @@ public class ProofService {
         return savedProof;
     }
 
-    public void voteInProof(Long id, CreateVoteRequest vote) {
+    public void voteInProof(Long id, CreateVoteRequest vote, Long voterId) {
         Proof proof = getProofEntityById(id);
-        if (!groupService.isUserMemberOfGroupLinkedToProof(vote.voterId(), id)) {
+        if (!groupService.isUserMemberOfGroupLinkedToProof(voterId, id)) {
             throw new UnauthorizedActionException("User must be a member of the group linked to the proof to vote.");
         }
         // TODO: Check if the proof is still open for voting
-        if (proof.getAuthor().getId().equals(vote.voterId())) {
+        if (proof.getAuthor().getId().equals(voterId)) {
             throw new SelfInteractionException("Author of the proof cannot vote on their own proof.");
         }
         // TODO: Opponent/Challenged should not be able to vote on the proof either, if applicable
-        if (voteService.hasUserAlreadyVotedInProof(id, vote.voterId())) {
+        if (voteService.hasUserAlreadyVotedInProof(id, voterId)) {
             throw new DuplicateActionException("User has already voted in this proof.");
         }
-        User voter = userService.getUserEntityById(vote.voterId());
+        User voter = userService.getUserEntityById(voterId);
         ContextType contextType = proofRepository.findContextTypeByProofId(id);
         voteService.createVote(proof, voter, vote.approved());
         checkAndProcessConsensus(proof.getId(), contextType);
