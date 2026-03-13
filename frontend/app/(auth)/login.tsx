@@ -15,21 +15,21 @@ export default function LoginScreen() {
   const { login } = useAuth();
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const isValid = name.trim() && password.trim();
+  const isValid = email.trim() && password.trim();
 
   const handleLogin = useCallback(async () => {
     if (!isValid) return;
     setIsLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
-      await login(name.trim(), password);
+      await login(email.trim(), password);
     } catch {}
     setIsLoading(false);
-  }, [isValid, name, password, login]);
+  }, [isValid, email, password, login]);
 
   return (
     <KeyboardAvoidingView
@@ -50,10 +50,10 @@ export default function LoginScreen() {
             <Ionicons name="person-outline" size={18} color={c.textTertiary} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { backgroundColor: c.surfaceElevated, color: c.text, borderColor: c.border }]}
-              placeholder="Nome de usuario"
+              placeholder="Email"
               placeholderTextColor={c.textTertiary}
-              value={name}
-              onChangeText={setName}
+              value={email}
+              onChangeText={setEmail}
               autoCapitalize="none"
               autoCorrect={false}
             />
