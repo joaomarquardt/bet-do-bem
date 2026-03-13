@@ -8,18 +8,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import Colors from "@/constants/colors";
-import { BetsProvider, ActivityProvider, ChallengeProvider } from "@/lib/contexts";
+import { BetsProvider, ActivityProvider, ChallengeProvider, GroupProvider } from "@/lib/contexts";
 
 const c = Colors.dark;
 
 function NativeTabLayout() {
   return (
-    <NativeTabs screenOptions={{ headerShown: false }}>
-      <NativeTabs.Trigger name="index">
+    <NativeTabs>
+      <NativeTabs.Trigger name="feed">
         <Icon sf={{ default: "flame", selected: "flame.fill" }} />
         <Label>Feed</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="dashboard">
+      <NativeTabs.Trigger name="bets">
         <Icon sf={{ default: "list.bullet.rectangle", selected: "list.bullet.rectangle.fill" }} />
         <Label>Apostas</Label>
       </NativeTabs.Trigger>
@@ -59,7 +59,7 @@ function ClassicTabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="feed"
         options={{
           title: "Feed",
           tabBarIcon: ({ color, focused }) => (
@@ -68,7 +68,7 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="dashboard"
+        name="bets"
         options={{
           title: "Apostas",
           tabBarIcon: ({ color, focused }) => (
@@ -92,12 +92,14 @@ function ClassicTabLayout() {
 export default function TabLayout() {
     const layout = isLiquidGlassAvailable() ? <NativeTabLayout /> : <ClassicTabLayout />;
     return (
-        <BetsProvider>
-            <ActivityProvider>
-                <ChallengeProvider>
-                    {layout}
-                </ChallengeProvider>
-            </ActivityProvider>
-        </BetsProvider>
+        <GroupProvider>
+            <BetsProvider>
+                <ActivityProvider>
+                    <ChallengeProvider>
+                        {layout}
+                    </ChallengeProvider>
+                </ActivityProvider>
+            </BetsProvider>
+        </GroupProvider>
     )
 }

@@ -6,13 +6,18 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar';
-import { TransactionItem } from '@/components/profile/TransactionItem';
+import { TransactionItem, type ProfileTransaction } from '@/components/profile/TransactionItem';
 import { useAuth } from '@/lib/contexts';
 import { userService } from '@/lib/api/user.service';
-import { Wallet, Transaction } from '@/lib/types';
+import type { TransactionType } from '@/lib/types';
 import { styles } from '@/styles/tabs/profile.styles';
 
 const c = Colors.dark;
+
+type Wallet = {
+  balance: number;
+  transactions: ProfileTransaction[];
+};
 
 function stringToColor(input: string) {
   let hash = 0;
@@ -35,7 +40,7 @@ export default function ProfileScreen() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [walletError, setWalletError] = useState<string | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[] | null>(null);
+  const [transactions, setTransactions] = useState<ProfileTransaction[] | null>(null);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
@@ -49,78 +54,77 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
+  const mapApiTransactionsToDomain = (apiTxs: any[]): ProfileTransaction[] => {
+    return apiTxs.map((t: any) => {
+      const apiType = (t.transactionType as TransactionType) || 'BET_ENTRY';
+      const mappedType = apiType as TransactionType;
+
+      const contextType = t.contextType || 'UNKNOWN';
+      const description =
+        contextType === 'BET'
+          ? `Aposta #${t.contextId}`
+          : contextType === 'CHALLENGE'
+          ? `Desafio #${t.contextId}`
+          : contextType === 'ACTIVITY'
+          ? `Atividade #${t.contextId}`
+          : `${contextType} #${t.contextId}`;
+
+      return {
+        id: String(t.id),
+        type: mappedType,
+        amount: Number(t.amount),
+        description,
+        betId: t.contextId ? String(t.contextId) : undefined,
+        createdAt: t.createdAt,
+      };
+    });
+  };
+
+  const loadProfileAndTransactions = useCallback(async () => {
+    setIsLoadingWallet(true);
+    setWalletError(null);
+    setIsLoadingTransactions(true);
+    setTransactionsError(null);
+
+    try {
+      const profile = await userService.getMyProfile();
+      setWallet({ balance: profile.coins ?? 0, transactions: [] });
+
+      try {
+        const apiTxs = await userService.getMyTransactions();
+        const mapped = mapApiTransactionsToDomain(apiTxs);
+        setTransactions(mapped);
+        setWallet((prev) =>
+          prev
+            ? { ...prev, transactions: mapped }
+            : { balance: profile.coins ?? 0, transactions: mapped },
+        );
+      } catch (txErr: any) {
+        setTransactions(null);
+        setTransactionsError(txErr?.message || 'Erro ao carregar transacoes');
+      }
+    } catch (err: any) {
+      setWallet(null);
+      setWalletError(err?.message || 'Erro ao carregar carteira');
+      setTransactions(null);
+      setTransactionsError(err?.message || 'Erro ao carregar transacoes');
+    } finally {
+      setIsLoadingWallet(false);
+      setIsLoadingTransactions(false);
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
-    const loadProfileAndTransactions = async () => {
-      setIsLoadingWallet(true);
-      setWalletError(null);
-      setIsLoadingTransactions(true);
-      setTransactionsError(null);
-
-      try {
-        const profile = await userService.getMyProfile();
-        if (!mounted) return;
-        setWallet({ balance: profile.coins ?? 0, transactions: [] });
-
-        try {
-          const apiTxs = await userService.getMyTransactions();
-          if (!mounted) return;
-          const mapped: Transaction[] = apiTxs.map((t: any) => {
-            const apiType = (t.transactionType as string) || 'BET_ENTRY';
-            const mappedType = apiType as Transaction['type'];
-
-            const contextType = t.contextType || 'UNKNOWN';
-            const description =
-              contextType === 'BET'
-                ? `Aposta #${t.contextId}`
-                : contextType === 'CHALLENGE'
-                ? `Desafio #${t.contextId}`
-                : contextType === 'ACTIVITY'
-                ? `Atividade #${t.contextId}`
-                : `${contextType} #${t.contextId}`;
-
-            return {
-              id: String(t.id),
-              type: mappedType,
-              amount: Number(t.amount),
-              description,
-              betId: t.contextId ? String(t.contextId) : undefined,
-              createdAt: t.createdAt,
-            } as Transaction;
-          });
-
-          if (mounted) {
-            setTransactions(mapped);
-            setWallet((prev) => (prev ? { ...prev, transactions: mapped } : { balance: profile.coins ?? 0, transactions: mapped }));
-          }
-        } catch (txErr: any) {
-          if (mounted) {
-            setTransactions(null);
-            setTransactionsError(txErr?.message || 'Erro ao carregar transacoes');
-          }
-        }
-      } catch (err: any) {
-        if (mounted) {
-          setWallet(null);
-          setWalletError(err?.message || 'Erro ao carregar carteira');
-          setTransactions(null);
-          setTransactionsError(err?.message || 'Erro ao carregar transacoes');
-        }
-      } finally {
-        if (mounted) {
-          setIsLoadingWallet(false);
-          setIsLoadingTransactions(false);
-        }
-      }
-    };
-
-    loadProfileAndTransactions();
+    if (mounted) {
+      loadProfileAndTransactions();
+    }
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [loadProfileAndTransactions]);
 
   const totalGames = (typeof wins === 'number' && typeof losses === 'number' && typeof draws === 'number') ? wins + losses + draws : 0;
   const winRate = totalGames > 0 && typeof wins === 'number' ? Math.round((wins / totalGames) * 100) : 0;
@@ -193,40 +197,12 @@ export default function ProfileScreen() {
             <View style={styles.transactionsEmpty}>
               <Ionicons name="alert-circle-outline" size={32} color={c.textTertiary} />
               <Text style={[styles.emptyText, { color: c.textTertiary }]}>{transactionsError}</Text>
-              <Pressable onPress={() => {
-                setIsLoadingTransactions(true);
-                setTransactionsError(null);
-                userService.getMyTransactions()
-                  .then((apiTxs: any[]) => {
-                    const mapped: Transaction[] = apiTxs.map((t: any) => {
-                      const apiType = (t.transactionType as string) || 'BET_ENTRY';
-                      const mappedType = apiType as Transaction['type'];
-
-                      const contextType = t.contextType || 'UNKNOWN';
-                      const description =
-                        contextType === 'BET'
-                          ? `Aposta #${t.contextId}`
-                          : contextType === 'CHALLENGE'
-                          ? `Desafio #${t.contextId}`
-                          : contextType === 'ACTIVITY'
-                          ? `Atividade #${t.contextId}`
-                          : `${contextType} #${t.contextId}`;
-
-                      return {
-                        id: String(t.id),
-                        type: mappedType,
-                        amount: Number(t.amount),
-                        description,
-                        betId: t.contextId ? String(t.contextId) : undefined,
-                        createdAt: t.createdAt,
-                      } as Transaction;
-                    });
-                    setTransactions(mapped);
-                    setWallet((prev) => (prev ? { ...prev, transactions: mapped } : { balance: prev ?? 0, transactions: mapped }));
-                  })
-                  .catch((e) => setTransactionsError(e?.message || 'Erro ao carregar transacoes'))
-                  .finally(() => setIsLoadingTransactions(false));
-              }} style={{ marginTop: 8 }}>
+              <Pressable
+                onPress={() => {
+                  loadProfileAndTransactions();
+                }}
+                style={{ marginTop: 8 }}
+              >
                 <Text style={[styles.emptyText, { color: c.accent }]}>Tentar novamente</Text>
               </Pressable>
             </View>
