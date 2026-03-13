@@ -9,7 +9,6 @@ import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_7
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { queryClient } from "@/lib/query-client";
 import { AuthProvider, useAuth } from "@/lib/contexts";
-import { BetsProvider } from "@/lib/contexts";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,10 +65,8 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <KeyboardProvider>
             <AuthProvider>
-              <BetsProvider>
-                <StatusBar style="light" />
-                <RootLayoutNav />
-              </BetsProvider>
+              <StatusBar style="light" />
+              <RootLayoutNav />
             </AuthProvider>
           </KeyboardProvider>
         </GestureHandlerRootView>
