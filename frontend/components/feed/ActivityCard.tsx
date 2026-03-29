@@ -5,6 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
+import { Image } from 'react-native';
 import { Avatar } from '@/components/ui/Avatar';
 import { Activity } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils/formatters';
@@ -25,6 +26,12 @@ export function ActivityCard({ activity, index }: ActivityCardProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<boolean | null>(null);
   const c = Colors.dark;
+  const authorName =
+    activity.author?.name ?? (activity.author as any)?.displayName ?? (activity.author as any)?.username ?? '...';
+  const proofUri = activity.proof?.imageUrl ?? (activity.proof as any)?.mediaUri ?? '';
+  const isVideo =
+    String(activity.proof?.contentType ?? '').toLowerCase().startsWith('video') ||
+    /\.(mp4|mov|webm|mkv)$/i.test(proofUri);
 
   const handleVote = useCallback((approved: boolean) => {
     if (hasVoted) return;
@@ -53,13 +60,23 @@ export function ActivityCard({ activity, index }: ActivityCardProps) {
 
       <View style={[styles.proofCard, { backgroundColor: c.surfaceElevated, borderColor: c.border, marginTop: 12 }]}>
         <View style={styles.proofHeader}>
-          <Avatar name={activity.author?.name ?? '?'} color={"#CCCCCC"} size={28} />
-          <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{activity.author?.name ?? '...'}</Text>
+          <Avatar name={authorName} color={"#CCCCCC"} size={28} />
+          <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{authorName}</Text>
         </View>
         <View style={[styles.proofMediaPlaceholder, { backgroundColor: c.surfaceHighlight, marginTop: 8 }]}>
-          <Ionicons name="image-outline" size={28} color={c.textTertiary} />
+          {proofUri ? (
+            <>
+              <Image source={{ uri: proofUri }} style={styles.proofImage} />
+              {isVideo && (
+                <View style={styles.proofMediaOverlay}>
+                  <Ionicons name="play" size={20} color="#fff" />
+                </View>
+              )}
+            </>
+          ) : (
+            <Ionicons name="image-outline" size={28} color={c.textTertiary} />
+          )}
         </View>
-        {activity.proof && <Text style={[styles.proofText, { color: c.text }]}>{activity.proof.imageUrl}</Text>}
       </View>
 
       {!hasVoted && (

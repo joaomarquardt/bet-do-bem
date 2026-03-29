@@ -1,15 +1,27 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
-import { Bet, Wallet, FeedItemResponse } from '@/lib/types';
+import { Bet, FeedItemResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { betsService } from '@/lib/api/bets.service';
 import { useAuth } from '@/lib/contexts';
 
+type WalletLike = {
+  balance: number;
+  transactions: {
+    id: string;
+    type: string;
+    amount: number;
+    description: string;
+    betId?: string;
+    createdAt: string;
+  }[];
+};
+
 interface BetsContextValue {
   feedBets: Bet[];
   myBets: Bet[];
-  wallet: Wallet;
+  wallet: WalletLike;
   isLoading: boolean;
   voteBet: (betId: string, votedForUserId: string) => void;
   acceptBet: (betId: string) => void;
@@ -30,7 +42,7 @@ export function BetsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [feedBets, setFeedBets] = useState<Bet[]>([]);
   const [myBets, setMyBets] = useState<Bet[]>([]);
-  const [wallet, setWallet] = useState<Wallet>({ balance: 0, transactions: [] });
+  const [wallet, setWallet] = useState<WalletLike>({ balance: 0, transactions: [] });
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -49,6 +61,31 @@ export function BetsProvider({ children }: { children: ReactNode }) {
       if (walletData) setWallet(JSON.parse(walletData));
     } catch {}
   }
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadFeedFromApi() {
+      if (!user?.id) return;
+      try {
+        const feedItems = await feedService.getMyFeed();
+        const mappedFeedBets: Bet[] = (feedItems || [])
+          .filter((it) => it.feedItemType === 'BET')
+          .map((it) => mapFeedItemToBet(it, user.id));
+        if (!mounted) return;
+        setFeedBets(mappedFeedBets);
+        persistFeed(mappedFeedBets);
+      } catch (e) {
+        // ignore for now; feed will stay with cached data
+      }
+    }
+
+    loadFeedFromApi();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     let mounted = true;
@@ -78,7 +115,7 @@ export function BetsProvider({ children }: { children: ReactNode }) {
   function persistBets(data: Bet[]) {
     AsyncStorage.setItem(STORAGE_KEYS.BETS, JSON.stringify(data));
   }
-  function persistWallet(data: Wallet) {
+  function persistWallet(data: WalletLike) {
     AsyncStorage.setItem(STORAGE_KEYS.WALLET, JSON.stringify(data));
   }
 
@@ -89,68 +126,60 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     const proofs = content.proofs || content.proofsList || [];
     let status = String(content.status ?? content.betStatus ?? 'INVITED');
 
-    const creatorIdRaw = String(creator.id ?? '');
-    const opponentIdRaw = String(opponent.id ?? '');
-    const creatorId = currentUserId && String(currentUserId) === creatorIdRaw ? 'me' : creatorIdRaw;
-    const opponentId = currentUserId && String(currentUserId) === opponentIdRaw ? 'me' : opponentIdRaw;
-
     return {
-      id: String(content.id ?? item.id ?? ''),
+      id: Number(content.id ?? item.id ?? 0),
       title: content.title ?? content.name ?? '',
       description: content.description ?? '',
+      proofs,
       buyIn: Number(content.buyIn ?? content.buy_in ?? 0),
-      status: (status as any),
-      creatorId,
-      opponentId,
+      createdAt: content.createdAt
+        ? new Date(content.createdAt).toISOString()
+        : new Date().toISOString(),
+      closedAt: content.closedAt ?? content.expiresAt ?? new Date().toISOString(),
+      expiresAt: content.expiresAt ?? content.deadline ?? new Date().toISOString(),
+      status: status as any,
       creator: {
-        id: String(creator.id ?? ''),
-        username: creator.username ?? creator.displayName ?? 'user',
-        displayName: creator.displayName ?? creator.username ?? 'User',
+        id: Number(creator.id ?? 0),
+        name: creator.name ?? creator.displayName ?? creator.username ?? 'User',
+        email: creator.email ?? '',
+        username: creator.username ?? creator.name ?? creator.displayName ?? 'user',
+        displayName: creator.displayName ?? creator.name ?? creator.username ?? 'User',
+        role: creator.role ?? 'USER',
+        coins: Number(creator.coins ?? 0),
         avatarColor: creator.avatarColor ?? '#CCCCCC',
         wins: creator.wins ?? 0,
         losses: creator.losses ?? 0,
         draws: creator.draws ?? 0,
       },
       opponent: {
-        id: String(opponent.id ?? ''),
-        username: opponent.username ?? opponent.displayName ?? 'opponent',
-        displayName: opponent.displayName ?? opponent.username ?? 'Opponent',
+        id: Number(opponent.id ?? 0),
+        name: opponent.name ?? opponent.displayName ?? opponent.username ?? 'Opponent',
+        email: opponent.email ?? '',
+        username: opponent.username ?? opponent.name ?? opponent.displayName ?? 'opponent',
+        displayName: opponent.displayName ?? opponent.name ?? opponent.username ?? 'Opponent',
+        role: opponent.role ?? 'USER',
+        coins: Number(opponent.coins ?? 0),
         avatarColor: opponent.avatarColor ?? '#CCCCCC',
         wins: opponent.wins ?? 0,
         losses: opponent.losses ?? 0,
         draws: opponent.draws ?? 0,
       },
-      comments: [],
-      votes: { creatorVotes: 0, opponentVotes: 0 },
-      deadline: content.expiresAt ? new Date(content.expiresAt).toISOString() : content.deadline ? new Date(content.deadline).toISOString() : new Date().toISOString(),
-      createdAt: content.createdAt ? new Date(content.createdAt).toISOString() : new Date().toISOString(),
+      group: content.group,
     } as Bet;
   }
 
-  const voteBet = useCallback((betId: string, votedForUserId: string) => {
-    setFeedBets((prev) => {
-      const updated = prev.map((bet) => {
-        if (bet.id !== betId) return bet;
-        const isCreator = votedForUserId === bet.creatorId;
-        return {
-          ...bet,
-          myVote: votedForUserId,
-          votes: {
-            creatorVotes: bet.votes.creatorVotes + (isCreator ? 1 : 0),
-            opponentVotes: bet.votes.opponentVotes + (!isCreator ? 1 : 0),
-          },
-        };
-      });
-      persistFeed(updated);
-      return updated;
-    });
-  }, []);
+  const voteBet = useCallback(
+    (betId: string, votedForUserId: string) => {
+      setFeedBets((prev) => prev);
+    },
+    [],
+  );
 
   const acceptBet = useCallback(async (betId: string) => {
     try {
       await betsService.acceptBet(betId);
       setMyBets((prev) => {
-        const updated = prev.map((bet) => (bet.id === betId ? { ...bet, status: 'IN_PROGRESS' as const } : bet));
+        const updated = prev.map((bet) => (bet.id === Number(betId) ? { ...bet, status: 'IN_PROGRESS' as const } : bet));
         persistBets(updated);
         return updated;
       });
@@ -162,7 +191,7 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     try {
       await betsService.declineBet(betId);
       setMyBets((prev) => {
-        const updated = prev.filter((bet) => bet.id !== betId);
+        const updated = prev.filter((bet) => bet.id !== Number(betId));
         persistBets(updated);
         return updated;
       });
@@ -172,7 +201,7 @@ export function BetsProvider({ children }: { children: ReactNode }) {
 
   const createBet = useCallback(async (title: string, description: string, buyIn: number, opponentUsername: string) => {
     try {
-      const created = await betsService.createBet({ title, description, buyIn, opponentUsername });
+      const created = await betsService.createBet({ title, description, buyIn, opponentUsername } as any);
       const mapped = mapFeedItemToBet({ content: created, id: created.id });
       setMyBets((prev) => {
         const updated = [mapped, ...prev];
@@ -180,7 +209,7 @@ export function BetsProvider({ children }: { children: ReactNode }) {
         return updated;
       });
       setWallet((prev) => {
-        const updated: Wallet = {
+        const updated: WalletLike = {
           ...prev,
           balance: prev.balance - buyIn,
           transactions: [
@@ -207,13 +236,23 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     if (!user?.id) return;
     setIsLoading(true);
     try {
-      const [pending, inProgress] = await Promise.all([
+      const [pending, inProgress, feedItems] = await Promise.all([
         feedService.getMyPendingInvites(),
         feedService.getMyInProgressItems(),
+        feedService.getMyFeed(),
       ]);
-      const mapped: Bet[] = [...pending, ...inProgress].map(mapFeedItemToBet);
-      setMyBets(mapped);
-      persistBets(mapped);
+      const mappedMyBets: Bet[] = [...pending, ...inProgress].map((it) =>
+        mapFeedItemToBet(it, user.id),
+      );
+      const mappedFeedBets: Bet[] = (feedItems || [])
+        .filter((it) => it.feedItemType === 'BET')
+        .map((it) => mapFeedItemToBet(it, user.id));
+
+      setMyBets(mappedMyBets);
+      persistBets(mappedMyBets);
+
+      setFeedBets(mappedFeedBets);
+      persistFeed(mappedFeedBets);
     } catch (e) {
       // ignore
     } finally {

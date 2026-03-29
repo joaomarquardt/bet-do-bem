@@ -5,6 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
+import { Image } from 'react-native';
 import { Avatar } from '@/components/ui/Avatar';
 import { Challenge } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils/formatters';
@@ -25,6 +26,22 @@ export function ChallengeCard({ challenge, index }: ChallengeCardProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<boolean | null>(null);
   const c = Colors.dark;
+  const challengerName =
+    challenge.challenger?.name ??
+    (challenge.challenger as any)?.displayName ??
+    (challenge.challenger as any)?.username ??
+    '...';
+  const challengedName =
+    challenge.challenged?.name ??
+    (challenge.challenged as any)?.displayName ??
+    (challenge.challenged as any)?.username ??
+    '...';
+  const challengerEmail = challenge.challenger?.email ?? (challenge.challenger as any)?.username ?? '...';
+  const challengedEmail = challenge.challenged?.email ?? (challenge.challenged as any)?.username ?? '...';
+  const proofUri = challenge.proof?.imageUrl ?? (challenge.proof as any)?.mediaUri ?? '';
+  const isVideo =
+    String(challenge.proof?.contentType ?? '').toLowerCase().startsWith('video') ||
+    /\.(mp4|mov|webm|mkv)$/i.test(proofUri);
 
   const handleVote = useCallback((approved: boolean) => {
     if (hasVoted) return;
@@ -55,10 +72,10 @@ export function ChallengeCard({ challenge, index }: ChallengeCardProps) {
 
       <View style={[styles.vsContainer, { borderColor: c.border }]}>
         <View style={styles.playerSide}>
-          <Avatar name={challenge.challenger?.name ?? '?'} color={"#CCCCCC"} size={36} />
+          <Avatar name={challengerName} color={"#CCCCCC"} size={36} />
           <View style={styles.playerInfo}>
-            <Text style={[styles.playerName, { color: c.text }]}>{challenge.challenger?.name ?? '...'}</Text>
-            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{challenge.challenger?.email ?? '...'}</Text>
+            <Text style={[styles.playerName, { color: c.text }]}>{challengerName}</Text>
+            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{challengerEmail}</Text>
           </View>
         </View>
 
@@ -68,23 +85,33 @@ export function ChallengeCard({ challenge, index }: ChallengeCardProps) {
 
         <View style={[styles.playerSide, { alignItems: 'flex-end' }]}>
           <View style={[styles.playerInfo, { alignItems: 'flex-end' }]}>
-            <Text style={[styles.playerName, { color: c.text }]}>{challenge.challenged?.name ?? '...'}</Text>
-            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{challenge.challenged?.email ?? '...'}</Text>
+            <Text style={[styles.playerName, { color: c.text }]}>{challengedName}</Text>
+            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{challengedEmail}</Text>
           </View>
-          <Avatar name={challenge.challenged?.name ?? '?'} color={"#CCCCCC"} size={36} />
+          <Avatar name={challengedName} color={"#CCCCCC"} size={36} />
         </View>
       </View>
 
       {challenge.proof && (
         <View style={[styles.proofCard, { backgroundColor: c.surfaceElevated, borderColor: c.border }]}>
           <View style={styles.proofHeader}>
-            <Avatar name={challenge.challenger?.name ?? '?'} color={"#CCCCCC"} size={24} />
-            <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{challenge.challenger?.name ?? '...'}</Text>
+            <Avatar name={challengerName} color={"#CCCCCC"} size={24} />
+            <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{challengerName}</Text>
           </View>
           <View style={[styles.proofMediaPlaceholder, { backgroundColor: c.surfaceHighlight }]}>
-            <Ionicons name="image-outline" size={28} color={c.textTertiary} />
+            {proofUri ? (
+              <>
+                <Image source={{ uri: proofUri }} style={styles.proofImage} />
+                {isVideo && (
+                  <View style={styles.proofMediaOverlay}>
+                    <Ionicons name="play" size={20} color="#fff" />
+                  </View>
+                )}
+              </>
+            ) : (
+              <Ionicons name="image-outline" size={28} color={c.textTertiary} />
+            )}
           </View>
-          <Text style={[styles.proofText, { color: c.text }]}>{challenge.proof?.imageUrl}</Text>
         </View>
       )}
 
@@ -95,7 +122,7 @@ export function ChallengeCard({ challenge, index }: ChallengeCardProps) {
             onPress={() => handleVote(true)}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
-            <Text style={[styles.voteBtnText, { color: c.accent }]}>{challenge.challenger?.name ?? '...'}</Text>
+            <Text style={[styles.voteBtnText, { color: c.accent }]}>{challengerName}</Text>
           </Pressable>
 
           <Pressable
@@ -103,7 +130,7 @@ export function ChallengeCard({ challenge, index }: ChallengeCardProps) {
             onPress={() => handleVote(false)}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
-            <Text style={[styles.voteBtnText, { color: c.accent }]}>{challenge.challenged?.name ?? '...'}</Text>
+            <Text style={[styles.voteBtnText, { color: c.accent }]}>{challengedName}</Text>
           </Pressable>
         </View>
       )}

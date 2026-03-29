@@ -68,8 +68,10 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
       const idRaw = String(u?.id ?? fallbackId);
       return {
         id: idRaw,
+        name: u?.name ?? u?.displayName ?? u?.username ?? `User ${idRaw}`,
+        email: u?.email ?? '',
         username: u?.username ?? u?.name ?? u?.displayName ?? `user${idRaw}`,
-        displayName: u?.name ?? u?.displayName ?? u?.username ?? `User ${idRaw}`,
+        displayName: u?.displayName ?? u?.name ?? u?.username ?? `User ${idRaw}`,
         avatarColor: u?.avatarColor ?? '#CCCCCC',
         wins: u?.wins ?? 0,
         losses: u?.losses ?? 0,
@@ -80,12 +82,13 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     const mapProof = (p: any) => {
       if (!p) return undefined;
       return {
-        id: String(p.id ?? ''),
-        userId: String(p.authorId ?? p.userId ?? ''),
-        description: p.description ?? '',
-        mediaType: (p.contentType && String(p.contentType).startsWith('video')) ? 'video' : 'photo',
-        mediaUri: p.imageUrl ? p.imageUrl : (p.mediaUri ?? ''),
-        createdAt: p.postedAt ?? p.createdAt ?? new Date().toISOString(),
+        id: Number(p.id ?? 0),
+        imageUrl: p.imageUrl ?? p.mediaUri ?? '',
+        contentType: p.contentType ?? '',
+        fileName: p.fileName ?? '',
+        postedAt: p.postedAt ?? p.createdAt ?? new Date().toISOString(),
+        author: safeUser(p.author, p.authorId ?? p.userId ?? ''),
+        comments: p.comments ?? [],
       } as any;
     };
 

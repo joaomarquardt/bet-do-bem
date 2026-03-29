@@ -28,6 +28,8 @@ export function BetCard({ bet, index }: BetCardProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<string | null>(null);
   const c = Colors.dark;
+  const creatorName = bet.creator?.name ?? (bet.creator as any)?.displayName ?? (bet.creator as any)?.username ?? '...';
+  const opponentName = bet.opponent?.name ?? (bet.opponent as any)?.displayName ?? (bet.opponent as any)?.username ?? '...';
 
   const handleVote = useCallback(
     async (proofId: any, userId: string) => {
@@ -95,10 +97,10 @@ export function BetCard({ bet, index }: BetCardProps) {
 
       <View style={[styles.vsContainer, { borderColor: c.border }]}>
         <View style={styles.playerSide}>
-          <Avatar name={bet.creator?.name ?? '?'} color={"#CCCCCC"} size={36} />
+          <Avatar name={creatorName} color={"#CCCCCC"} size={36} />
           <View style={styles.playerInfo}>
-            <Text style={[styles.playerName, { color: c.text }]}>{bet.creator?.name ?? '...'}</Text>
-            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{bet.creator?.name ?? '...'}</Text>
+            <Text style={[styles.playerName, { color: c.text }]}>{creatorName}</Text>
+            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{creatorName}</Text>
           </View>
         </View>
         <View style={[styles.vsBadge, { backgroundColor: c.surfaceHighlight }]}>
@@ -106,10 +108,10 @@ export function BetCard({ bet, index }: BetCardProps) {
         </View>
         <View style={[styles.playerSide, { alignItems: 'flex-end' }]}>
           <View style={[styles.playerInfo, { alignItems: 'flex-end' }]}>
-            <Text style={[styles.playerName, { color: c.text }]}>{bet.opponent?.name ?? '...'}</Text>
-            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{bet.opponent?.name ?? '...'}</Text>
+            <Text style={[styles.playerName, { color: c.text }]}>{opponentName}</Text>
+            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{opponentName}</Text>
           </View>
-          <Avatar name={bet.opponent?.name ?? '?'} color={"#CCCCCC"} size={36} />
+          <Avatar name={opponentName} color={"#CCCCCC"} size={36} />
         </View>
       </View>
       {(creatorMedia.uri || opponentMedia.uri) && (
@@ -170,14 +172,14 @@ export function BetCard({ bet, index }: BetCardProps) {
             onPress={() => handleVote(creatorProof?.id ?? bet.proofs?.[0]?.id, String(bet.creator.id))}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
-            <Text style={[styles.voteBtnText, { color: c.accent }]}>{bet.creator.name}</Text>
+            <Text style={[styles.voteBtnText, { color: c.accent }]}>{creatorName}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
             onPress={() => handleVote(opponentProof?.id ?? bet.proofs?.[1]?.id, String(bet.opponent.id))}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
-            <Text style={[styles.voteBtnText, { color: c.accent }]}>{bet.opponent.name}</Text>
+            <Text style={[styles.voteBtnText, { color: c.accent }]}>{opponentName}</Text>
           </Pressable>
         </View>
       )}
