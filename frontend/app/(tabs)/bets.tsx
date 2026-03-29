@@ -40,18 +40,23 @@ function buildBetsSections(
   allItems: BetsTabItem[],
   currentUserId: number | undefined,
 ): BetsTabSection[] {
+  const currentUserIdStr =
+    currentUserId != null ? String(currentUserId) : undefined;
+
   const pendingInvites = allItems.filter(
     (item) =>
       item.status === 'INVITED' &&
       'opponent' in item &&
-      item.opponent?.id === currentUserId,
+      currentUserIdStr != null &&
+      item.opponent?.id === currentUserIdStr,
   );
 
   const awaitingAcceptance = allItems.filter(
     (item) =>
       item.status === 'INVITED' &&
       'creator' in item &&
-      item.creator?.id === currentUserId,
+      currentUserIdStr != null &&
+      item.creator?.id === currentUserIdStr,
   );
 
   const inProgress = allItems.filter(
@@ -203,7 +208,7 @@ export default function MyBetsScreen() {
       const isPendingInvite =
         item.status === 'INVITED' &&
         'opponent' in item &&
-        item.opponent?.id === user?.id;
+        item.opponent?.id === (user ? String(user.id) : undefined);
 
       const handleSendProof = async (
         itemId: number,

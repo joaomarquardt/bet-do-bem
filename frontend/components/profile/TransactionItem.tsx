@@ -2,18 +2,27 @@ import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
-import { Transaction } from '@/lib/types';
+import type { TransactionType } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils/formatters';
 import { styles } from './TransactionItem.styles';
 
 const c = Colors.dark;
 
+export interface ProfileTransaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  description: string;
+  betId?: string;
+  createdAt: string;
+}
+
 interface TransactionItemProps {
-  transaction: Transaction;
+  transaction: ProfileTransaction;
   index: number;
 }
 
-function getTransactionConfig(type: Transaction['type']) {
+function getTransactionConfig(type: ProfileTransaction['type']) {
   switch (type) {
     case 'BET_ENTRY':
     case 'CHALLENGE_ENTRY':
