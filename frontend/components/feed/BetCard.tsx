@@ -8,13 +8,30 @@ import Colors from '@/constants/colors';
 import { Image } from 'react-native';
 import { Avatar } from '@/components/ui/Avatar';
 import { proofService } from '@/lib/api/proof.service';
-import { Bet } from '@/lib/types';
+import { Bet, Proof } from '@/lib/types';
 import { formatTimeAgo, formatDeadline } from '@/lib/utils/formatters';
 import { useBets } from '@/lib/contexts';
 import { styles } from './BetCard.styles';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+function proofAuthorId(p: Proof): number | undefined {
+  return p.authorId ?? p.author?.id;
+}
+
+function proofForParticipant(
+  proofs: Proof[] | undefined,
+  participantId: number | undefined,
+  fallbackIndex: number,
+): Proof | undefined {
+  if (!proofs?.length || participantId == null) return undefined;
+  const match = proofs.find((p) => proofAuthorId(p) === participantId);
+  if (match) return match;
+  const allMissingAuthor = proofs.every((p) => proofAuthorId(p) === undefined);
+  if (allMissingAuthor && proofs[fallbackIndex]) return proofs[fallbackIndex];
+  return undefined;
 }
 
 interface BetCardProps {
@@ -52,8 +69,8 @@ export function BetCard({ bet, index }: BetCardProps) {
     setShowComments((prev) => !prev);
   }, []);
 
-  const creatorProof = bet.proofs && bet.proofs.length > 0 ? bet.proofs[0] : undefined;
-  const opponentProof = bet.proofs && bet.proofs.length > 1 ? bet.proofs[1] : undefined;
+  const creatorProof = proofForParticipant(bet.proofs, bet.creator?.id, 0);
+  const opponentProof = proofForParticipant(bet.proofs, bet.opponent?.id, 1);
 
   const getMediaInfo = (p: any) => {
     if (!p) return { uri: '', isVideo: false, label: '' };
@@ -169,14 +186,20 @@ export function BetCard({ bet, index }: BetCardProps) {
         <View style={styles.voteButtons}>
           <Pressable
             style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
-            onPress={() => handleVote(creatorProof?.id ?? bet.proofs?.[0]?.id, String(bet.creator.id))}
+            onPress={() => {
+              if (creatorProof?.id == null) return;
+              handleVote(creatorProof.id, String(bet.creator.id));
+            }}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
             <Text style={[styles.voteBtnText, { color: c.accent }]}>{creatorName}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
-            onPress={() => handleVote(opponentProof?.id ?? bet.proofs?.[1]?.id, String(bet.opponent.id))}
+            onPress={() => {
+              if (opponentProof?.id == null) return;
+              handleVote(opponentProof.id, String(bet.opponent.id));
+            }}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
             <Text style={[styles.voteBtnText, { color: c.accent }]}>{opponentName}</Text>

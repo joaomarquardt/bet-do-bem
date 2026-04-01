@@ -60,6 +60,7 @@ export interface Proof {
   fileName: string;
   contentType: string;
   imageUrl: string;
+  authorId?: number;
   author: User;
   comments: ProofComment[];
   postedAt: string;
