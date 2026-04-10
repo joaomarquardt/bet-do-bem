@@ -159,7 +159,6 @@ export interface CreateBetRequest {
   title: string;
   description: string;
   buyIn: number;
-  creatorId: number;
   opponentId: number;
   groupId: number;
 }
@@ -186,7 +185,6 @@ export interface CreateActivityRequest {
 }
 
 export interface CreateChallengeRequest {
-    challengerId: number;
     challengedId: number;
     title: string;
     description: string;
