@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   KeyboardAvoidingView,
@@ -19,7 +20,18 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '@/constants/colors';
-import { useAuth, useGroup } from '@/lib/contexts';
+import {
+  useActivity,
+  useAuth,
+  useBets,
+  useChallenge,
+  useGroup,
+} from '@/lib/contexts';
+import type {
+  CreateActivityRequest,
+  CreateBetRequest,
+  CreateChallengeRequest,
+} from '@/lib/types';
 import { styles as dashStyles } from '@/styles/tabs/dashboard.styles';
 import { createContentModalStyles as localStyles } from '@/styles/components/createContentModal.styles';
 
@@ -34,6 +46,18 @@ type ActivityProofDraft = {
   contentType: string;
   uri: string;
 };
+
+function getErrorMessage(e: unknown): string {
+  if (
+    e &&
+    typeof e === 'object' &&
+    'message' in e &&
+    typeof (e as { message: string }).message === 'string'
+  ) {
+    return (e as { message: string }).message;
+  }
+  return 'Não foi possível concluir. Tente novamente.';
+}
 
 function formatLocalDatetime(d: Date) {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -88,6 +112,11 @@ export function CreateContentModal({ visible, onClose }: CreateContentModalProps
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { groups, activeGroup } = useGroup();
+  const { createBet } = useBets();
+  const { createChallenge } = useChallenge();
+  const { createActivity } = useActivity();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [step, setStep] = useState<Step>('type');
   const [contentType, setContentType] = useState<ContentKind | null>(null);
@@ -253,45 +282,55 @@ export function CreateContentModal({ visible, onClose }: CreateContentModalProps
     setContentType(null);
   }, []);
 
-  const handleSubmit = useCallback(() => {
-    if (!formValid || !contentType) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-    if (contentType === 'BET') {
-      console.log('create bet draft', {
-        title: betTitle.trim(),
-        description: betDescription.trim(),
-        buyIn: Number.parseInt(betBuyIn, 10),
-        opponentId: betOpponentId,
-        groupId: selectedGroupId,
-      });
-    } else if (contentType === 'CHALLENGE') {
-      console.log('create challenge draft', {
-        title: chTitle.trim(),
-        description: chDescription.trim(),
-        amount: Number.parseInt(chAmount, 10),
-        challengedId: chChallengedId,
-        deadline: chDeadline.toISOString(),
-        groupId: selectedGroupId,
-      });
-    } else {
-      console.log('create activity draft', {
-        description: actDescription.trim(),
-        groupId: selectedGroupId,
-        proof: actProof
-          ? { fileName: actProof.fileName, contentType: actProof.contentType }
-          : null,
-      });
+  const handleSubmit = useCallback(async () => {
+    if (!formValid || !contentType || !user) return;
+    setIsSubmitting(true);
+    try {
+      if (contentType === 'BET') {
+        const body: CreateBetRequest = {
+          title: betTitle.trim(),
+          description: betDescription.trim(),
+          buyIn: Number.parseInt(betBuyIn, 10),
+          opponentId: betOpponentId!,
+          groupId: selectedGroupId!,
+        };
+        await createBet(body);
+      } else if (contentType === 'CHALLENGE') {
+        const body: CreateChallengeRequest = {
+          challengedId: chChallengedId!,
+          title: chTitle.trim(),
+          description: chDescription.trim(),
+          amount: Number.parseInt(chAmount, 10),
+          deadline: chDeadline.toISOString(),
+          groupId: selectedGroupId!,
+        };
+        await createChallenge(body);
+      } else {
+        if (!actProof) return;
+        const body: CreateActivityRequest = {
+          proof: {
+            fileName: actProof.fileName,
+            contentType: actProof.contentType,
+          },
+          description: actDescription.trim(),
+          groupId: selectedGroupId!,
+        };
+        await createActivity(body, { uri: actProof.uri });
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Sucesso', 'Item criado com sucesso.', [
+        { text: 'OK', onPress: onClose },
+      ]);
+    } catch (e) {
+      console.error('CreateContentModal submit', e);
+      Alert.alert('Erro', getErrorMessage(e));
+    } finally {
+      setIsSubmitting(false);
     }
-
-    Alert.alert(
-      'Próxima etapa',
-      'O formulário está pronto. A integração com a API será feita em seguida.',
-      [{ text: 'OK', onPress: onClose }],
-    );
   }, [
     formValid,
     contentType,
+    user,
     betTitle,
     betDescription,
     betBuyIn,
@@ -304,6 +343,9 @@ export function CreateContentModal({ visible, onClose }: CreateContentModalProps
     chDeadline,
     actDescription,
     actProof,
+    createBet,
+    createChallenge,
+    createActivity,
     onClose,
   ]);
 
@@ -849,25 +891,34 @@ export function CreateContentModal({ visible, onClose }: CreateContentModalProps
                   style={({ pressed }) => [
                     dashStyles.createSubmitBtn,
                     {
-                      backgroundColor: formValid ? c.accent : c.surfaceHighlight,
+                      backgroundColor:
+                        formValid && user && !isSubmitting ? c.accent : c.surfaceHighlight,
                       opacity: pressed ? 0.85 : 1,
                     },
                   ]}
-                  onPress={handleSubmit}
-                  disabled={!formValid}
+                  onPress={() => {
+                    void handleSubmit();
+                  }}
+                  disabled={!formValid || !user || isSubmitting}
                 >
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={18}
-                    color={formValid ? '#000' : c.textTertiary}
-                  />
+                  {isSubmitting ? (
+                    <ActivityIndicator color="#000" />
+                  ) : (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={18}
+                      color={formValid && user ? '#000' : c.textTertiary}
+                    />
+                  )}
                   <Text
                     style={[
                       dashStyles.createSubmitText,
-                      { color: formValid ? '#000' : c.textTertiary },
+                      {
+                        color: formValid && user ? '#000' : c.textTertiary,
+                      },
                     ]}
                   >
-                    Continuar
+                    {isSubmitting ? 'Enviando…' : 'Continuar'}
                   </Text>
                 </Pressable>
               </ScrollView>
