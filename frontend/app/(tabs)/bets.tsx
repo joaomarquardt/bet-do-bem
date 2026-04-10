@@ -225,11 +225,6 @@ export default function MyBetsScreen() {
               itemId.toString(),
               { fileName, contentType: mime } as any,
             );
-          } else if (itemType === 'ACTIVITY') {
-            resp = await activityService.addProofToActivity(
-              itemId.toString(),
-              { fileName, contentType: mime } as any,
-            );
           }
 
           const uploadUrl: string | undefined = resp?.uploadUrl;
