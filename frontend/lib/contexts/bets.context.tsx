@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Crypto from 'expo-crypto';
-import { Bet, FeedItemResponse } from '@/lib/types';
+import { Bet, CreateBetRequest, FeedItemResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { betsService } from '@/lib/api/bets.service';
 import { useAuth } from '@/lib/contexts';
@@ -26,7 +25,7 @@ interface BetsContextValue {
   voteBet: (betId: string, votedForUserId: string) => void;
   acceptBet: (betId: string) => void;
   declineBet: (betId: string) => void;
-  createBet: (title: string, description: string, buyIn: number, opponentUsername: string) => void;
+  createBet: (request: CreateBetRequest) => Promise<void>;
   refreshData: () => void;
 }
 
@@ -199,39 +198,6 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const createBet = useCallback(async (title: string, description: string, buyIn: number, opponentUsername: string) => {
-    try {
-      const created = await betsService.createBet({ title, description, buyIn, opponentUsername } as any);
-      const mapped = mapFeedItemToBet({ content: created, id: created.id });
-      setMyBets((prev) => {
-        const updated = [mapped, ...prev];
-        persistBets(updated);
-        return updated;
-      });
-      setWallet((prev) => {
-        const updated: WalletLike = {
-          ...prev,
-          balance: prev.balance - buyIn,
-          transactions: [
-            {
-              id: Crypto.randomUUID(),
-              type: 'BET_ENTRY',
-              amount: -buyIn,
-              description: `Entrada - ${title}`,
-              betId: String(created.id),
-              createdAt: new Date().toISOString(),
-            },
-            ...prev.transactions,
-          ],
-        };
-        persistWallet(updated);
-        return updated;
-      });
-    } catch (e) {
-      // ignore
-    }
-  }, []);
-
   const refreshData = useCallback(async () => {
     if (!user?.id) return;
     setIsLoading(true);
@@ -258,7 +224,20 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user?.id]);
+
+  const createBet = useCallback(
+    async (request: CreateBetRequest) => {
+      try {
+        await betsService.createBet(request);
+        await refreshData();
+      } catch (e) {
+        console.error('Erro ao criar aposta', e);
+        throw e;
+      }
+    },
+    [refreshData],
+  );
 
   const value = useMemo(
     () => ({ feedBets, myBets, wallet, isLoading, voteBet, acceptBet, declineBet, createBet, refreshData }),

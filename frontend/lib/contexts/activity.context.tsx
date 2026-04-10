@@ -1,16 +1,20 @@
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Activity, FeedItemResponse } from '@/lib/types';
+import { Activity, CreateActivityRequest, FeedItemResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { activityService } from '@/lib/api/activity.service';
+import { uploadToPresignedUrl } from '@/lib/utils/uploadFileToAWS';
 import { useAuth } from '@/lib/contexts';
 
 interface ActivityContextValue {
   activities: Activity[];
   isLoading: boolean;
   voteActivity: (activityId: string, approved: boolean) => void;
-  createActivity: (description: string) => void;
+  createActivity: (
+    request: CreateActivityRequest,
+    file: File | { uri: string; type?: string },
+  ) => Promise<void>;
   refreshData: () => void;
 }
 
@@ -113,10 +117,6 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     console.log('vote activity not implemented');
   }, []);
 
-  const createActivity = useCallback(async (description: string) => {
-    console.log('create activity not implemented');
-  }, []);
-
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -132,7 +132,21 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user?.id]);
+
+  const createActivity = useCallback(
+    async (request: CreateActivityRequest, file: File | { uri: string; type?: string }) => {
+      try {
+        const { uploadUrl } = await activityService.createActivity(request);
+        await uploadToPresignedUrl(uploadUrl, file, request.proof.contentType);
+        await refreshData();
+      } catch (e) {
+        console.error('Erro ao criar atividade', e);
+        throw e;
+      }
+    },
+    [refreshData],
+  );
 
   const value = useMemo(
     () => ({ activities, isLoading, voteActivity, createActivity, refreshData }),

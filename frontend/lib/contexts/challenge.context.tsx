@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Challenge, FeedItemResponse } from '@/lib/types';
+import { Challenge, CreateChallengeRequest, FeedItemResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { challengeService } from '@/lib/api/challenge.service';
 import { useAuth } from '@/lib/contexts';
@@ -10,7 +10,7 @@ interface ChallengeContextValue {
   challenges: Challenge[];
   isLoading: boolean;
   voteChallenge: (challengeId: string, approved: boolean) => void;
-  createChallenge: (title: string, description: string, amount: number, opponentUsername: string, deadline: string) => void;
+  createChallenge: (request: CreateChallengeRequest) => Promise<void>;
   acceptChallenge: (challengeId: string) => void;
   declineChallenge: (challengeId: string) => void;
   refreshData: () => void;
@@ -120,10 +120,6 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     console.log('vote challenge not implemented');
   }, []);
 
-  const createChallenge = useCallback(async (title: string, description: string, amount: number, opponentUsername: string, deadline: string) => {
-    console.log('create challenge not implemented');
-  }, []);
-
     const acceptChallenge = useCallback(async (challengeId: string) => {
         try {
             await challengeService.acceptChallenge(challengeId);
@@ -163,7 +159,20 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user?.id]);
+
+  const createChallenge = useCallback(
+    async (request: CreateChallengeRequest) => {
+      try {
+        await challengeService.createChallenge(request);
+        await refreshData();
+      } catch (e) {
+        console.error('Erro ao criar desafio', e);
+        throw e;
+      }
+    },
+    [refreshData],
+  );
 
   const value = useMemo(
     () => ({ challenges, isLoading, voteChallenge, createChallenge, refreshData, acceptChallenge, declineChallenge }),
