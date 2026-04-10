@@ -1,36 +1,36 @@
 import { apiClient } from './client';
-import { Bet, CreateBetRequest, UpdateBetRequest, CreateProofRequest } from '@/lib/types';
+import { Bet, BetResponse, CreateBetRequest, UpdateBetRequest, CreateProofRequest, ProofUploadResponse } from '@/lib/types';
 
 const ENDPOINTS = {
   BETS: '/api/bets',
 } as const;
 
 export const betsService = {
-  getAllBets(): Promise<Bet[]> {
+  getAllBets(): Promise<BetResponse[]> {
     return apiClient.get(ENDPOINTS.BETS);
   },
 
-  getBetById(id: string): Promise<Bet> {
+  getBetById(id: string): Promise<BetResponse> {
     return apiClient.get(`${ENDPOINTS.BETS}/${id}`);
   },
 
-  createBet(data: CreateBetRequest): Promise<Bet> {
+  createBet(data: CreateBetRequest): Promise<BetResponse> {
     return apiClient.post(ENDPOINTS.BETS, data);
   },
 
-  addProofToBet(id: string, data: CreateProofRequest): Promise<Bet> {
+  addProofToBet(id: string, data: CreateProofRequest): Promise<ProofUploadResponse> {
     return apiClient.post(`${ENDPOINTS.BETS}/${id}/proofs`, data);
   },
 
-  acceptBet(id: string): Promise<Bet> {
+  acceptBet(id: string): Promise<BetResponse> {
     return apiClient.post(`${ENDPOINTS.BETS}/${id}/accept`);
   },
 
-  declineBet(id: string): Promise<void> {
+  declineBet(id: string): Promise<BetResponse> {
     return apiClient.post(`${ENDPOINTS.BETS}/${id}/decline`);
   },
 
-  updateBet(id: string, data: UpdateBetRequest): Promise<Bet> {
+  updateBet(id: string, data: UpdateBetRequest): Promise<BetResponse> {
     return apiClient.put(`${ENDPOINTS.BETS}/${id}`, data);
   },
 

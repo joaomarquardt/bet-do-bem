@@ -1,28 +1,24 @@
 import { apiClient } from './client';
-import { Activity, CreateActivityRequest, UpdateActivityRequest, CreateProofRequest } from '@/lib/types';
+import { CreatedActivityResponse, CreateActivityRequest, UpdateActivityRequest, ActivityResponse } from '@/lib/types';
 
 const ENDPOINTS = {
   ACTIVITIES: '/api/activities',
 } as const;
 
 export const activityService = {
-  getAllActivities(): Promise<Activity[]> {
+  getAllActivities(): Promise<ActivityResponse[]> {
     return apiClient.get(ENDPOINTS.ACTIVITIES);
   },
 
-  createActivity(data: CreateActivityRequest): Promise<Activity> {
+  createActivity(data: CreateActivityRequest): Promise<CreatedActivityResponse> {
     return apiClient.post(ENDPOINTS.ACTIVITIES, data);
   },
 
-  addProofToActivity(id: string, data: CreateProofRequest): Promise<Activity> {
-    return apiClient.post(`${ENDPOINTS.ACTIVITIES}/${id}/proofs`, data);
-  },
-
-  getActivityById(id: string): Promise<Activity> {
+  getActivityById(id: string): Promise<ActivityResponse> {
     return apiClient.get(`${ENDPOINTS.ACTIVITIES}/${id}`);
   },
 
-  updateActivity(id: string, data: UpdateActivityRequest): Promise<Activity> {
+  updateActivity(id: string, data: UpdateActivityRequest): Promise<ActivityResponse> {
     return apiClient.put(`${ENDPOINTS.ACTIVITIES}/${id}`, data);
   },
 

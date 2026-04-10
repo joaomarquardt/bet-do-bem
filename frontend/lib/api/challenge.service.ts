@@ -1,36 +1,36 @@
 import { apiClient } from './client';
-import { Challenge, CreateChallengeRequest, UpdateChallengeRequest, CreateProofRequest } from '@/lib/types';
+import { ChallengeResponse, CreateChallengeRequest, UpdateChallengeRequest, CreateProofRequest, ProofUploadResponse } from '@/lib/types';
 
 const ENDPOINTS = {
   CHALLENGES: '/api/challenges',
 } as const;
 
 export const challengeService = {
-  getAllChallenges(): Promise<Challenge[]> {
+  getAllChallenges(): Promise<ChallengeResponse[]> {
     return apiClient.get(ENDPOINTS.CHALLENGES);
   },
 
-  createChallenge(data: CreateChallengeRequest): Promise<Challenge> {
+  createChallenge(data: CreateChallengeRequest): Promise<ChallengeResponse> {
     return apiClient.post(ENDPOINTS.CHALLENGES, data);
   },
 
-  addProofToChallenge(id: string, data: CreateProofRequest): Promise<Challenge> {
+  addProofToChallenge(id: string, data: CreateProofRequest): Promise<ProofUploadResponse> {
     return apiClient.post(`${ENDPOINTS.CHALLENGES}/${id}/proofs`, data);
   },
 
-  acceptChallenge(id: string): Promise<Challenge> {
+  acceptChallenge(id: string): Promise<ChallengeResponse> {
     return apiClient.post(`${ENDPOINTS.CHALLENGES}/${id}/accept`);
   },
 
-  declineChallenge(id: string): Promise<Challenge> {
+  declineChallenge(id: string): Promise<ChallengeResponse> {
     return apiClient.post(`${ENDPOINTS.CHALLENGES}/${id}/decline`);
   },
 
-  getChallengeById(id: string): Promise<Challenge> {
+  getChallengeById(id: string): Promise<ChallengeResponse> {
     return apiClient.get(`${ENDPOINTS.CHALLENGES}/${id}`);
   },
 
-  updateChallenge(id: string, data: UpdateChallengeRequest): Promise<Challenge> {
+  updateChallenge(id: string, data: UpdateChallengeRequest): Promise<ChallengeResponse> {
     return apiClient.put(`${ENDPOINTS.CHALLENGES}/${id}`, data);
   },
 
