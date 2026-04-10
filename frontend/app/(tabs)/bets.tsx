@@ -6,9 +6,6 @@ import {
   RefreshControl,
   Pressable,
   Platform,
-  TextInput,
-  Modal,
-  KeyboardAvoidingView,
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { MyFeedItemCard } from '@/components/dashboard/MyFeedItemCard';
-import { useBets, useActivity, useChallenge, useAuth, useGroup } from '@/lib/contexts';
+import { CreateContentModal } from '@/components/create/CreateContentModal';
+import { useBets, useActivity, useChallenge, useAuth } from '@/lib/contexts';
 import { Bet, Activity, Challenge } from '@/lib/types';
 import { styles } from '@/styles/tabs/dashboard.styles';
 import { betsService } from '@/lib/api/bets.service';
@@ -109,14 +107,12 @@ function buildBetsSections(
 
 export default function MyBetsScreen() {
   const { user } = useAuth();
-  const { activeGroup } = useGroup();
   const {
     myBets,
     isLoading: betsLoading,
     refreshData: refreshBets,
     acceptBet,
     declineBet,
-    createBet,
   } = useBets();
   const {
     activities,
@@ -134,10 +130,6 @@ export default function MyBetsScreen() {
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [newBuyIn, setNewBuyIn] = useState('');
-  const [newOpponent, setNewOpponent] = useState('');
 
   const sections = useMemo<BetsTabSection[]>(() => {
     const allItems: BetsTabItem[] = [
@@ -166,40 +158,6 @@ export default function MyBetsScreen() {
     refreshChallenges();
   }, [refreshBets, refreshActivities, refreshChallenges]);
 
-  const isFormValid = newTitle.trim() && newBuyIn.trim() && newOpponent.trim();
-
-  const handleCreate = useCallback(async () => {
-    if (!isFormValid || !user) return;
-
-    try {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      const title = newTitle.trim();
-      const description = newDescription.trim();
-      const buyIn = parseInt(newBuyIn, 10) || 10;
-      const opponentUsername = newOpponent.trim().replace(/^@/, '');
-
-      await createBet(title, description, buyIn, opponentUsername);
-
-      setShowCreateModal(false);
-      setNewTitle('');
-      setNewDescription('');
-      setNewBuyIn('');
-      setNewOpponent('');
-    } catch (e) {
-      console.error('Erro ao criar aposta', e);
-      Alert.alert('Erro ao criar aposta');
-    }
-  }, [
-    isFormValid,
-    newTitle,
-    newDescription,
-    newBuyIn,
-    newOpponent,
-    createBet,
-    user,
-  ]);
-
   const renderItem = useCallback(
     ({ item, index }: { item: BetsTabItem; index: number }) => {
       const isPendingInvite =
@@ -224,6 +182,7 @@ export default function MyBetsScreen() {
                 };
                 input.click();
               } catch (e) {
+                console.error('pickFileWebFile', e);
                 resolve(null);
               }
             });
@@ -403,141 +362,10 @@ export default function MyBetsScreen() {
         }
       />
 
-      <Modal
+      <CreateContentModal
         visible={showCreateModal}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setShowCreateModal(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
-        >
-          <Pressable
-            style={styles.modalBackdrop}
-            onPress={() => setShowCreateModal(false)}
-          />
-          <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
-            <View style={styles.modalHandle} />
-            <Text style={[styles.modalTitle, { color: c.text }]}>
-              Criar Desafio
-            </Text>
-
-            <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, { color: c.textSecondary }]}>
-                Titulo do desafio
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: c.surfaceElevated,
-                    color: c.text,
-                    borderColor: c.border,
-                  },
-                ]}
-                placeholder="Ex: 100 flexoes em 2 minutos"
-                placeholderTextColor={c.textTertiary}
-                value={newTitle}
-                onChangeText={setNewTitle}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, { color: c.textSecondary }]}>
-                Descricao
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  styles.inputMultiline,
-                  {
-                    backgroundColor: c.surfaceElevated,
-                    color: c.text,
-                    borderColor: c.border,
-                  },
-                ]}
-                placeholder="Detalhes do desafio..."
-                placeholderTextColor={c.textTertiary}
-                value={newDescription}
-                onChangeText={setNewDescription}
-                multiline
-                numberOfLines={3}
-              />
-            </View>
-
-            <View style={styles.inputRow}>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.inputLabel, { color: c.textSecondary }]}>
-                  Buy-in
-                </Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: c.surfaceElevated,
-                      color: c.text,
-                      borderColor: c.border,
-                    },
-                  ]}
-                  placeholder="50"
-                  placeholderTextColor={c.textTertiary}
-                  value={newBuyIn}
-                  onChangeText={setNewBuyIn}
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={[styles.inputGroup, { flex: 2 }]}>
-                <Text style={[styles.inputLabel, { color: c.textSecondary }]}>
-                  Oponente
-                </Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: c.surfaceElevated,
-                      color: c.text,
-                      borderColor: c.border,
-                    },
-                  ]}
-                  placeholder="@username"
-                  placeholderTextColor={c.textTertiary}
-                  value={newOpponent}
-                  onChangeText={setNewOpponent}
-                />
-              </View>
-            </View>
-
-            <Pressable
-              style={({ pressed }) => [
-                styles.createSubmitBtn,
-                {
-                  backgroundColor: isFormValid
-                    ? c.accent
-                    : c.surfaceHighlight,
-                  opacity: pressed ? 0.8 : 1,
-                },
-              ]}
-              onPress={handleCreate}
-              disabled={!isFormValid}
-            >
-              <Ionicons
-                name="flash"
-                size={18}
-                color={isFormValid ? '#000' : c.textTertiary}
-              />
-              <Text
-                style={[
-                  styles.createSubmitText,
-                  { color: isFormValid ? '#000' : c.textTertiary },
-                ]}
-              >
-                Lancar Desafio
-              </Text>
-            </Pressable>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        onClose={() => setShowCreateModal(false)}
+      />
     </View>
   );
 }
