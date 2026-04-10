@@ -121,10 +121,11 @@ export const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
   },
   proofMediaPlaceholder: {
-    height: 80,
+    width: '100%',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   proofImage: {
     width: '100%',

@@ -5,8 +5,8 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
-import { Image } from 'react-native';
 import { Avatar } from '@/components/ui/Avatar';
+import { ProofMediaFrame } from '@/components/feed/ProofMediaFrame';
 import { Challenge } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils/formatters';
 import { useChallenge } from '@/lib/contexts';
@@ -98,20 +98,29 @@ export function ChallengeCard({ challenge, index }: ChallengeCardProps) {
             <Avatar name={challengerName} color={"#CCCCCC"} size={24} />
             <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{challengerName}</Text>
           </View>
-          <View style={[styles.proofMediaPlaceholder, { backgroundColor: c.surfaceHighlight }]}>
-            {proofUri ? (
-              <>
-                <Image source={{ uri: proofUri }} style={styles.proofImage} />
-                {isVideo && (
+          {proofUri ? (
+            <ProofMediaFrame
+              uri={proofUri}
+              backgroundColor={c.surfaceHighlight}
+              isVideo={isVideo}
+              overlay={
+                isVideo ? (
                   <View style={styles.proofMediaOverlay}>
                     <Ionicons name="play" size={20} color="#fff" />
                   </View>
-                )}
-              </>
-            ) : (
+                ) : undefined
+              }
+            />
+          ) : (
+            <View
+              style={[
+                styles.proofMediaPlaceholder,
+                { backgroundColor: c.surfaceHighlight, aspectRatio: 3 / 4 },
+              ]}
+            >
               <Ionicons name="image-outline" size={28} color={c.textTertiary} />
-            )}
-          </View>
+            </View>
+          )}
         </View>
       )}
 
