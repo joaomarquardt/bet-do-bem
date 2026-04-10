@@ -37,7 +37,7 @@ import { createContentModalStyles as localStyles } from '@/styles/components/cre
 
 const c = Colors.dark;
 
-type ContentKind = 'BET' | 'CHALLENGE' | 'ACTIVITY';
+export type ContentKind = 'BET' | 'CHALLENGE' | 'ACTIVITY';
 
 type Step = 'type' | 'form';
 
@@ -106,9 +106,14 @@ function WebDatetimeLocalInput({
 type CreateContentModalProps = {
   visible: boolean;
   onClose: () => void;
+  onCreated?: (kind: ContentKind) => void;
 };
 
-export function CreateContentModal({ visible, onClose }: CreateContentModalProps) {
+export function CreateContentModal({
+  visible,
+  onClose,
+  onCreated,
+}: CreateContentModalProps) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { groups, activeGroup } = useGroup();
@@ -318,9 +323,8 @@ export function CreateContentModal({ visible, onClose }: CreateContentModalProps
         await createActivity(body, { uri: actProof.uri });
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Sucesso', 'Item criado com sucesso.', [
-        { text: 'OK', onPress: onClose },
-      ]);
+      onCreated?.(contentType);
+      onClose();
     } catch (e) {
       console.error('CreateContentModal submit', e);
       Alert.alert('Erro', getErrorMessage(e));
@@ -347,6 +351,7 @@ export function CreateContentModal({ visible, onClose }: CreateContentModalProps
     createChallenge,
     createActivity,
     onClose,
+    onCreated,
   ]);
 
   const formTitle =

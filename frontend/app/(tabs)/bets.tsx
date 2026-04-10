@@ -14,7 +14,9 @@ import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { MyFeedItemCard } from '@/components/dashboard/MyFeedItemCard';
 import { CreateContentModal } from '@/components/create/CreateContentModal';
+import { CreationSuccessModal } from '@/components/create/CreationSuccessModal';
 import { useBets, useActivity, useChallenge, useAuth } from '@/lib/contexts';
+import type { ContentKind } from '@/components/create/CreateContentModal';
 import { Bet, Activity, Challenge } from '@/lib/types';
 import { styles } from '@/styles/tabs/dashboard.styles';
 import { betsService } from '@/lib/api/bets.service';
@@ -130,6 +132,7 @@ export default function MyBetsScreen() {
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createdSuccessKind, setCreatedSuccessKind] = useState<ContentKind | null>(null);
 
   const sections = useMemo<BetsTabSection[]>(() => {
     const allItems: BetsTabItem[] = [
@@ -365,6 +368,11 @@ export default function MyBetsScreen() {
       <CreateContentModal
         visible={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+        onCreated={(k) => setCreatedSuccessKind(k)}
+      />
+      <CreationSuccessModal
+        kind={createdSuccessKind}
+        onDismiss={() => setCreatedSuccessKind(null)}
       />
     </View>
   );
