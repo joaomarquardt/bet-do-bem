@@ -36,12 +36,7 @@ export type TransactionType =
 export type ContextType =
   | 'ACTIVITY'
   | 'BET'
-  | 'CHALLENGE'
-  | 'GROUP'
-  | 'PROOF'
-  | 'TRANSACTION'
-  | 'USER'
-  | 'VOTE';
+  | 'CHALLENGE';
 
 export type UserRole =
   | 'USER'
