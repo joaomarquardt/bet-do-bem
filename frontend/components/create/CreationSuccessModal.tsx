@@ -44,7 +44,12 @@ export function CreationSuccessModal({ kind, onDismiss }: CreationSuccessModalPr
           </View>
           <Text style={[styles.title, { color: c.text }]}>{title}</Text>
           <Text style={[styles.subtitle, { color: c.textSecondary }]}>
-            Agora seus amigos podem ver e participar!
+            {
+              kind === 'ACTIVITY' ? 'Agora seus amigos podem ver e participar!' :
+              kind === 'BET' ? 'Convite de aposta enviado!' :
+              kind === 'CHALLENGE' ? 'Convite de desafio enviado!' :
+              'Convite enviado!'
+            }
           </Text>
           <Pressable
             onPress={onDismiss}
