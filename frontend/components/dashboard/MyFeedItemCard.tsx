@@ -6,7 +6,7 @@ import Animated, { FadeInRight } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar';
 import { FeedItemResponse, BetResponse, ActivityResponse, ChallengeResponse, Bet, Activity, Challenge } from '@/lib/types';
-import { formatDeadline } from '@/lib/utils/formatters';
+import { formatDeadline, formatDateTime } from '@/lib/utils/formatters';
 import { styles } from './MyFeedItemCard.styles';
 import { useAuth } from '@/lib/contexts/auth.context';
 
@@ -25,6 +25,50 @@ interface StatusConfig {
   color: string;
   bg: string;
   icon: keyof typeof Ionicons.glyphMap;
+}
+
+function renderPendingMetadataRows({
+  typeLabel,
+  description,
+  createdAt,
+  expirationLabel,
+}: {
+  typeLabel: 'Aposta' | 'Desafio';
+  description: string;
+  createdAt: string;
+  /** Omit or pass null to hide the expiration row (e.g. bet invite has no deadline yet). */
+  expirationLabel?: string | null;
+}) {
+  return (
+    <View style={styles.pendingMetadataList}>
+      <View style={styles.pendingMetadataItem}>
+        <Ionicons name="pricetag-outline" size={14} color={c.accent} />
+        <Text style={[styles.pendingMetadataKey, { color: c.textTertiary }]}>Tipo:</Text>
+        <Text style={[styles.pendingMetadataValue, { color: c.text }]}>{typeLabel}</Text>
+      </View>
+      <View style={styles.pendingMetadataItem}>
+        <Ionicons name="calendar-outline" size={14} color={c.textSecondary} />
+        <Text style={[styles.pendingMetadataKey, { color: c.textTertiary }]}>Criado:</Text>
+        <Text style={[styles.pendingMetadataValue, { color: c.text }]}>
+          {formatDateTime(createdAt)}
+        </Text>
+      </View>
+      {expirationLabel != null && expirationLabel !== '' ? (
+        <View style={styles.pendingMetadataItem}>
+          <Ionicons name="time-outline" size={14} color={c.warning} />
+          <Text style={[styles.pendingMetadataKey, { color: c.textTertiary }]}>Expira:</Text>
+          <Text style={[styles.pendingMetadataValue, { color: c.text }]}>{expirationLabel}</Text>
+        </View>
+      ) : null}
+      <View style={styles.pendingDescriptionRow}>
+        <Ionicons name="document-text-outline" size={14} color={c.textSecondary} />
+        <Text style={[styles.pendingMetadataKey, { color: c.textTertiary }]}>Descrição:</Text>
+        <Text style={[styles.pendingDescriptionText, { color: c.textSecondary }]} numberOfLines={2}>
+          {description}
+        </Text>
+      </View>
+    </View>
+  );
 }
 
 function getStatusConfig(item: FeedItemResponse | (Bet | Activity | Challenge) & { feedItemType: 'BET' | 'ACTIVITY' | 'CHALLENGE' }, currentUserId: number | null): StatusConfig {
@@ -133,11 +177,22 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
 
         <Text style={[styles.title, { color: c.text }]} numberOfLines={1}>{bet.title}</Text>
 
+        {bet.status === 'INVITED' &&
+          renderPendingMetadataRows({
+            typeLabel: 'Aposta',
+            description: bet.description,
+            createdAt: bet.createdAt,
+          })}
+
         <View style={styles.opponentRow}>
           <Text style={[styles.vsLabel, { color: c.textTertiary }]}>{isCreator ? 'vs' : 'de'}</Text>
           <Avatar name={otherPlayer?.name ?? '?'} color={"#CCCCCC"} size={24} />
           <Text style={[styles.opponentName, { color: c.textSecondary }]}>@{otherPlayer?.name ?? '...'}</Text>
-          <Text style={[styles.deadline, { color: c.textTertiary }]}>{formatDeadline(bet.expiresAt)}</Text>
+          {bet.status !== 'INVITED' ? (
+            <Text style={[styles.deadline, { color: c.textTertiary }]}>
+              {formatDeadline(bet.expiresAt)}
+            </Text>
+          ) : null}
         </View>
 
         {bet.status === 'INVITED' && !isCreator && onAccept && onDecline && (
@@ -197,6 +252,14 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
         </View>
 
         <Text style={[styles.title, { color: c.text }]} numberOfLines={1}>{challenge.title}</Text>
+
+        {challenge.status === 'INVITED' &&
+          renderPendingMetadataRows({
+            typeLabel: 'Desafio',
+            description: challenge.description,
+            createdAt: challenge.createdAt,
+            expirationLabel: formatDateTime(challenge.deadline),
+          })}
 
         <View style={styles.opponentRow}>
           <Text style={[styles.vsLabel, { color: c.textTertiary }]}>{isChallenger ? 'vs' : 'de'}</Text>

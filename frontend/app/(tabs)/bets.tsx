@@ -36,24 +36,56 @@ type BetsTabSection = {
   data: BetsTabItem[];
 };
 
+function isPendingReceivedInvite(
+  item: BetsTabItem,
+  currentUserId: number | undefined,
+): boolean {
+  if (item.status !== 'INVITED' || currentUserId == null) return false;
+  if (item.feedItemType === 'BET') {
+    return (
+      'opponent' in item &&
+      Number(item.opponent?.id) === currentUserId
+    );
+  }
+  if (item.feedItemType === 'CHALLENGE') {
+    return (
+      'challenged' in item &&
+      Number(item.challenged?.id) === currentUserId
+    );
+  }
+  return false;
+}
+
+function isAwaitingSentInvite(
+  item: BetsTabItem,
+  currentUserId: number | undefined,
+): boolean {
+  if (item.status !== 'INVITED' || currentUserId == null) return false;
+  if (item.feedItemType === 'BET') {
+    return (
+      'creator' in item &&
+      Number(item.creator?.id) === currentUserId
+    );
+  }
+  if (item.feedItemType === 'CHALLENGE') {
+    return (
+      'challenger' in item &&
+      Number(item.challenger?.id) === currentUserId
+    );
+  }
+  return false;
+}
+
 function buildBetsSections(
   allItems: BetsTabItem[],
   currentUserId: number | undefined,
 ): BetsTabSection[] {
-  const pendingInvites = allItems.filter(
-    (item) =>
-      item.status === 'INVITED' &&
-      'opponent' in item &&
-      currentUserId != null &&
-      item.opponent?.id === currentUserId,
+  const pendingInvites = allItems.filter((item) =>
+    isPendingReceivedInvite(item, currentUserId),
   );
 
-  const awaitingAcceptance = allItems.filter(
-    (item) =>
-      item.status === 'INVITED' &&
-      'creator' in item &&
-      currentUserId != null &&
-      item.creator?.id === currentUserId,
+  const awaitingAcceptance = allItems.filter((item) =>
+    isAwaitingSentInvite(item, currentUserId),
   );
 
   const inProgress = allItems.filter(
@@ -165,8 +197,13 @@ export default function MyBetsScreen() {
     ({ item, index }: { item: BetsTabItem; index: number }) => {
       const isPendingInvite =
         item.status === 'INVITED' &&
-        'opponent' in item &&
-        item.opponent?.id === (user?.id ?? undefined);
+        user?.id != null &&
+        ((item.feedItemType === 'BET' &&
+          'opponent' in item &&
+          Number(item.opponent?.id) === user.id) ||
+          (item.feedItemType === 'CHALLENGE' &&
+            'challenged' in item &&
+            Number(item.challenged?.id) === user.id));
 
       const handleSendProof = async (
         itemId: number,

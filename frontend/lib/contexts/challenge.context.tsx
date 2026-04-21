@@ -22,6 +22,26 @@ const STORAGE_KEYS = {
   CHALLENGES: '@betdobem_challenges',
 } as const;
 
+
+function uniqueChallengeFeedItems(
+  pending: FeedItemResponse[],
+  inProgress: FeedItemResponse[],
+): FeedItemResponse[] {
+  const combined = [...(pending || []), ...(inProgress || [])].filter(
+    (it) => it.feedItemType === 'CHALLENGE',
+  );
+  const seen = new Set<number>();
+  const unique: FeedItemResponse[] = [];
+  for (const it of combined) {
+    const raw = it as FeedItemResponse & { content?: { id?: number } };
+    const id = Number(raw.content?.id ?? raw.id ?? 0);
+    if (id === 0 || seen.has(id)) continue;
+    seen.add(id);
+    unique.push(it);
+  }
+  return unique;
+}
+
 export function ChallengeProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -43,10 +63,14 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     async function loadChallengesFromApi() {
       if (!user?.id) return;
       try {
-        const feedItems = await feedService.getMyFeed();
-        const mappedChallenges: Challenge[] = (feedItems || [])
-          .filter(it => it.feedItemType === 'CHALLENGE')
-          .map((it) => mapFeedItemToChallenge(it, user?.id));
+        const [pending, inProgress] = await Promise.all([
+          feedService.getMyPendingInvites(),
+          feedService.getMyInProgressItems(),
+        ]);
+        const unique = uniqueChallengeFeedItems(pending || [], inProgress || []);
+        const mappedChallenges: Challenge[] = unique.map((it) =>
+          mapFeedItemToChallenge(it, user?.id),
+        );
         if (!mounted) return;
         setChallenges(mappedChallenges);
         persistChallenges(mappedChallenges);
@@ -148,10 +172,14 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
         if (!user?.id) return;
-        const feedItems = await feedService.getMyFeed();
-        const mappedChallenges: Challenge[] = (feedItems || [])
-            .filter(it => it.feedItemType === 'CHALLENGE')
-            .map((it) => mapFeedItemToChallenge(it, user?.id));
+        const [pending, inProgress] = await Promise.all([
+          feedService.getMyPendingInvites(),
+          feedService.getMyInProgressItems(),
+        ]);
+        const unique = uniqueChallengeFeedItems(pending || [], inProgress || []);
+        const mappedChallenges: Challenge[] = unique.map((it) =>
+          mapFeedItemToChallenge(it, user?.id),
+        );
         setChallenges(mappedChallenges);
         persistChallenges(mappedChallenges);
     } catch (e) {

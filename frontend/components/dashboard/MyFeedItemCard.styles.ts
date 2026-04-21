@@ -41,6 +41,35 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter_600SemiBold',
   },
+  pendingMetadataList: {
+    gap: 5,
+    marginTop: -1,
+  },
+  pendingMetadataItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  pendingMetadataKey: {
+    fontSize: 11,
+    fontFamily: 'Inter_500Medium',
+  },
+  pendingMetadataValue: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+  },
+  pendingDescriptionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 1,
+  },
+  pendingDescriptionText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 16,
+    fontFamily: 'Inter_400Regular',
+  },
   opponentRow: {
     flexDirection: 'row',
     alignItems: 'center',
