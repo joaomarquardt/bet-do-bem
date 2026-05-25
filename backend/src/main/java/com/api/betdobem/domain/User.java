@@ -20,6 +20,7 @@ public class User implements UserDetails {
     private String password;
     @Enumerated(EnumType.STRING)
     private UserRole role;
+    private String profilePictureUrl;
     private Long coins = 500L;
 
     public User() {
@@ -73,6 +74,14 @@ public class User implements UserDetails {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
     }
 
     @Override
