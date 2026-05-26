@@ -48,6 +48,7 @@ export interface User {
   email: string;
   role: UserRole;
   coins: number;
+  profilePictureUrl?: string | null;
 }
 
 export interface Proof {
@@ -340,6 +341,17 @@ export interface UserResponse {
     name: string;
     email: string;
     coins: number;
+    profilePictureUrl?: string | null;
+}
+
+export interface UploadPictureResponse {
+    uploadUrl: string;
+}
+
+export interface UploadPictureRequest {
+    fileName: string;
+    contentType: string;
+    imageUrl?: string;
 }
 
 export interface VoteResponse {
