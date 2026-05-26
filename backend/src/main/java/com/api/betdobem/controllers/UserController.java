@@ -2,8 +2,10 @@ package com.api.betdobem.controllers;
 
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
+import com.api.betdobem.dtos.requests.UpdatePictureRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
 import com.api.betdobem.dtos.responses.TransactionResponse;
+import com.api.betdobem.dtos.responses.UploadPictureResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.services.UserService;
 import jakarta.validation.Valid;
@@ -45,6 +47,12 @@ public class UserController {
     public ResponseEntity<UserResponse> getMyProfile(@AuthenticationPrincipal User loggedUser) {
         UserResponse user = userService.getUserById(loggedUser.getId());
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @PutMapping("me/profile-picture")
+    public ResponseEntity<UploadPictureResponse> updateProfilePicture(@RequestBody @Valid UpdatePictureRequest picture, @AuthenticationPrincipal User loggedUser) {
+        UploadPictureResponse uploadPictureResponse = userService.setProfilePicture(picture, loggedUser.getId());
+        return new ResponseEntity<>(uploadPictureResponse, HttpStatus.OK);
     }
 
     @GetMapping("{id}/transactions")
