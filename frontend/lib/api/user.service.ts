@@ -1,5 +1,12 @@
 import { apiClient } from './client';
-import { User, CreateUserRequest, UpdateUserRequest, Transaction } from '@/lib/types';
+import {
+  User,
+  CreateUserRequest,
+  UpdateUserRequest,
+  Transaction,
+  UploadPictureRequest,
+  UploadPictureResponse,
+} from '@/lib/types';
 
 const ENDPOINTS = {
   USERS: '/api/users',
@@ -24,6 +31,10 @@ export const userService = {
 
   getMyProfile(): Promise<User> {
     return apiClient.get(`${ENDPOINTS.USERS}/me`);
+  },
+
+  updateProfilePicture(data: UploadPictureRequest): Promise<UploadPictureResponse> {
+    return apiClient.put(`${ENDPOINTS.USERS}/me/profile-picture`, data);
   },
 
   getUserTransactions(id: string): Promise<Transaction[]> {
