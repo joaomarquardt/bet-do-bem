@@ -4,23 +4,38 @@ import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
 import com.api.betdobem.dtos.responses.UserResponse;
+import com.api.betdobem.services.S3StorageService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface UserMapper {
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
+public abstract class UserMapper {
+    @Autowired
+    private S3StorageService s3StorageService;
 
-    User toUserEntity(CreateUserRequest request);
+    public abstract User toUserEntity(CreateUserRequest request);
 
-    UserResponse toUserResponse(User user);
+    @Mapping(source = "profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "generateS3Url")
+    public abstract UserResponse toUserResponse(User user);
 
-    List<UserResponse> toUserResponseList(List<User> users);
+    public abstract List<UserResponse> toUserResponseList(List<User> users);
 
     @Mapping(target = "id", ignore = true)
-    void updateUserRequest(UpdateUserRequest request, @MappingTarget User user);
+    public abstract void updateUserRequest(UpdateUserRequest request, @MappingTarget User user);
+
+    @Named("generateS3Url")
+    protected String generateS3Url(String imagePath) {
+        if (imagePath == null || imagePath.trim().isEmpty()) {
+            return null;
+        }
+        if (imagePath.startsWith("http")) {
+            return imagePath;
+        }
+        return s3StorageService.generatePresignedDownloadUrl(imagePath);
+    }
 }
