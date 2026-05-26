@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
-import { Avatar } from '@/components/ui/Avatar';
+import {
+  EditableProfileAvatar,
+  type PickedProfileImage,
+} from '@/components/profile/EditableProfileAvatar';
+import { uploadToPresignedUrl } from '@/lib/utils/uploadFileToAWS';
 import { TransactionItem, type ProfileTransaction } from '@/components/profile/TransactionItem';
 import { useAuth } from '@/lib/contexts';
 import { userService } from '@/lib/api/user.service';
@@ -29,11 +33,54 @@ function stringToColor(input: string) {
 }
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const authUser: any = user;
   const displayName = authUser?.displayName ?? authUser?.name ?? authUser?.email ?? 'Usuário';
   const username = authUser?.name ?? (typeof authUser?.email === 'string' ? authUser.email.split('@')[0] : `user${authUser?.id ?? ''}`);
   const avatarColor = authUser?.avatarColor ?? stringToColor(displayName);
+  const initialProfileImageUri = user?.profilePictureUrl ?? null;
+  const [profileImageUri, setProfileImageUri] = useState<string | null>(initialProfileImageUri);
+  const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+
+  useEffect(() => {
+    const url = user?.profilePictureUrl;
+    if (url?.startsWith('http')) {
+      setProfileImageUri(url);
+    }
+  }, [user?.profilePictureUrl]);
+
+  const resolveDisplayImageUrl = (url: string | null | undefined) =>
+    url?.startsWith('http') ? url : null;
+
+  const handleProfileImageSelected = useCallback(
+    async (image: PickedProfileImage) => {
+      setProfileImageUri(image.uri);
+      setIsUploadingPicture(true);
+
+      try {
+        const { uploadUrl } = await userService.updateProfilePicture({
+          fileName: image.fileName,
+          contentType: image.contentType,
+          imageUrl: image.uri,
+        });
+
+        await uploadToPresignedUrl(uploadUrl, { uri: image.uri, type: image.contentType }, image.contentType);
+
+        const profile = await userService.getMyProfile();
+        const serverUrl = resolveDisplayImageUrl(profile.profilePictureUrl) ?? image.uri;
+        setProfileImageUri(serverUrl);
+        updateUser({ profilePictureUrl: serverUrl });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch (e) {
+        console.error('Erro ao enviar foto de perfil', e);
+        setProfileImageUri(resolveDisplayImageUrl(user?.profilePictureUrl) ?? null);
+        Alert.alert('Erro', 'Não foi possível atualizar a foto de perfil.');
+      } finally {
+        setIsUploadingPicture(false);
+      }
+    },
+    [updateUser, user?.profilePictureUrl],
+  );
   const wins: number | undefined = typeof authUser?.wins === 'number' ? authUser.wins : undefined;
   const losses: number | undefined = typeof authUser?.losses === 'number' ? authUser.losses : undefined;
   const draws: number | undefined = typeof authUser?.draws === 'number' ? authUser.draws : undefined;
@@ -88,6 +135,13 @@ export default function ProfileScreen() {
 
     try {
       const profile = await userService.getMyProfile();
+      const displayUrl = profile.profilePictureUrl?.startsWith('http')
+        ? profile.profilePictureUrl
+        : null;
+      if (displayUrl) {
+        setProfileImageUri(displayUrl);
+        updateUser({ profilePictureUrl: displayUrl });
+      }
       setWallet({ balance: profile.coins ?? 0, transactions: [] });
 
       try {
@@ -112,7 +166,7 @@ export default function ProfileScreen() {
       setIsLoadingWallet(false);
       setIsLoadingTransactions(false);
     }
-  }, []);
+  }, [updateUser]);
 
   useEffect(() => {
     let mounted = true;
@@ -136,7 +190,14 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={[styles.header, { paddingTop: topPadding + 20 }]}>
-        <Avatar name={displayName} color={avatarColor} size={72} />
+        <EditableProfileAvatar
+          name={displayName}
+          color={avatarColor}
+          size={72}
+          imageUri={profileImageUri}
+          onImageSelected={handleProfileImageSelected}
+          disabled={isUploadingPicture}
+        />
         <Text style={[styles.displayName, { color: c.text }]}>{displayName}</Text>
         <Text style={[styles.username, { color: c.textSecondary }]}>{username ? `@${username}` : ''}</Text>
       </View>
