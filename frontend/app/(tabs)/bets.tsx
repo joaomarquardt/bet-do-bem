@@ -15,6 +15,7 @@ import Colors from '@/constants/colors';
 import { MyFeedItemCard } from '@/components/dashboard/MyFeedItemCard';
 import { CreateContentModal } from '@/components/create/CreateContentModal';
 import { CreationSuccessModal } from '@/components/create/CreationSuccessModal';
+import { AcceptInviteModal } from '@/components/create/AcceptInviteModal';
 import { useBets, useActivity, useChallenge, useAuth } from '@/lib/contexts';
 import type { ContentKind } from '@/components/create/CreateContentModal';
 import { Bet, Activity, Challenge } from '@/lib/types';
@@ -165,6 +166,7 @@ export default function MyBetsScreen() {
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createdSuccessKind, setCreatedSuccessKind] = useState<ContentKind | null>(null);
+  const [acceptedInviteKind, setAcceptedInviteKind] = useState<'BET' | 'CHALLENGE' | null>(null);
 
   const sections = useMemo<BetsTabSection[]>(() => {
     const allItems: BetsTabItem[] = [
@@ -279,9 +281,11 @@ export default function MyBetsScreen() {
       const onAcceptPress = () => {
         if (item.feedItemType === 'BET') {
           acceptBet(item.id.toString());
+          setAcceptedInviteKind('BET');
         }
         if (item.feedItemType === 'CHALLENGE') {
           acceptChallenge(item.id.toString());
+          setAcceptedInviteKind('CHALLENGE');
         }
       };
 
@@ -405,6 +409,10 @@ export default function MyBetsScreen() {
       <CreationSuccessModal
         kind={createdSuccessKind}
         onDismiss={() => setCreatedSuccessKind(null)}
+      />
+      <AcceptInviteModal
+        kind={acceptedInviteKind}
+        onDismiss={() => setAcceptedInviteKind(null)}
       />
     </View>
   );
