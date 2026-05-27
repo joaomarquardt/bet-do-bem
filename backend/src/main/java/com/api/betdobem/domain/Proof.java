@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
 
 @Entity
 @Table(name = "proofs")
@@ -18,8 +17,6 @@ public class Proof {
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
-    @OneToMany(mappedBy = "proof", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProofComment> comments;
     @Column(name = "posted_at")
     private final Timestamp postedAt = Timestamp.from(Instant.now());
 
@@ -64,14 +61,6 @@ public class Proof {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
-    }
-
-    public List<ProofComment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<ProofComment> comments) {
-        this.comments = comments;
     }
 
     public User getAuthor() {
