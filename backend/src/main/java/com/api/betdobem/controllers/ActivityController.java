@@ -38,13 +38,13 @@ public class ActivityController {
         return new ResponseEntity<>(newActivity, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/{id}/comments")
     public ResponseEntity<CommentResponse> addComment(@PathVariable Long id, @RequestBody @Valid CreateCommentRequest comment, @AuthenticationPrincipal User loggedUser) {
         CommentResponse commentResponse = activityService.addComment(id, comment, loggedUser);
         return new ResponseEntity<>(commentResponse, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}/comments")
+    @GetMapping("/{id}")
     public ResponseEntity<ActivityResponse> getActivityById(@PathVariable Long id) {
         ActivityResponse activity = activityService.getActivityById(id);
         return new ResponseEntity<>(activity, HttpStatus.OK);
