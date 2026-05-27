@@ -8,6 +8,7 @@ public record FeedItemResponse(
         Long id,
         ContextType feedItemType,
         LocalDateTime createdAt,
-        Object content
+        Object content,
+        PagedResponse<CommentResponse> comments
 ) {
 }

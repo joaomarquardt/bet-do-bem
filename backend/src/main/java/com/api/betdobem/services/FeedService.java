@@ -1,12 +1,10 @@
 package com.api.betdobem.services;
 
-import com.api.betdobem.dtos.responses.ActivityResponse;
-import com.api.betdobem.dtos.responses.BetResponse;
-import com.api.betdobem.dtos.responses.ChallengeResponse;
-import com.api.betdobem.dtos.responses.FeedItemResponse;
+import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -20,11 +18,13 @@ public class FeedService {
     private final BetService betService;
     private final ChallengeService challengeService;
     private final ActivityService activityService;
+    private final CommentService commentService;
 
-    public FeedService(BetService betService, ChallengeService challengeService, ActivityService activityService) {
+    public FeedService(BetService betService, ChallengeService challengeService, ActivityService activityService, CommentService commentService) {
         this.betService = betService;
         this.challengeService = challengeService;
         this.activityService = activityService;
+        this.commentService = commentService;
     }
 
     public List<FeedItemResponse> getVotingFeed(Long userId) {
@@ -74,11 +74,14 @@ public class FeedService {
     private <T> void addFeedItems(List<FeedItemResponse> feedItems, List<T> items, ContextType type, 
                                   Function<T, Long> idExtractor, Function<T, Timestamp> dateExtractor) {
         for (T item : items) {
+            Long itemId = idExtractor.apply(item);
+            PagedResponse<CommentResponse> comments = commentService.getComments(type, itemId, Pageable.ofSize(5));
             feedItems.add(new FeedItemResponse(
-                    idExtractor.apply(item),
+                    itemId,
                     type,
                     dateExtractor.apply(item).toLocalDateTime(),
-                    item
+                    item,
+                    comments
             ));
         }
     }
