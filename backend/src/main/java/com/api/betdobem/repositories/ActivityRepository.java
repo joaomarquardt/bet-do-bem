@@ -30,4 +30,13 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
         ORDER BY a.createdAt DESC
     """)
     List<Activity> getActivitiesRequiringVotingByUserId(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END
+        FROM Activity a
+        JOIN a.group g
+        JOIN g.members u
+        WHERE a.id = :activityId AND u.id = :userId
+    """)
+    boolean canUserViewActivity(@Param("activityId") Long activityId, @Param("userId") Long userId);
 }

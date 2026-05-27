@@ -51,4 +51,13 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
             ORDER BY c.createdAt DESC
             """)
     List<Challenge> findByStatusesAndInvolvedUserId(@Param("statuses") List<ChallengeStatus> statuses, @Param("userId") Long userId);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END
+        FROM Challenge c
+        JOIN c.group g
+        JOIN g.members u
+        WHERE c.id = :challengeId AND u.id = :userId
+    """)
+    boolean canUserViewChallenge(@Param("challengeId") Long challengeId, @Param("userId") Long userId);
 }
