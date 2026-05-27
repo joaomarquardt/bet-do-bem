@@ -1,6 +1,6 @@
 package com.api.betdobem.mappers;
 
-import com.api.betdobem.domain.ProofComment;
+import com.api.betdobem.domain.Comment;
 import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.responses.CommentResponse;
 import org.mapstruct.Mapper;
@@ -10,17 +10,17 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface ProofCommentMapper {
-    ProofCommentMapper INSTANCE = Mappers.getMapper(ProofCommentMapper.class);
+public interface CommentMapper {
+    CommentMapper INSTANCE = Mappers.getMapper(CommentMapper.class);
 
-    ProofComment toCommentEntity(CreateCommentRequest request);
-
-    @Mapping(source = "author.id", target = "authorId")
-    @Mapping(source = "author.name", target = "authorName")
-    CommentResponse toCommentResponse(ProofComment comment);
+    Comment toCommentEntity(CreateCommentRequest request);
 
     @Mapping(source = "author.id", target = "authorId")
     @Mapping(source = "author.name", target = "authorName")
-    List<CommentResponse> toCommentResponseList(List<ProofComment> comments);
+    CommentResponse toCommentResponse(Comment comment);
+
+    @Mapping(source = "author.id", target = "authorId")
+    @Mapping(source = "author.name", target = "authorName")
+    List<CommentResponse> toCommentResponseList(List<Comment> comments);
 }
 
