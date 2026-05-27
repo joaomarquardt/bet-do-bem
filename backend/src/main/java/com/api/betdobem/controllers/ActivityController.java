@@ -8,6 +8,7 @@ import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
 import com.api.betdobem.dtos.responses.CommentResponse;
 import com.api.betdobem.dtos.responses.CreatedActivityResponse;
+import com.api.betdobem.dtos.responses.PagedResponse;
 import com.api.betdobem.services.ActivityService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,12 @@ public class ActivityController {
     public ResponseEntity<CommentResponse> addComment(@PathVariable Long id, @RequestBody @Valid CreateCommentRequest comment, @AuthenticationPrincipal User loggedUser) {
         CommentResponse commentResponse = activityService.addComment(id, comment, loggedUser);
         return new ResponseEntity<>(commentResponse, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<PagedResponse<CommentResponse>> getCommentsForActivity(@PathVariable Long id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size, @AuthenticationPrincipal User loggedUser) {
+        PagedResponse<CommentResponse> comments = activityService.getCommentsForActivity(id, page, size, loggedUser);
+        return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

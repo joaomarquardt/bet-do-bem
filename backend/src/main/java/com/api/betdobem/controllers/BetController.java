@@ -7,6 +7,7 @@ import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
 import com.api.betdobem.dtos.responses.CommentResponse;
+import com.api.betdobem.dtos.responses.PagedResponse;
 import com.api.betdobem.dtos.responses.ProofUploadResponse;
 import com.api.betdobem.services.BetService;
 import jakarta.validation.Valid;
@@ -60,6 +61,12 @@ public class BetController {
     public ResponseEntity<CommentResponse> addComment(@PathVariable Long id, @RequestBody @Valid CreateCommentRequest comment, @AuthenticationPrincipal User loggedUser) {
         CommentResponse commentResponse = betService.addComment(id, comment, loggedUser);
         return new ResponseEntity<>(commentResponse, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<PagedResponse<CommentResponse>> getCommentsForBet(@PathVariable Long id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size, @AuthenticationPrincipal User loggedUser) {
+        PagedResponse<CommentResponse> comments = betService.getCommentsForBet(id, page, size, loggedUser);
+        return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

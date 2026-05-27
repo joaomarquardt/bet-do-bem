@@ -8,10 +8,7 @@ import com.api.betdobem.dtos.requests.CreateActivityRequest;
 import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
-import com.api.betdobem.dtos.responses.ActivityResponse;
-import com.api.betdobem.dtos.responses.CommentResponse;
-import com.api.betdobem.dtos.responses.CreatedActivityResponse;
-import com.api.betdobem.dtos.responses.VotesByProof;
+import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
@@ -21,6 +18,7 @@ import com.api.betdobem.repositories.ActivityRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -71,6 +69,16 @@ public class ActivityService {
                 throw new UnauthorizedActionException("User does not have access to comment on this activity.");
         }
         return commentService.addComment(ContextType.ACTIVITY, activityId, comment.content(), loggedUser);
+    }
+
+    public PagedResponse<CommentResponse> getCommentsForActivity(Long activityId, int page, int size, User loggedUser) {
+        if (!activityRepository.existsById(activityId)) {
+            throw new EntityNotFoundException("Activity with ID " + activityId + " not found.");
+        }
+        if (!activityRepository.canUserViewActivity(activityId, loggedUser.getId())) {
+            throw new UnauthorizedActionException("User cannot access the comments for this activity.");
+        }
+        return commentService.getComments(ContextType.ACTIVITY, activityId, Pageable.ofSize(size).withPage(page));
     }
 
     public List<ActivityResponse> getActivitiesRequiringVotingByUserId(Long userId) {

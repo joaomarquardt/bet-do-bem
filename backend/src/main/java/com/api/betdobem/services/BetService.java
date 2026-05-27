@@ -18,6 +18,7 @@ import com.api.betdobem.repositories.BetRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -63,12 +64,22 @@ public class BetService {
 
     public CommentResponse addComment(Long betId, CreateCommentRequest comment, User loggedUser) {
         if (!betRepository.existsById(betId)) {
-            throw new EntityNotFoundException("Activity with ID " + betId + " not found.");
+            throw new EntityNotFoundException("Bet with ID " + betId + " not found.");
         }
         if (!betRepository.canUserViewBet(betId, loggedUser.getId())) {
             throw new UnauthorizedActionException("User does not have access to comment on this bet.");
         }
         return commentService.addComment(ContextType.BET, betId, comment.content(), loggedUser);
+    }
+
+    public PagedResponse<CommentResponse> getCommentsForBet(Long betId, int page, int size, User loggedUser) {
+        if (!betRepository.existsById(betId)) {
+            throw new EntityNotFoundException("Bet with ID " + betId + " not found.");
+        }
+        if (!betRepository.canUserViewBet(betId, loggedUser.getId())) {
+            throw new UnauthorizedActionException("User cannot access the comments for this bet.");
+        }
+        return commentService.getComments(ContextType.BET, betId, Pageable.ofSize(size).withPage(page));
     }
 
     public List<BetResponse> getBetsRequiringVotingByUserId(Long userId) {

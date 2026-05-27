@@ -5,10 +5,7 @@ import com.api.betdobem.dtos.requests.CreateChallengeRequest;
 import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
-import com.api.betdobem.dtos.responses.ChallengeResponse;
-import com.api.betdobem.dtos.responses.CommentResponse;
-import com.api.betdobem.dtos.responses.ProofResponse;
-import com.api.betdobem.dtos.responses.ProofUploadResponse;
+import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
@@ -20,6 +17,7 @@ import com.api.betdobem.repositories.ChallengeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +69,16 @@ public class ChallengeService {
             throw new UnauthorizedActionException("User does not have access to comment on this challenge.");
         }
         return commentService.addComment(ContextType.ACTIVITY, challengeId, comment.content(), loggedUser);
+    }
+
+    public PagedResponse<CommentResponse> getCommentsForChallenge(Long challengeId, int page, int size, User loggedUser) {
+        if (!challengeRepository.existsById(challengeId)) {
+            throw new EntityNotFoundException("Challenge with ID " + challengeId + " not found.");
+        }
+        if (!challengeRepository.canUserViewChallenge(challengeId, loggedUser.getId())) {
+            throw new UnauthorizedActionException("User cannot access the comments for this challenge.");
+        }
+        return commentService.getComments(ContextType.CHALLENGE, challengeId, Pageable.ofSize(size).withPage(page));
     }
 
     public List<ChallengeResponse> getChallengesRequiringVotingByUserId(Long userId) {
