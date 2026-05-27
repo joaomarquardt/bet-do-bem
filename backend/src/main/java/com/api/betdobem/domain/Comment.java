@@ -1,31 +1,33 @@
 package com.api.betdobem.domain;
 
+import com.api.betdobem.enums.ContextType;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 
 @Entity
-@Table(name = "proof_comments")
-public class ProofComment {
+@Table(name = "comments")
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
-    @JoinColumn(name = "proof_id", nullable = false)
-    private Proof proof;
+    @Enumerated(EnumType.STRING)
+    private ContextType contextType;
+    private Long contextId;
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
     private String content;
     private final Timestamp postedAt = Timestamp.from(Instant.now());
 
-    public ProofComment() {
+    public Comment() {
     }
 
-    public ProofComment(Long id, Proof proof, User author, String content) {
+    public Comment(Long id, ContextType contextType, Long contextId, User author, String content) {
         this.id = id;
-        this.proof = proof;
+        this.contextType = contextType;
+        this.contextId = contextId;
         this.author = author;
         this.content = content;
     }
@@ -38,12 +40,20 @@ public class ProofComment {
         this.id = id;
     }
 
-    public Proof getProof() {
-        return proof;
+    public ContextType getContextType() {
+        return contextType;
     }
 
-    public void setProof(Proof proof) {
-        this.proof = proof;
+    public void setContextType(ContextType contextType) {
+        this.contextType = contextType;
+    }
+
+    public Long getContextId() {
+        return contextId;
+    }
+
+    public void setContextId(Long contextId) {
+        this.contextId = contextId;
     }
 
     public User getAuthor() {
