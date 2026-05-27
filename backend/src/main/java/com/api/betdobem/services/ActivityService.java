@@ -5,14 +5,17 @@ import com.api.betdobem.domain.Group;
 import com.api.betdobem.domain.Proof;
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateActivityRequest;
+import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
+import com.api.betdobem.dtos.responses.CommentResponse;
 import com.api.betdobem.dtos.responses.CreatedActivityResponse;
 import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
+import com.api.betdobem.infra.exceptions.UnauthorizedActionException;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,8 +36,9 @@ public class ActivityService {
     private GroupService groupService;
     private WalletService walletService;
     private S3StorageService s3StorageService;
+    private CommentService commentService;
 
-    public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService, UserService userService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService) {
+    public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService, UserService userService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService, CommentService commentService) {
         this.activityRepository = activityRepository;
         this.activityMapper = activityMapper;
         this.proofService = proofService;
@@ -42,6 +46,7 @@ public class ActivityService {
         this.groupService = groupService;
         this.walletService = walletService;
         this.s3StorageService = s3StorageService;
+        this.commentService = commentService;
     }
 
     public List<ActivityResponse> getAllActivities() {
@@ -52,6 +57,20 @@ public class ActivityService {
     public List<Activity> getAllExpiredActivities() {
         Timestamp now = Timestamp.from(Instant.now());
         return activityRepository.findByStatusAndExpiresAtBefore(ActivityStatus.IN_JUDGMENT, now);
+    }
+
+    public boolean existsById(Long id) {
+        return activityRepository.existsById(id);
+    }
+
+    public CommentResponse addComment(Long activityId, CreateCommentRequest comment, User loggedUser) {
+        if (!activityRepository.existsById(activityId)) {
+            throw new EntityNotFoundException("Activity with ID " + activityId + " not found.");
+        }
+        if (!activityRepository.canUserViewActivity(activityId, loggedUser.getId())) {
+                throw new UnauthorizedActionException("User does not have access to comment on this activity.");
+        }
+        return commentService.addComment(ContextType.ACTIVITY, activityId, comment.content(), loggedUser);
     }
 
     public List<ActivityResponse> getActivitiesRequiringVotingByUserId(Long userId) {

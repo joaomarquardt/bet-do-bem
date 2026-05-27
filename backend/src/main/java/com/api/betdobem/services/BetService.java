@@ -2,12 +2,10 @@ package com.api.betdobem.services;
 
 import com.api.betdobem.domain.*;
 import com.api.betdobem.dtos.requests.CreateBetRequest;
+import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
-import com.api.betdobem.dtos.responses.BetResponse;
-import com.api.betdobem.dtos.responses.ProofResponse;
-import com.api.betdobem.dtos.responses.ProofUploadResponse;
-import com.api.betdobem.dtos.responses.VotesByProof;
+import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
@@ -36,8 +34,9 @@ public class BetService {
     private GroupService groupService;
     private WalletService walletService;
     private S3StorageService s3StorageService;
+        private CommentService commentService;
 
-    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService) {
+    public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService, CommentService commentService) {
         this.betRepository = betRepository;
         this.betMapper = betMapper;
         this.userService = userService;
@@ -45,6 +44,7 @@ public class BetService {
         this.groupService = groupService;
         this.walletService = walletService;
         this.s3StorageService = s3StorageService;
+        this.commentService = commentService;
     }
 
     public List<BetResponse> getAllBets() {
@@ -55,6 +55,20 @@ public class BetService {
     public List<Bet> getAllExpiredBets() {
         Timestamp now = Timestamp.from(Instant.now());
         return betRepository.findByStatusAndExpiresAtBefore(BetStatus.IN_JUDGMENT, now);
+    }
+
+    public boolean existsById(Long id) {
+        return betRepository.existsById(id);
+    }
+
+    public CommentResponse addComment(Long betId, CreateCommentRequest comment, User loggedUser) {
+        if (!betRepository.existsById(betId)) {
+            throw new EntityNotFoundException("Activity with ID " + betId + " not found.");
+        }
+        if (!betRepository.canUserViewBet(betId, loggedUser.getId())) {
+            throw new UnauthorizedActionException("User does not have access to comment on this bet.");
+        }
+        return commentService.addComment(ContextType.BET, betId, comment.content(), loggedUser);
     }
 
     public List<BetResponse> getBetsRequiringVotingByUserId(Long userId) {

@@ -2,9 +2,11 @@ package com.api.betdobem.controllers;
 
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateActivityRequest;
+import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateActivityRequest;
 import com.api.betdobem.dtos.responses.ActivityResponse;
+import com.api.betdobem.dtos.responses.CommentResponse;
 import com.api.betdobem.dtos.responses.CreatedActivityResponse;
 import com.api.betdobem.services.ActivityService;
 import jakarta.validation.Valid;
@@ -36,7 +38,13 @@ public class ActivityController {
         return new ResponseEntity<>(newActivity, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
+    @PostMapping("/{id}")
+    public ResponseEntity<CommentResponse> addComment(@PathVariable Long id, @RequestBody @Valid CreateCommentRequest comment, @AuthenticationPrincipal User loggedUser) {
+        CommentResponse commentResponse = activityService.addComment(id, comment, loggedUser);
+        return new ResponseEntity<>(commentResponse, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}/comments")
     public ResponseEntity<ActivityResponse> getActivityById(@PathVariable Long id) {
         ActivityResponse activity = activityService.getActivityById(id);
         return new ResponseEntity<>(activity, HttpStatus.OK);

@@ -2,9 +2,11 @@ package com.api.betdobem.services;
 
 import com.api.betdobem.domain.*;
 import com.api.betdobem.dtos.requests.CreateChallengeRequest;
+import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
+import com.api.betdobem.dtos.responses.CommentResponse;
 import com.api.betdobem.dtos.responses.ProofResponse;
 import com.api.betdobem.dtos.responses.ProofUploadResponse;
 import com.api.betdobem.enums.ChallengeStatus;
@@ -34,8 +36,9 @@ public class ChallengeService {
     private GroupService groupService;
     private WalletService walletService;
     private S3StorageService s3StorageService;
+    private CommentService commentService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService, CommentService commentService) {
         this.challengeRepository = challengeRepository;
         this.challengeMapper = challengeMapper;
         this.proofService = proofService;
@@ -43,6 +46,7 @@ public class ChallengeService {
         this.groupService = groupService;
         this.walletService = walletService;
         this.s3StorageService = s3StorageService;
+        this.commentService = commentService;
     }
 
     public List<ChallengeResponse> getAllChallenges() {
@@ -53,6 +57,20 @@ public class ChallengeService {
     public List<Challenge> getAllExpiredChallenges() {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         return challengeRepository.findByStatusAndDeadlineBefore(ChallengeStatus.IN_PROGRESS, now);
+    }
+
+    public boolean existsById(Long id) {
+        return challengeRepository.existsById(id);
+    }
+
+    public CommentResponse addComment(Long challengeId, CreateCommentRequest comment, User loggedUser) {
+        if (!challengeRepository.existsById(challengeId)) {
+            throw new EntityNotFoundException("Challenge with ID " + challengeId + " not found.");
+        }
+        if (!challengeRepository.canUserViewChallenge(challengeId, loggedUser.getId())) {
+            throw new UnauthorizedActionException("User does not have access to comment on this challenge.");
+        }
+        return commentService.addComment(ContextType.ACTIVITY, challengeId, comment.content(), loggedUser);
     }
 
     public List<ChallengeResponse> getChallengesRequiringVotingByUserId(Long userId) {

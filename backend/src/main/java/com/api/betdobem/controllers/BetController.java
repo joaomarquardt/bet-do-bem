@@ -2,9 +2,11 @@ package com.api.betdobem.controllers;
 
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateBetRequest;
+import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateBetRequest;
 import com.api.betdobem.dtos.responses.BetResponse;
+import com.api.betdobem.dtos.responses.CommentResponse;
 import com.api.betdobem.dtos.responses.ProofUploadResponse;
 import com.api.betdobem.services.BetService;
 import jakarta.validation.Valid;
@@ -52,6 +54,12 @@ public class BetController {
     public ResponseEntity<BetResponse> declineBet(@PathVariable Long id, @AuthenticationPrincipal User user) {
         BetResponse bet = betService.declineBet(id, user.getId());
         return new ResponseEntity<>(bet, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<CommentResponse> addComment(@PathVariable Long id, @RequestBody @Valid CreateCommentRequest comment, @AuthenticationPrincipal User loggedUser) {
+        CommentResponse commentResponse = betService.addComment(id, comment, loggedUser);
+        return new ResponseEntity<>(commentResponse, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

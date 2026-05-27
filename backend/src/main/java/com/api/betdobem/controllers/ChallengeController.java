@@ -2,9 +2,11 @@ package com.api.betdobem.controllers;
 
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateChallengeRequest;
+import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.UpdateChallengeRequest;
 import com.api.betdobem.dtos.responses.ChallengeResponse;
+import com.api.betdobem.dtos.responses.CommentResponse;
 import com.api.betdobem.dtos.responses.ProofUploadResponse;
 import com.api.betdobem.services.ChallengeService;
 import jakarta.validation.Valid;
@@ -52,6 +54,12 @@ public class ChallengeController {
     public ResponseEntity<ChallengeResponse> declineChallenge(@PathVariable Long id, @AuthenticationPrincipal User user) {
         ChallengeResponse challenge = challengeService.declineChallenge(id, user.getId());
         return new ResponseEntity<>(challenge, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<CommentResponse> addComment(@PathVariable Long id, @RequestBody @Valid CreateCommentRequest comment, @AuthenticationPrincipal User loggedUser) {
+        CommentResponse commentResponse = challengeService.addComment(id, comment, loggedUser);
+        return new ResponseEntity<>(commentResponse, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
