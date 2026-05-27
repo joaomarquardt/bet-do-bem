@@ -1,33 +1,38 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.*;
-import com.api.betdobem.dtos.requests.CreateCommentRequest;
 import com.api.betdobem.dtos.responses.CommentResponse;
+import com.api.betdobem.dtos.responses.PagedResponse;
 import com.api.betdobem.enums.ContextType;
-import com.api.betdobem.infra.exceptions.UnauthorizedActionException;
 import com.api.betdobem.mappers.CommentMapper;
 import com.api.betdobem.repositories.CommentRepository;
-import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
-    private final UserService userService;
-    private final ActivityService activityService;
-    private final BetService betService;
-    private final ChallengeService challengeService;
 
-    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, UserService userService, ActivityService activityService, BetService betService, ChallengeService challengeService) {
+    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
-        this.userService = userService;
-        this.activityService = activityService;
-        this.betService = betService;
-        this.challengeService = challengeService;
+    }
+
+    public PagedResponse<CommentResponse> getComments(ContextType contextType, Long contextId, Pageable pageable) {
+        Page<Comment> page = commentRepository.findByContextTypeAndContextIdOrderByPostedAtDesc(
+                contextType, contextId, pageable
+        );
+        Page<CommentResponse> responsePage = page.map(commentMapper::toCommentResponse);
+        return new PagedResponse<>(
+                responsePage.getContent(),
+                responsePage.getNumber(),
+                responsePage.getSize(),
+                responsePage.getTotalElements(),
+                responsePage.getTotalPages(),
+                responsePage.hasNext()
+        );
     }
 
     public CommentResponse addComment(ContextType contextType, Long contextId, String content, User user) {
