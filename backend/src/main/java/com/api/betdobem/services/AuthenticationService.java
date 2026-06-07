@@ -5,7 +5,6 @@ import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.LoginRequest;
 import com.api.betdobem.dtos.requests.RegisterRequest;
 import com.api.betdobem.dtos.responses.TokenResponse;
-import com.api.betdobem.infra.exceptions.AuthenticationFailedException;
 import com.api.betdobem.infra.exceptions.DifferentPasswordsException;
 import com.api.betdobem.infra.exceptions.EmailAlreadyExistsException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,7 +28,6 @@ public class AuthenticationService {
     }
 
     public TokenResponse login(LoginRequest loginRequest) {
-        User user = userService.getUserEntityByEmail(loginRequest.email());
         var userPassword = new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password());
         try {
             var auth = authenticationManager.authenticate(userPassword);
@@ -37,7 +35,7 @@ public class AuthenticationService {
             String token = tokenService.generateToken(userAuth);
             return new TokenResponse(token);
         } catch (BadCredentialsException e) {
-            throw new AuthenticationFailedException("Invalid email or password");
+            throw new BadCredentialsException("Invalid email or password");
         }
     }
 
