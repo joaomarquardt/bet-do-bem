@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -11,156 +11,39 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useQueryClient } from '@tanstack/react-query';
 import Colors from '@/constants/colors';
 import { MyFeedItemCard } from '@/components/dashboard/MyFeedItemCard';
+import { PendingInviteCard } from '@/components/dashboard/PendingInviteCard';
 import { CreateContentModal } from '@/components/create/CreateContentModal';
 import { CreationSuccessModal } from '@/components/create/CreationSuccessModal';
 import { AcceptInviteModal } from '@/components/create/AcceptInviteModal';
-import { useBets, useActivity, useChallenge, useAuth } from '@/lib/contexts';
+import { useBets, useChallenge, useAuth } from '@/lib/contexts';
 import type { ContentKind } from '@/components/create/CreateContentModal';
-import { Bet, Activity, Challenge } from '@/lib/types';
+import {
+  useMyBetsSections,
+  myBetsSectionQueryKeys,
+  type BetsTabSection,
+} from '@/lib/hooks';
+import type { BetsTabItem } from '@/lib/utils/feedItemMappers';
 import { styles } from '@/styles/tabs/dashboard.styles';
 import { betsService } from '@/lib/api/bets.service';
-import { activityService } from '@/lib/api/activity.service';
 import { challengeService } from '@/lib/api/challenge.service';
 import uploadFileToAWS from '@/lib/utils/uploadFileToAWS';
 
 const c = Colors.dark;
 
-type BetsTabItem = (Bet | Activity | Challenge) & {
-  feedItemType: 'BET' | 'ACTIVITY' | 'CHALLENGE';
-};
-
-type BetsTabSection = {
-  title: string;
-  key: 'pendingInvites' | 'awaitingAcceptance' | 'inProgress' | 'history';
-  data: BetsTabItem[];
-};
-
-function isPendingReceivedInvite(
-  item: BetsTabItem,
-  currentUserId: number | undefined,
-): boolean {
-  if (item.status !== 'INVITED' || currentUserId == null) return false;
-  if (item.feedItemType === 'BET') {
-    return (
-      'opponent' in item &&
-      Number(item.opponent?.id) === currentUserId
-    );
-  }
-  if (item.feedItemType === 'CHALLENGE') {
-    return (
-      'challenged' in item &&
-      Number(item.challenged?.id) === currentUserId
-    );
-  }
-  return false;
-}
-
-function isAwaitingSentInvite(
-  item: BetsTabItem,
-  currentUserId: number | undefined,
-): boolean {
-  if (item.status !== 'INVITED' || currentUserId == null) return false;
-  if (item.feedItemType === 'BET') {
-    return (
-      'creator' in item &&
-      Number(item.creator?.id) === currentUserId
-    );
-  }
-  if (item.feedItemType === 'CHALLENGE') {
-    return (
-      'challenger' in item &&
-      Number(item.challenger?.id) === currentUserId
-    );
-  }
-  return false;
-}
-
-function buildBetsSections(
-  allItems: BetsTabItem[],
-  currentUserId: number | undefined,
-): BetsTabSection[] {
-  const pendingInvites = allItems.filter((item) =>
-    isPendingReceivedInvite(item, currentUserId),
-  );
-
-  const awaitingAcceptance = allItems.filter((item) =>
-    isAwaitingSentInvite(item, currentUserId),
-  );
-
-  const inProgress = allItems.filter(
-    (item) => item.status === 'IN_PROGRESS' || item.status === 'IN_JUDGMENT',
-  );
-
-  const history = allItems.filter(
-    (item) =>
-      (typeof item.status === 'string' &&
-        item.status.startsWith('FINISHED')) ||
-      item.status === 'SUCCESS' ||
-      item.status === 'FAILED' ||
-      item.status === 'APPROVED' ||
-      item.status === 'REJECTED',
-  );
-
-  const sections: BetsTabSection[] = [];
-
-  if (pendingInvites.length > 0) {
-    sections.push({
-      title: 'Convites Pendentes',
-      key: 'pendingInvites',
-      data: pendingInvites,
-    });
-  }
-
-  if (awaitingAcceptance.length > 0) {
-    sections.push({
-      title: 'Aguardando Aceite',
-      key: 'awaitingAcceptance',
-      data: awaitingAcceptance,
-    });
-  }
-
-  if (inProgress.length > 0) {
-    sections.push({
-      title: 'Em Andamento',
-      key: 'inProgress',
-      data: inProgress,
-    });
-  }
-
-  if (history.length > 0) {
-    sections.push({
-      title: 'Historico',
-      key: 'history',
-      data: history,
-    });
-  }
-
-  return sections;
-}
-
 export default function MyBetsScreen() {
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const {
-    myBets,
-    isLoading: betsLoading,
-    refreshData: refreshBets,
-    acceptBet,
-    declineBet,
-  } = useBets();
-  const {
-    activities,
-    isLoading: activitiesLoading,
-    refreshData: refreshActivities,
-  } = useActivity();
-  const {
-    challenges,
-    isLoading: challengesLoading,
-    refreshData: refreshChallenges,
-    acceptChallenge,
-    declineChallenge,
-  } = useChallenge();
+    sections,
+    isLoading,
+    isRefetching,
+    refetch: refetchSections,
+  } = useMyBetsSections();
+  const { acceptBet, declineBet } = useBets();
+  const { acceptChallenge, declineChallenge } = useChallenge();
 
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
@@ -168,48 +51,31 @@ export default function MyBetsScreen() {
   const [createdSuccessKind, setCreatedSuccessKind] = useState<ContentKind | null>(null);
   const [acceptedInviteKind, setAcceptedInviteKind] = useState<'BET' | 'CHALLENGE' | null>(null);
 
-  const sections = useMemo<BetsTabSection[]>(() => {
-    const allItems: BetsTabItem[] = [
-      ...myBets.map((bet) => ({ ...bet, feedItemType: 'BET' as const })),
-      ...activities.map((activity) => ({
-        ...activity,
-        feedItemType: 'ACTIVITY' as const,
-      })),
-      ...challenges.map((challenge) => ({
-        ...challenge,
-        feedItemType: 'CHALLENGE' as const,
-      })),
-    ].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+  const invalidateSections = useCallback(async () => {
+    await queryClient.invalidateQueries({
+      queryKey: myBetsSectionQueryKeys.all,
+    });
+  }, [queryClient]);
 
-    return buildBetsSections(allItems, user?.id as number | undefined);
-  }, [myBets, activities, challenges, user?.id]);
-
-  const isLoading = betsLoading || activitiesLoading || challengesLoading;
-
-  const refreshData = useCallback(() => {
-    refreshBets();
-    refreshActivities();
-    refreshChallenges();
-  }, [refreshBets, refreshActivities, refreshChallenges]);
+  const refreshData = useCallback(async () => {
+    await refetchSections();
+  }, [refetchSections]);
 
   const renderItem = useCallback(
-    ({ item, index }: { item: BetsTabItem; index: number }) => {
-      const isPendingInvite =
-        item.status === 'INVITED' &&
-        user?.id != null &&
-        ((item.feedItemType === 'BET' &&
-          'opponent' in item &&
-          Number(item.opponent?.id) === user.id) ||
-          (item.feedItemType === 'CHALLENGE' &&
-            'challenged' in item &&
-            Number(item.challenged?.id) === user.id));
+    ({
+      item,
+      index,
+      section,
+    }: {
+      item: BetsTabItem;
+      index: number;
+      section: BetsTabSection;
+    }) => {
+      const isPendingInvite = section.key === 'pendingInvites';
 
       const handleSendProof = async (
         itemId: number,
-        itemType: 'BET' | 'ACTIVITY' | 'CHALLENGE',
+        itemType: 'BET' | 'CHALLENGE',
       ) => {
         try {
           const pickFileWebFile = (): Promise<File | null> =>
@@ -253,24 +119,24 @@ export default function MyBetsScreen() {
 
           if (!file) return;
 
-          let resp: any;
+          let resp: { uploadUrl?: string } | undefined;
           if (itemType === 'BET') {
             resp = await betsService.addProofToBet(itemId.toString(), {
               fileName,
               contentType: mime,
-            } as any);
+            });
           } else if (itemType === 'CHALLENGE') {
             resp = await challengeService.addProofToChallenge(
               itemId.toString(),
-              { fileName, contentType: mime } as any,
+              { fileName, contentType: mime },
             );
           }
 
-          const uploadUrl: string | undefined = resp?.uploadUrl;
+          const uploadUrl = resp?.uploadUrl;
           if (uploadUrl) {
             await uploadFileToAWS(uploadUrl, file, mime);
           }
-          refreshData();
+          await invalidateSections();
           Alert.alert('Prova enviada');
         } catch (e) {
           console.error('Erro ao enviar prova', e);
@@ -278,41 +144,58 @@ export default function MyBetsScreen() {
         }
       };
 
-      const onAcceptPress = () => {
+      const onAcceptPress = async () => {
         if (item.feedItemType === 'BET') {
-          acceptBet(item.id.toString());
+          await acceptBet(item.id.toString());
           setAcceptedInviteKind('BET');
         }
         if (item.feedItemType === 'CHALLENGE') {
-          acceptChallenge(item.id.toString());
+          await acceptChallenge(item.id.toString());
           setAcceptedInviteKind('CHALLENGE');
         }
+        await invalidateSections();
       };
 
-      const onDeclinePress = () => {
+      const onDeclinePress = async () => {
         if (item.feedItemType === 'BET') {
-          declineBet(item.id.toString());
+          await declineBet(item.id.toString());
         }
         if (item.feedItemType === 'CHALLENGE') {
-          declineChallenge(item.id.toString());
+          await declineChallenge(item.id.toString());
         }
+        await invalidateSections();
       };
 
       return (
         <View style={styles.cardWrapper}>
-          <MyFeedItemCard
-            item={item}
-            index={index}
-            onAccept={isPendingInvite ? onAcceptPress : undefined}
-            onDecline={isPendingInvite ? onDeclinePress : undefined}
-            onSendProof={() =>
-              handleSendProof(item.id as number, item.feedItemType)
-            }
-          />
+          {isPendingInvite && user?.id != null ? (
+            <PendingInviteCard
+              item={item}
+              index={index}
+              currentUserId={user.id}
+              onAccept={onAcceptPress}
+              onDecline={onDeclinePress}
+            />
+          ) : (
+            <MyFeedItemCard
+              item={item}
+              index={index}
+              onSendProof={() =>
+                handleSendProof(item.id as number, item.feedItemType)
+              }
+            />
+          )}
         </View>
       );
     },
-    [acceptBet, declineBet, acceptChallenge, declineChallenge, user?.id, refreshData],
+    [
+      user?.id,
+      acceptBet,
+      declineBet,
+      acceptChallenge,
+      declineChallenge,
+      invalidateSections,
+    ],
   );
 
   const renderSectionHeader = useCallback(
@@ -379,7 +262,7 @@ export default function MyBetsScreen() {
         stickySectionHeadersEnabled={false}
         refreshControl={
           <RefreshControl
-            refreshing={isLoading}
+            refreshing={isLoading || isRefetching}
             onRefresh={refreshData}
             tintColor={c.accent}
           />
@@ -404,7 +287,10 @@ export default function MyBetsScreen() {
       <CreateContentModal
         visible={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onCreated={(k) => setCreatedSuccessKind(k)}
+        onCreated={(k) => {
+          setCreatedSuccessKind(k);
+          void invalidateSections();
+        }}
       />
       <CreationSuccessModal
         kind={createdSuccessKind}
@@ -417,4 +303,3 @@ export default function MyBetsScreen() {
     </View>
   );
 }
-

@@ -1,0 +1,156 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 10,
+    gap: 14,
+  },
+  statusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  statusBannerText: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  mainContent: {
+    gap: 6,
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: 'Inter_700Bold',
+    lineHeight: 24,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: 'Inter_400Regular',
+  },
+  stakeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginTop: 2,
+  },
+  stakeLabel: {
+    fontSize: 11,
+    fontFamily: 'Inter_500Medium',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  stakeValue: {
+    fontSize: 22,
+    fontFamily: 'Inter_700Bold',
+  },
+  stakeUnit: {
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  duelSection: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    gap: 12,
+  },
+  duelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  participant: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: '38%',
+  },
+  participantHighlight: {
+    borderRadius: 999,
+    padding: 3,
+  },
+  roleLabel: {
+    fontSize: 10,
+    fontFamily: 'Inter_600SemiBold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  participantName: {
+    fontSize: 14,
+    fontFamily: 'Inter_700Bold',
+    textAlign: 'center',
+  },
+  participantHandle: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    textAlign: 'center',
+  },
+  youBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    marginTop: 2,
+  },
+  youBadgeText: {
+    fontSize: 10,
+    fontFamily: 'Inter_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  vsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 56,
+  },
+  vsBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+  },
+  vsText: {
+    fontSize: 16,
+    fontFamily: 'Inter_700Bold',
+    letterSpacing: 1,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 2,
+  },
+  declineBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  acceptBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  actionText: {
+    fontSize: 15,
+    fontFamily: 'Inter_700Bold',
+  },
+});
