@@ -1,9 +1,10 @@
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Challenge, CreateChallengeRequest, FeedItemResponse } from '@/lib/types';
+import { Challenge, CreateChallengeRequest } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { challengeService } from '@/lib/api/challenge.service';
+import { mapFeedItemToChallenge } from '@/lib/utils/feedItemMappers';
 import { useAuth } from '@/lib/contexts';
 
 interface ChallengeContextValue {
@@ -11,8 +12,8 @@ interface ChallengeContextValue {
   isLoading: boolean;
   voteChallenge: (challengeId: string, approved: boolean) => void;
   createChallenge: (request: CreateChallengeRequest) => Promise<void>;
-  acceptChallenge: (challengeId: string) => void;
-  declineChallenge: (challengeId: string) => void;
+  acceptChallenge: (challengeId: string) => Promise<void>;
+  declineChallenge: (challengeId: string) => Promise<void>;
   refreshData: () => void;
 }
 
@@ -21,26 +22,6 @@ const ChallengeContext = createContext<ChallengeContextValue | null>(null);
 const STORAGE_KEYS = {
   CHALLENGES: '@betdobem_challenges',
 } as const;
-
-
-function uniqueChallengeFeedItems(
-  pending: FeedItemResponse[],
-  inProgress: FeedItemResponse[],
-): FeedItemResponse[] {
-  const combined = [...(pending || []), ...(inProgress || [])].filter(
-    (it) => it.feedItemType === 'CHALLENGE',
-  );
-  const seen = new Set<number>();
-  const unique: FeedItemResponse[] = [];
-  for (const it of combined) {
-    const raw = it as FeedItemResponse & { content?: { id?: number } };
-    const id = Number(raw.content?.id ?? raw.id ?? 0);
-    if (id === 0 || seen.has(id)) continue;
-    seen.add(id);
-    unique.push(it);
-  }
-  return unique;
-}
 
 export function ChallengeProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -55,7 +36,9 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     try {
       const challengesData = await AsyncStorage.getItem(STORAGE_KEYS.CHALLENGES);
       if (challengesData) setChallenges(JSON.parse(challengesData));
-    } catch {}
+    } catch (e) {
+      console.error('ChallengeProvider: failed to load persisted data', e);
+    }
   }
 
   useEffect(() => {
@@ -63,19 +46,15 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     async function loadChallengesFromApi() {
       if (!user?.id) return;
       try {
-        const [pending, inProgress] = await Promise.all([
-          feedService.getMyPendingInvites(),
-          feedService.getMyInProgressItems(),
-        ]);
-        const unique = uniqueChallengeFeedItems(pending || [], inProgress || []);
-        const mappedChallenges: Challenge[] = unique.map((it) =>
-          mapFeedItemToChallenge(it, user?.id),
-        );
+        const feedItems = await feedService.getMyFeed();
+        const mappedChallenges: Challenge[] = (feedItems || [])
+          .filter((it) => it.feedItemType === 'CHALLENGE')
+          .map((it) => mapFeedItemToChallenge(it));
         if (!mounted) return;
         setChallenges(mappedChallenges);
         persistChallenges(mappedChallenges);
       } catch (e) {
-        // ignore
+        console.error('ChallengeProvider: failed to load feed from API', e);
       }
     }
 
@@ -87,103 +66,30 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEYS.CHALLENGES, JSON.stringify(data));
   }
 
-  function mapFeedItemToChallenge(item: FeedItemResponse | any, currentUserId?: string | number | null): Challenge {
-    const content = item.content || item;
-    
-    const safeUser = (u: any, fallbackId = '') => {
-      const idRaw = String(u?.id ?? fallbackId);
-      return {
-        id: idRaw,
-        name: u?.name ?? u?.displayName ?? u?.username ?? `User ${idRaw}`,
-        email: u?.email ?? '',
-        username: u?.username ?? u?.name ?? u?.displayName ?? `user${idRaw}`,
-        displayName: u?.displayName ?? u?.name ?? u?.username ?? `User ${idRaw}`,
-        avatarColor: u?.avatarColor ?? '#CCCCCC',
-        wins: u?.wins ?? 0,
-        losses: u?.losses ?? 0,
-        draws: u?.draws ?? 0,
-      } as any;
-    };
-
-    const mapProof = (p: any) => {
-      if (!p) return undefined;
-      return {
-        id: Number(p.id ?? 0),
-        imageUrl: p.imageUrl ?? p.mediaUri ?? '',
-        contentType: p.contentType ?? '',
-        fileName: p.fileName ?? '',
-        postedAt: p.postedAt ?? p.createdAt ?? new Date().toISOString(),
-        author: safeUser(p.author, p.authorId ?? p.userId ?? ''),
-        comments: p.comments ?? [],
-      } as any;
-    };
-
-    const challenger = content.challenger || content.challengerResponse || content.challengerUser;
-    const challenged = content.challenged || content.challengedResponse || content.challengedUser;
-    const proof = content.proof || content.proofResponse;
-    const challengerRaw = safeUser(challenger, content.challengerId ?? '');
-    const challengedRaw = safeUser(challenged, content.challengedId ?? '');
-
-    return {
-        id: content.id,
-        challenger: challengerRaw,
-        challenged: challengedRaw,
-        title: content.title,
-        description: content.description,
-        amount: content.amount,
-        proof: mapProof(proof),
-        createdAt: content.createdAt,
-        closedAt: content.closedAt,
-        deadline: content.deadline,
-        status: content.status,
-        group: content.group
-    } as Challenge;
-  }
-
   const voteChallenge = useCallback((challengeId: string, approved: boolean) => {
     console.log('vote challenge not implemented');
   }, []);
 
-    const acceptChallenge = useCallback(async (challengeId: string) => {
-        try {
-            await challengeService.acceptChallenge(challengeId);
-            setChallenges((prev) => {
-                const updated = prev.map((challenge) => (challenge.id.toString() === challengeId ? { ...challenge, status: 'IN_PROGRESS' as const } : challenge));
-                persistChallenges(updated);
-                return updated;
-            });
-        } catch (e) {
-        }
-    }, []);
+  const acceptChallenge = useCallback(async (challengeId: string) => {
+    await challengeService.acceptChallenge(challengeId);
+  }, []);
 
-    const declineChallenge = useCallback(async (challengeId: string) => {
-        try {
-            await challengeService.declineChallenge(challengeId);
-            setChallenges((prev) => {
-                const updated = prev.filter((challenge) => challenge.id.toString() !== challengeId);
-                persistChallenges(updated);
-                return updated;
-            });
-        } catch (e) {
-        }
-    }, []);
+  const declineChallenge = useCallback(async (challengeId: string) => {
+    await challengeService.declineChallenge(challengeId);
+  }, []);
 
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
-        if (!user?.id) return;
-        const [pending, inProgress] = await Promise.all([
-          feedService.getMyPendingInvites(),
-          feedService.getMyInProgressItems(),
-        ]);
-        const unique = uniqueChallengeFeedItems(pending || [], inProgress || []);
-        const mappedChallenges: Challenge[] = unique.map((it) =>
-          mapFeedItemToChallenge(it, user?.id),
-        );
-        setChallenges(mappedChallenges);
-        persistChallenges(mappedChallenges);
+      if (!user?.id) return;
+      const feedItems = await feedService.getMyFeed();
+      const mappedChallenges: Challenge[] = (feedItems || [])
+        .filter((it) => it.feedItemType === 'CHALLENGE')
+        .map((it) => mapFeedItemToChallenge(it));
+      setChallenges(mappedChallenges);
+      persistChallenges(mappedChallenges);
     } catch (e) {
-      // ignore
+      console.error('ChallengeProvider: failed to refresh feed', e);
     } finally {
       setIsLoading(false);
     }
