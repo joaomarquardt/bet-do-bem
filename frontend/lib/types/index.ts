@@ -373,7 +373,7 @@ export interface PaginatedResponse<T> {
   size: number;
   totalElements: number;
   totalPages: number;
-  last: boolean;
+  hasNext: boolean;
 }
 
 export interface ApiError {

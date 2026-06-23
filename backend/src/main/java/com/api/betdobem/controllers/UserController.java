@@ -4,11 +4,15 @@ import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdatePictureRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
+import com.api.betdobem.dtos.responses.PagedResponse;
 import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.dtos.responses.UploadPictureResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.services.UserService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -56,14 +60,20 @@ public class UserController {
     }
 
     @GetMapping("{id}/transactions")
-    public ResponseEntity<List<TransactionResponse>> getUserTransactions(@PathVariable Long id) {
-        List<TransactionResponse> transactions = userService.getUserTransactions(id);
+    public ResponseEntity<PagedResponse<TransactionResponse>> getUserTransactions(@PathVariable Long id, @RequestParam(defaultValue = "0") int page, 
+    @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "createdAt") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        PagedResponse<TransactionResponse> transactions = userService.getUserTransactions(id, pageable);
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
     @GetMapping("me/transactions")
-    public ResponseEntity<List<TransactionResponse>> getMyTransactions(@AuthenticationPrincipal User loggedUser) {
-        List<TransactionResponse> transactions = userService.getUserTransactions(loggedUser.getId());
+    public ResponseEntity<PagedResponse<TransactionResponse>> getMyTransactions(@AuthenticationPrincipal User loggedUser, @RequestParam(defaultValue = "0") int page, 
+    @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "createdAt") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        PagedResponse<TransactionResponse> transactions = userService.getUserTransactions(loggedUser.getId(), pageable);
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 

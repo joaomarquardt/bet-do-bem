@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/colors';
 import {
   EditableProfileAvatar,
@@ -11,6 +12,7 @@ import {
 } from '@/components/profile/EditableProfileAvatar';
 import { uploadToPresignedUrl } from '@/lib/utils/uploadFileToAWS';
 import { TransactionItem, type ProfileTransaction } from '@/components/profile/TransactionItem';
+import { FullTransactionHistory } from '@/components/profile/FullTransactionHistory';
 import { useAuth } from '@/lib/contexts';
 import { userService } from '@/lib/api/user.service';
 import type { TransactionType } from '@/lib/types';
@@ -87,9 +89,12 @@ export default function ProfileScreen() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [walletError, setWalletError] = useState<string | null>(null);
-  const [transactions, setTransactions] = useState<ProfileTransaction[] | null>(null);
+  const [previewTransactions, setPreviewTransactions] = useState<ProfileTransaction[] | null>(null);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [hasMoreThanPreview, setHasMoreThanPreview] = useState(false);
+  const [showFullHistory, setShowFullHistory] = useState(false);
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPadding = Platform.OS === 'web' ? 84 : insets.bottom + 90;
@@ -145,22 +150,24 @@ export default function ProfileScreen() {
       setWallet({ balance: profile.coins ?? 0, transactions: [] });
 
       try {
-        const apiTxs = await userService.getMyTransactions();
-        const mapped = mapApiTransactionsToDomain(apiTxs);
-        setTransactions(mapped);
+        const pagedResult = await userService.getMyTransactions({ page: 0, size: 5 });
+        const mapped = mapApiTransactionsToDomain(pagedResult.content);
+        setPreviewTransactions(mapped);
+        setTotalTransactions(pagedResult.totalElements);
+        setHasMoreThanPreview(pagedResult.hasNext);
         setWallet((prev) =>
           prev
             ? { ...prev, transactions: mapped }
             : { balance: profile.coins ?? 0, transactions: mapped },
         );
       } catch (txErr: any) {
-        setTransactions(null);
+        setPreviewTransactions(null);
         setTransactionsError(txErr?.message || 'Erro ao carregar transacoes');
       }
     } catch (err: any) {
       setWallet(null);
       setWalletError(err?.message || 'Erro ao carregar carteira');
-      setTransactions(null);
+      setPreviewTransactions(null);
       setTransactionsError(err?.message || 'Erro ao carregar transacoes');
     } finally {
       setIsLoadingWallet(false);
@@ -247,7 +254,7 @@ export default function ProfileScreen() {
       <Animated.View entering={FadeInDown.delay(300).duration(400)}>
         <View style={styles.sectionHeaderRow}>
           <Text style={[styles.sectionTitle, { color: c.text }]}>Extrato</Text>
-          <Text style={[styles.sectionCount, { color: c.textTertiary }]}>{transactions ? transactions.length : 0} transacoes</Text>
+          <Text style={[styles.sectionCount, { color: c.textTertiary }]}>{totalTransactions} transações</Text>
         </View>
         <View style={[styles.transactionsCard, { backgroundColor: c.surface, borderColor: c.border }]}>
           {isLoadingTransactions ? (
@@ -267,15 +274,51 @@ export default function ProfileScreen() {
                 <Text style={[styles.emptyText, { color: c.accent }]}>Tentar novamente</Text>
               </Pressable>
             </View>
-          ) : !transactions || transactions.length === 0 ? (
+          ) : !previewTransactions || previewTransactions.length === 0 ? (
             <View style={styles.transactionsEmpty}>
               <Ionicons name="receipt-outline" size={32} color={c.textTertiary} />
               <Text style={[styles.emptyText, { color: c.textTertiary }]}>Nenhuma transacao ainda</Text>
             </View>
           ) : (
-            transactions.map((tx, index) => (
-              <TransactionItem key={tx.id} transaction={tx} index={index} />
-            ))
+            <View>
+              {previewTransactions.map((tx, index) => (
+                <TransactionItem key={tx.id} transaction={tx} index={index} />
+              ))}
+              {hasMoreThanPreview && (
+                <View style={{ position: 'relative' }}>
+                  <LinearGradient
+                    colors={[`${c.surface}00`, c.surface]}
+                    style={{
+                      position: 'absolute',
+                      top: -48,
+                      left: 0,
+                      right: 0,
+                      height: 48,
+                      zIndex: 1,
+                    }}
+                    pointerEvents="none"
+                  />
+                  <Pressable
+                    onPress={() => setShowFullHistory(true)}
+                    style={({ pressed }) => ({
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingVertical: 14,
+                      gap: 6,
+                      opacity: pressed ? 0.7 : 1,
+                      borderTopWidth: 1,
+                      borderTopColor: c.border,
+                    })}
+                  >
+                    <Ionicons name="list-outline" size={16} color={c.accent} />
+                    <Text style={{ fontSize: 14, fontFamily: 'Inter_600SemiBold', color: c.accent }}>
+                      Ver extrato completo
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
           )}
         </View>
       </Animated.View>
@@ -287,6 +330,13 @@ export default function ProfileScreen() {
         <Ionicons name="log-out-outline" size={18} color={c.danger} />
         <Text style={[styles.logoutText, { color: c.danger }]}>Sair</Text>
       </Pressable>
+
+      <FullTransactionHistory
+        visible={showFullHistory}
+        onClose={() => setShowFullHistory(false)}
+        initialTransactions={previewTransactions ?? []}
+        totalElements={totalTransactions}
+      />
     </ScrollView>
   );
 }

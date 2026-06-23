@@ -4,6 +4,7 @@ import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdatePictureRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
+import com.api.betdobem.dtos.responses.PagedResponse;
 import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.dtos.responses.UploadPictureResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
@@ -11,6 +12,7 @@ import com.api.betdobem.enums.UserRole;
 import com.api.betdobem.mappers.UserMapper;
 import com.api.betdobem.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,8 +53,8 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public List<TransactionResponse> getUserTransactions(Long id) {
-        return walletService.getUserTransactions(id);
+    public PagedResponse<TransactionResponse> getUserTransactions(Long id, Pageable pageable) {
+        return walletService.getUserTransactions(id, pageable);
     }
 
     public UserResponse createUser(CreateUserRequest user) {

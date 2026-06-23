@@ -3,7 +3,8 @@ import {
   User,
   CreateUserRequest,
   UpdateUserRequest,
-  Transaction,
+  TransactionResponse,
+  PaginatedResponse,
   UploadPictureRequest,
   UploadPictureResponse,
 } from '@/lib/types';
@@ -37,12 +38,29 @@ export const userService = {
     return apiClient.put(`${ENDPOINTS.USERS}/me/profile-picture`, data);
   },
 
-  getUserTransactions(id: string): Promise<Transaction[]> {
-    return apiClient.get(`${ENDPOINTS.USERS}/${id}/transactions`);
+  getUserTransactions(
+    id: string,
+    params?: { page?: number; size?: number; sortBy?: string; sortDirection?: string },
+  ): Promise<PaginatedResponse<TransactionResponse>> {
+    const query = new URLSearchParams();
+    if (params?.page !== undefined) query.set('page', String(params.page));
+    if (params?.size !== undefined) query.set('size', String(params.size));
+    if (params?.sortBy) query.set('sortBy', params.sortBy);
+    if (params?.sortDirection) query.set('sortDirection', params.sortDirection);
+    const qs = query.toString();
+    return apiClient.get(`${ENDPOINTS.USERS}/${id}/transactions${qs ? `?${qs}` : ''}`);
   },
 
-  getMyTransactions(): Promise<Transaction[]> {
-    return apiClient.get(`${ENDPOINTS.USERS}/me/transactions`);
+  getMyTransactions(
+    params?: { page?: number; size?: number; sortBy?: string; sortDirection?: string },
+  ): Promise<PaginatedResponse<TransactionResponse>> {
+    const query = new URLSearchParams();
+    if (params?.page !== undefined) query.set('page', String(params.page));
+    if (params?.size !== undefined) query.set('size', String(params.size));
+    if (params?.sortBy) query.set('sortBy', params.sortBy);
+    if (params?.sortDirection) query.set('sortDirection', params.sortDirection);
+    const qs = query.toString();
+    return apiClient.get(`${ENDPOINTS.USERS}/me/transactions${qs ? `?${qs}` : ''}`);
   },
 
   updateUser(id: string, data: UpdateUserRequest): Promise<User> {

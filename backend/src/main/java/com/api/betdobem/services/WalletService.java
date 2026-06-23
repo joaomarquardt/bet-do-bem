@@ -1,6 +1,7 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.domain.*;
+import com.api.betdobem.dtos.responses.PagedResponse;
 import com.api.betdobem.dtos.responses.TransactionResponse;
 import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ChallengeStatus;
@@ -11,6 +12,8 @@ import com.api.betdobem.repositories.TransactionRepository;
 import com.api.betdobem.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -158,15 +161,23 @@ public class WalletService {
         return user.getCoins().compareTo(amount) >= 0;
     }
 
-    public List<TransactionResponse> getUserTransactions(Long userId) {
-        List<Transaction> transactions = transactionRepository.findByUserId(userId);
-        return transactions.stream().map(transaction -> new TransactionResponse(
+    public PagedResponse<TransactionResponse> getUserTransactions(Long userId, Pageable pageable) {
+        Page<Transaction> page = transactionRepository.findByUserId(userId, pageable);
+        Page<TransactionResponse> responsePage = page.map(transaction -> new TransactionResponse(
                 transaction.getId(),
                 transaction.getAmount(),
                 transaction.getContextId(),
                 transaction.getContextType(),
                 transaction.getTransactionType(),
                 transaction.getCreatedAt()
-        )).toList();
+        ));
+        return new PagedResponse<>(
+                responsePage.getContent(),
+                responsePage.getNumber(),
+                responsePage.getSize(),
+                responsePage.getTotalElements(),
+                responsePage.getTotalPages(),
+                responsePage.hasNext()
+        );
     }
 }
