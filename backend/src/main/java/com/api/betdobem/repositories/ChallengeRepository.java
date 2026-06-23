@@ -53,6 +53,14 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     List<Challenge> findByStatusesAndInvolvedUserId(@Param("statuses") List<ChallengeStatus> statuses, @Param("userId") Long userId);
 
     @Query("""
+            SELECT c FROM Challenge c
+            WHERE c.status = :status
+            AND c.challenger.id = :challengerId
+            ORDER BY c.createdAt DESC
+            """)
+    List<Challenge> findByStatusAndChallengerId(@Param("status") ChallengeStatus status, @Param("challengerId") Long challengerId);
+
+    @Query("""
         SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END
         FROM Challenge c
         JOIN c.group g

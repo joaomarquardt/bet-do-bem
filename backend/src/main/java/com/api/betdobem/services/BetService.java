@@ -97,6 +97,11 @@ public class BetService {
         return betMapper.toBetResponseList(bets);
     }
 
+    public List<BetResponse> getBetsByStatusAndCreatorId(BetStatus status, Long userId) {
+        List<Bet> bets = betRepository.findByStatusAndCreatorId(status, userId);
+        return betMapper.toBetResponseList(bets);
+    }
+
     public BetResponse createBet(CreateBetRequest bet, Long userId) {
         if (userId.equals(bet.opponentId())) {
             throw new SelfInteractionException("Creator and opponent cannot be the same user.");

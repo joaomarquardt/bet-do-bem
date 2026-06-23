@@ -71,6 +71,19 @@ public class FeedService {
         return feedItems;
     }
 
+    public List<FeedItemResponse> getWaitingOpponentAcceptanceItems(Long userId) {
+        List<FeedItemResponse> feedItems = new ArrayList<>();
+
+        addFeedItems(feedItems, betService.getBetsByStatusAndCreatorId(BetStatus.INVITED, userId),
+                ContextType.BET, BetResponse::id, BetResponse::createdAt);
+
+        addFeedItems(feedItems, challengeService.getChallengesByStatusAndChallengerId(ChallengeStatus.INVITED, userId),
+                ContextType.CHALLENGE, ChallengeResponse::id, ChallengeResponse::createdAt);
+
+        feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
+        return feedItems;
+    }
+
     private <T> void addFeedItems(List<FeedItemResponse> feedItems, List<T> items, ContextType type, 
                                   Function<T, Long> idExtractor, Function<T, Timestamp> dateExtractor) {
         for (T item : items) {

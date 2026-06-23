@@ -88,6 +88,69 @@ export const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'Inter_400Regular',
   },
+  challengeProofContainer: {
+    marginTop: 8,
+    gap: 8,
+  },
+  challengeHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  challengeHeaderColumn: {
+    flex: 1,
+  },
+  challengeHeaderLabel: {
+    fontSize: 11,
+    fontFamily: 'Inter_400Regular',
+  },
+  challengeHeaderValue: {
+    fontSize: 12,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  activityProofContainer: {
+    marginTop: 8,
+  },
+  proofsMediaRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  proofMediaWrapper: {
+    flex: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  proofMediaWrapperSingle: {
+    flex: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginTop: 8,
+  },
+  proofMediaImage: {
+    width: '100%',
+    height: 160,
+  },
+  proofOwnerChip: {
+    position: 'absolute',
+    left: 8,
+    bottom: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  proofOwnerText: {
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  proofMediaOverlay: {
+    position: 'absolute',
+    right: 8,
+    top: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 999,
+    padding: 6,
+  },
   actionRow: {
     flexDirection: 'row',
     gap: 10,

@@ -15,4 +15,7 @@ export const feedService = {
   getMyInProgressItems(): Promise<FeedItemResponse[]> {
     return apiClient.get(`${ENDPOINTS.FEED}/me/in-progress-items`);
   },
+  getMyWaitingOpponentAcceptanceItems(): Promise<FeedItemResponse[]> {
+    return apiClient.get(`${ENDPOINTS.FEED}/me/waiting-opponent-acceptance`);
+  },
 };

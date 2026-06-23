@@ -36,4 +36,10 @@ public class FeedController {
         List<FeedItemResponse> inProgressItems = feedService.getInProgressItems(loggedUser.getId());
         return new ResponseEntity<>(inProgressItems, HttpStatus.OK);
     }
+
+    @GetMapping("/me/waiting-opponent-acceptance")
+    public ResponseEntity<List<FeedItemResponse>> getMyWaitingOpponentAcceptanceItems(@AuthenticationPrincipal User loggedUser) {
+        List<FeedItemResponse> waitingAcceptanceItems = feedService.getWaitingOpponentAcceptanceItems(loggedUser.getId());
+        return new ResponseEntity<>(waitingAcceptanceItems, HttpStatus.OK);
+    }
 }

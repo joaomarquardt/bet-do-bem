@@ -52,6 +52,14 @@ public interface BetRepository extends JpaRepository<Bet, Long> {
     List<Bet> findByStatusesAndInvolvedUserId(@Param("statuses") List<BetStatus> statuses, @Param("userId") Long userId);
 
     @Query("""
+            SELECT b FROM Bet b
+            WHERE b.status = :status
+            AND b.creator.id = :creatorId
+            ORDER BY b.createdAt DESC
+            """)
+    List<Bet> findByStatusAndCreatorId(@Param("status") BetStatus status, @Param("creatorId") Long creatorId);
+
+    @Query("""
         SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END
         FROM Bet b
         JOIN b.group g
