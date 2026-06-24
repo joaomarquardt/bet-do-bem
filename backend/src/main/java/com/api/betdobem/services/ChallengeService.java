@@ -68,7 +68,7 @@ public class ChallengeService {
         if (!challengeRepository.canUserViewChallenge(challengeId, loggedUser.getId())) {
             throw new UnauthorizedActionException("User does not have access to comment on this challenge.");
         }
-        return commentService.addComment(ContextType.ACTIVITY, challengeId, comment.content(), loggedUser);
+        return commentService.addComment(ContextType.CHALLENGE, challengeId, comment.content(), loggedUser);
     }
 
     public PagedResponse<CommentResponse> getCommentsForChallenge(Long challengeId, int page, int size, User loggedUser) {
