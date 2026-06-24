@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Proof, UpdateProofRequest, CreateVoteRequest } from '@/lib/types';
+import { Proof, UpdateProofRequest, CreateVoteRequest, VotePercentageResponse } from '@/lib/types';
 
 const ENDPOINTS = {
   PROOFS: '/api/proofs',
@@ -14,7 +14,7 @@ export const proofService = {
     return apiClient.get(`${ENDPOINTS.PROOFS}/${id}`);
   },
 
-  voteInProof(id: string, data: CreateVoteRequest): Promise<void> {
+  voteInProof(id: string, data: CreateVoteRequest): Promise<VotePercentageResponse> {
     return apiClient.post(`${ENDPOINTS.PROOFS}/${id}/votes`, data);
   },
 

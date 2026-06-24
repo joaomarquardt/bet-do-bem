@@ -8,7 +8,7 @@ import Colors from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar';
 import { ProofMediaFrame } from '@/components/feed/ProofMediaFrame';
 import { CommentSection } from '@/components/feed/CommentSection';
-import { Challenge, PaginatedResponse, CommentResponse } from '@/lib/types';
+import { Challenge, PaginatedResponse, CommentResponse, VotePercentageResponse } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils/formatters';
 import { useChallenge } from '@/lib/contexts';
 import { styles } from './BetCard.styles';
@@ -27,6 +27,8 @@ export function ChallengeCard({ challenge, index, commentsData }: ChallengeCardP
   const { voteChallenge } = useChallenge();
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<boolean | null>(null);
+  const [voteData, setVoteData] = useState<VotePercentageResponse | null>(null);
+  const [isVoting, setIsVoting] = useState(false);
   const c = Colors.dark;
   const challengerName =
     challenge.challenger?.name ??
@@ -45,13 +47,27 @@ export function ChallengeCard({ challenge, index, commentsData }: ChallengeCardP
     String(challenge.proof?.contentType ?? '').toLowerCase().startsWith('video') ||
     /\.(mp4|mov|webm|mkv)$/i.test(proofUri);
 
-  const handleVote = useCallback((approved: boolean) => {
-    if (hasVoted) return;
+  const handleVote = useCallback(async (approved: boolean) => {
+    if (hasVoted || isVoting) return;
+    const proofId = challenge.proof?.id;
+    if (proofId == null) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setHasVoted(true);
-    setVotedFor(approved);
-    voteChallenge(challenge.id.toString(), approved);
-  }, [hasVoted, voteChallenge, challenge.id]);
+    setIsVoting(true);
+    try {
+      const response = await voteChallenge(String(proofId), approved);
+      setHasVoted(true);
+      setVotedFor(approved);
+      setVoteData(response);
+    } catch (e) {
+      console.error('Erro ao votar no desafio', e);
+    } finally {
+      setIsVoting(false);
+    }
+  }, [hasVoted, isVoting, voteChallenge, challenge.proof?.id]);
+
+  const proofVote = voteData?.votesByProof?.[0];
+  const approvedPct = proofVote?.approvedPercentage ?? 0;
+  const rejectedPct = proofVote?.disapprovedPercentage ?? 0;
 
   return (
     <Animated.View entering={FadeInDown.delay(index * 80).duration(400)} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
@@ -129,27 +145,45 @@ export function ChallengeCard({ challenge, index, commentsData }: ChallengeCardP
       {!hasVoted && (
         <View style={styles.voteButtons}>
           <Pressable
-            style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed || isVoting ? 0.7 : 1 }]}
             onPress={() => handleVote(true)}
+            disabled={isVoting}
           >
-            <Ionicons name="trophy" size={16} color={c.accent} />
-            <Text style={[styles.voteBtnText, { color: c.accent }]}>{challengerName}</Text>
+            <Ionicons name="thumbs-up" size={16} color={c.accent} />
+            <Text style={[styles.voteBtnText, { color: c.accent }]}>Aprovar</Text>
           </Pressable>
 
           <Pressable
-            style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed || isVoting ? 0.7 : 1 }]}
             onPress={() => handleVote(false)}
+            disabled={isVoting}
           >
-            <Ionicons name="trophy" size={16} color={c.accent} />
-            <Text style={[styles.voteBtnText, { color: c.accent }]}>{challengedName}</Text>
+            <Ionicons name="thumbs-down" size={16} color={c.warning} />
+            <Text style={[styles.voteBtnText, { color: c.warning }]}>Reprovar</Text>
           </Pressable>
         </View>
       )}
 
-      {hasVoted && (
-        <View style={styles.voteResults}>
-            <Text style={[styles.totalVotes, { color: c.textTertiary }]}>Voto computado!</Text>
-        </View>
+      {hasVoted && voteData && (
+        <Animated.View entering={FadeIn.duration(300)} style={styles.voteResults}>
+          <Text style={[styles.totalVotes, { color: c.textTertiary }]}>
+            {voteData.totalVotes} {voteData.totalVotes === 1 ? 'voto' : 'votos'}
+          </Text>
+          <View style={styles.voteBarContainer}>
+            <View style={styles.voteBarRow}>
+              {approvedPct > 0 && (
+                <View style={{ flex: approvedPct, backgroundColor: c.accent, borderTopLeftRadius: 4, borderBottomLeftRadius: 4, borderTopRightRadius: rejectedPct === 0 ? 4 : 0, borderBottomRightRadius: rejectedPct === 0 ? 4 : 0 }} />
+              )}
+              {rejectedPct > 0 && (
+                <View style={{ flex: rejectedPct, backgroundColor: c.danger, borderTopRightRadius: 4, borderBottomRightRadius: 4, borderTopLeftRadius: approvedPct === 0 ? 4 : 0, borderBottomLeftRadius: approvedPct === 0 ? 4 : 0 }} />
+              )}
+            </View>
+            <View style={styles.voteLabels}>
+              <Text style={[styles.voteLabel, { color: c.accent }]}>{Math.round(approvedPct)}% Aprovado</Text>
+              <Text style={[styles.voteLabel, { color: c.danger }]}>{Math.round(rejectedPct)}% Rejeitado</Text>
+            </View>
+          </View>
+        </Animated.View>
       )}
 
       <CommentSection

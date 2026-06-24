@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Bet, CreateBetRequest, PaginatedResponse, CommentResponse } from '@/lib/types';
+import { Bet, CreateBetRequest, PaginatedResponse, CommentResponse, VotePercentageResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { betsService } from '@/lib/api/bets.service';
+import { proofService } from '@/lib/api/proof.service';
 import { mapFeedItemToBet } from '@/lib/utils/feedItemMappers';
 import { useAuth } from '@/lib/contexts';
 
@@ -23,7 +24,7 @@ interface BetsContextValue {
   betCommentsMap: Record<number, PaginatedResponse<CommentResponse>>;
   wallet: WalletLike;
   isLoading: boolean;
-  voteBet: (betId: string, votedForUserId: string) => void;
+  voteBet: (proofId: string) => Promise<VotePercentageResponse>;
   acceptBet: (betId: string) => Promise<void>;
   declineBet: (betId: string) => Promise<void>;
   createBet: (request: CreateBetRequest) => Promise<void>;
@@ -98,8 +99,9 @@ export function BetsProvider({ children }: { children: ReactNode }) {
   }
 
   const voteBet = useCallback(
-    (betId: string, votedForUserId: string) => {
-      setFeedBets((prev) => prev);
+    async (proofId: string): Promise<VotePercentageResponse> => {
+      const response = await proofService.voteInProof(proofId, { approved: true });
+      return response;
     },
     [],
   );

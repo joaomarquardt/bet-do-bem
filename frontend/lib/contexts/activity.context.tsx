@@ -1,9 +1,10 @@
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Activity, CreateActivityRequest, FeedItemResponse, PaginatedResponse, CommentResponse } from '@/lib/types';
+import { Activity, CreateActivityRequest, FeedItemResponse, PaginatedResponse, CommentResponse, VotePercentageResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { activityService } from '@/lib/api/activity.service';
+import { proofService } from '@/lib/api/proof.service';
 import { uploadToPresignedUrl } from '@/lib/utils/uploadFileToAWS';
 import { useAuth } from '@/lib/contexts';
 
@@ -11,7 +12,7 @@ interface ActivityContextValue {
   activities: Activity[];
   activityCommentsMap: Record<number, PaginatedResponse<CommentResponse>>;
   isLoading: boolean;
-  voteActivity: (activityId: string, approved: boolean) => void;
+  voteActivity: (proofId: string, approved: boolean) => Promise<VotePercentageResponse>;
   createActivity: (
     request: CreateActivityRequest,
     file: File | { uri: string; type?: string },
@@ -120,8 +121,9 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     } as Activity;
   }
 
-  const voteActivity = useCallback((activityId: string, approved: boolean) => {
-    console.log('vote activity not implemented');
+  const voteActivity = useCallback(async (proofId: string, approved: boolean): Promise<VotePercentageResponse> => {
+    const response = await proofService.voteInProof(proofId, { approved });
+    return response;
   }, []);
 
   const refreshData = useCallback(async () => {

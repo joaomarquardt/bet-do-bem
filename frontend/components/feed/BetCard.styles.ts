@@ -182,6 +182,12 @@ export const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 3,
   },
+  voteBarRow: {
+    flexDirection: 'row',
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
   voteLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',

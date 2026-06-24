@@ -362,6 +362,19 @@ export interface VoteResponse {
     votedAt: string;
 }
 
+export interface VotePercentageItemResponse {
+    proofId: number;
+    approvedPercentage: number;
+    disapprovedPercentage: number;
+}
+
+export interface VotePercentageResponse {
+    totalVotes: number;
+    contextType: ContextType;
+    contextItemId: number;
+    votesByProof: VotePercentageItemResponse[];
+}
+
 export interface VotesByProof {
     approvedVotes: number;
     rejectedVotes: number;

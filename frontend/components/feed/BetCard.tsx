@@ -7,9 +7,8 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { Image } from 'react-native';
 import { Avatar } from '@/components/ui/Avatar';
-import { proofService } from '@/lib/api/proof.service';
 import { CommentSection } from '@/components/feed/CommentSection';
-import { Bet, Proof, PaginatedResponse, CommentResponse } from '@/lib/types';
+import { Bet, Proof, PaginatedResponse, CommentResponse, VotePercentageResponse, VotePercentageItemResponse } from '@/lib/types';
 import { formatTimeAgo, formatDeadline } from '@/lib/utils/formatters';
 import { useBets } from '@/lib/contexts';
 import { styles } from './BetCard.styles';
@@ -35,6 +34,14 @@ function proofForParticipant(
   return undefined;
 }
 
+function findVoteForProof(
+  votesByProof: VotePercentageItemResponse[] | undefined,
+  proofId: number | undefined,
+): VotePercentageItemResponse | undefined {
+  if (!votesByProof?.length || proofId == null) return undefined;
+  return votesByProof.find((v) => v.proofId === proofId);
+}
+
 interface BetCardProps {
   bet: Bet;
   index: number;
@@ -45,24 +52,29 @@ export function BetCard({ bet, index, commentsData }: BetCardProps) {
   const { voteBet } = useBets();
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<string | null>(null);
+  const [voteData, setVoteData] = useState<VotePercentageResponse | null>(null);
+  const [isVoting, setIsVoting] = useState(false);
   const c = Colors.dark;
   const creatorName = bet.creator?.name ?? (bet.creator as any)?.displayName ?? (bet.creator as any)?.username ?? '...';
   const opponentName = bet.opponent?.name ?? (bet.opponent as any)?.displayName ?? (bet.opponent as any)?.username ?? '...';
 
   const handleVote = useCallback(
-    async (proofId: any, userId: string) => {
-      if (hasVoted) return;
+    async (proofId: number, userId: string) => {
+      if (hasVoted || isVoting) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setIsVoting(true);
       try {
-        await proofService.voteInProof(String(proofId), { approved: true } as any);
+        const response = await voteBet(String(proofId));
+        setHasVoted(true);
+        setVotedFor(userId);
+        setVoteData(response);
       } catch (e) {
-        return;
+        console.error('Erro ao votar na aposta', e);
+      } finally {
+        setIsVoting(false);
       }
-      setHasVoted(true);
-      setVotedFor(userId);
-      voteBet(bet.id.toString(), userId);
     },
-    [hasVoted, bet.id, voteBet],
+    [hasVoted, isVoting, voteBet],
   );
 
   const creatorProof = proofForParticipant(bet.proofs, bet.creator?.id, 0);
@@ -88,6 +100,12 @@ export function BetCard({ bet, index, commentsData }: BetCardProps) {
       Image.prefetch(opponentMedia.uri).catch(() => {});
     }
   }, [creatorMedia.uri, opponentMedia.uri]);
+
+  // Correlate vote data by proofId to ensure correct participant mapping
+  const creatorVote = findVoteForProof(voteData?.votesByProof, creatorProof?.id);
+  const opponentVote = findVoteForProof(voteData?.votesByProof, opponentProof?.id);
+  const creatorPct = creatorVote?.approvedPercentage ?? 0;
+  const opponentPct = opponentVote?.approvedPercentage ?? 0;
 
   return (
     <Animated.View entering={FadeInDown.delay(index * 80).duration(400)} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
@@ -170,32 +188,48 @@ export function BetCard({ bet, index, commentsData }: BetCardProps) {
         </View>
       )}
 
-
-
-      {hasVoted && (
+      {hasVoted && voteData && (
         <Animated.View entering={FadeIn.duration(300)} style={styles.voteResults}>
-          <Text style={[styles.totalVotes, { color: c.textTertiary }]}>Voto computado!</Text>
+          <Text style={[styles.totalVotes, { color: c.textTertiary }]}>
+            {voteData.totalVotes} {voteData.totalVotes === 1 ? 'voto' : 'votos'}
+          </Text>
+          <View style={styles.voteBarContainer}>
+            <View style={styles.voteBarRow}>
+              {creatorPct > 0 && (
+                <View style={{ flex: creatorPct, backgroundColor: c.accent, borderTopLeftRadius: 4, borderBottomLeftRadius: 4, borderTopRightRadius: opponentPct === 0 ? 4 : 0, borderBottomRightRadius: opponentPct === 0 ? 4 : 0 }} />
+              )}
+              {opponentPct > 0 && (
+                <View style={{ flex: opponentPct, backgroundColor: c.warning, borderTopRightRadius: 4, borderBottomRightRadius: 4, borderTopLeftRadius: creatorPct === 0 ? 4 : 0, borderBottomLeftRadius: creatorPct === 0 ? 4 : 0 }} />
+              )}
+            </View>
+            <View style={styles.voteLabels}>
+              <Text style={[styles.voteLabel, { color: c.accent }]}>{Math.round(creatorPct)}% {creatorName}</Text>
+              <Text style={[styles.voteLabel, { color: c.warning }]}>{Math.round(opponentPct)}% {opponentName}</Text>
+            </View>
+          </View>
         </Animated.View>
       )}
 
       {!hasVoted && bet.creator && bet.opponent && (
         <View style={styles.voteButtons}>
           <Pressable
-            style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed || isVoting ? 0.7 : 1 }]}
             onPress={() => {
               if (creatorProof?.id == null) return;
               handleVote(creatorProof.id, String(bet.creator.id));
             }}
+            disabled={isVoting}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
             <Text style={[styles.voteBtnText, { color: c.accent }]}>{creatorName}</Text>
           </Pressable>
           <Pressable
-            style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed || isVoting ? 0.7 : 1 }]}
             onPress={() => {
               if (opponentProof?.id == null) return;
               handleVote(opponentProof.id, String(bet.opponent.id));
             }}
+            disabled={isVoting}
           >
             <Ionicons name="trophy" size={16} color={c.accent} />
             <Text style={[styles.voteBtnText, { color: c.accent }]}>{opponentName}</Text>

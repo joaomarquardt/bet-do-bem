@@ -1,9 +1,10 @@
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Challenge, CreateChallengeRequest, PaginatedResponse, CommentResponse } from '@/lib/types';
+import { Challenge, CreateChallengeRequest, PaginatedResponse, CommentResponse, VotePercentageResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { challengeService } from '@/lib/api/challenge.service';
+import { proofService } from '@/lib/api/proof.service';
 import { mapFeedItemToChallenge } from '@/lib/utils/feedItemMappers';
 import { useAuth } from '@/lib/contexts';
 
@@ -11,7 +12,7 @@ interface ChallengeContextValue {
   challenges: Challenge[];
   challengeCommentsMap: Record<number, PaginatedResponse<CommentResponse>>;
   isLoading: boolean;
-  voteChallenge: (challengeId: string, approved: boolean) => void;
+  voteChallenge: (proofId: string, approved: boolean) => Promise<VotePercentageResponse>;
   createChallenge: (request: CreateChallengeRequest) => Promise<void>;
   acceptChallenge: (challengeId: string) => Promise<void>;
   declineChallenge: (challengeId: string) => Promise<void>;
@@ -73,8 +74,9 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEYS.CHALLENGES, JSON.stringify(data));
   }
 
-  const voteChallenge = useCallback((challengeId: string, approved: boolean) => {
-    console.log('vote challenge not implemented');
+  const voteChallenge = useCallback(async (proofId: string, approved: boolean): Promise<VotePercentageResponse> => {
+    const response = await proofService.voteInProof(proofId, { approved });
+    return response;
   }, []);
 
   const acceptChallenge = useCallback(async (challengeId: string) => {
