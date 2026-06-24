@@ -2,6 +2,7 @@ export * from './activity.service';
 export * from './auth.service';
 export * from './bets.service';
 export * from './challenge.service';
+export * from './comment.service';
 export * from './feed.service';
 export * from './group.service';
 export * from './proof-comment.service';

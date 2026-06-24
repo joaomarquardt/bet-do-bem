@@ -7,19 +7,20 @@ import { BetCard } from '@/components/feed/BetCard';
 import { ActivityCard } from '@/components/feed/ActivityCard';
 import { ChallengeCard } from '@/components/feed/ChallengeCard';
 import { useBets, useActivity, useChallenge } from '@/lib/contexts';
-import { Bet, Activity, Challenge } from '@/lib/types';
+import { Bet, Activity, Challenge, PaginatedResponse, CommentResponse } from '@/lib/types';
 import { styles } from '@/styles/tabs/feed.styles';
 
 const c = Colors.dark;
 
 type FeedItemWithType = (Bet | Activity | Challenge) & {
   feedItemType: 'BET' | 'ACTIVITY' | 'CHALLENGE';
+  commentsData?: PaginatedResponse<CommentResponse> | null;
 };
 
 export default function GroupFeedScreen() {
-  const { feedBets, isLoading: betsLoading, refreshData: refreshBets } = useBets();
-  const { activities, isLoading: activitiesLoading, refreshData: refreshActivities } = useActivity();
-  const { challenges, isLoading: challengesLoading, refreshData: refreshChallenges } = useChallenge();
+  const { feedBets, betCommentsMap, isLoading: betsLoading, refreshData: refreshBets } = useBets();
+  const { activities, activityCommentsMap, isLoading: activitiesLoading, refreshData: refreshActivities } = useActivity();
+  const { challenges, challengeCommentsMap, isLoading: challengesLoading, refreshData: refreshChallenges } = useChallenge();
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
 
@@ -27,19 +28,22 @@ export default function GroupFeedScreen() {
     const betsWithFeedType: FeedItemWithType[] = feedBets.map((bet) => ({
       ...bet,
       feedItemType: 'BET',
+      commentsData: betCommentsMap[bet.id] ?? null,
     }));
     const activitiesWithFeedType: FeedItemWithType[] = activities.map((activity) => ({
       ...activity,
       feedItemType: 'ACTIVITY',
+      commentsData: activityCommentsMap[activity.id] ?? null,
     }));
     const challengesWithFeedType: FeedItemWithType[] = challenges.map((challenge) => ({
       ...challenge,
       feedItemType: 'CHALLENGE',
+      commentsData: challengeCommentsMap[challenge.id] ?? null,
     }));
 
     return [...betsWithFeedType, ...activitiesWithFeedType, ...challengesWithFeedType]
       .filter((item) => item.status === 'IN_JUDGMENT');
-  }, [feedBets, activities, challenges]);
+  }, [feedBets, activities, challenges, betCommentsMap, activityCommentsMap, challengeCommentsMap]);
 
   const isLoading = betsLoading || activitiesLoading || challengesLoading;
 
@@ -52,12 +56,12 @@ export default function GroupFeedScreen() {
   const renderItem = useCallback(
     ({ item, index }: { item: FeedItemWithType; index: number }) => {
       if (item.feedItemType === 'ACTIVITY') {
-        return <ActivityCard activity={item as Activity} index={index} />;
+        return <ActivityCard activity={item as Activity} index={index} commentsData={item.commentsData ?? null} />;
       }
       if (item.feedItemType === 'CHALLENGE') {
-        return <ChallengeCard challenge={item as Challenge} index={index} />;
+        return <ChallengeCard challenge={item as Challenge} index={index} commentsData={item.commentsData ?? null} />;
       }
-      return <BetCard bet={item as Bet} index={index} />;
+      return <BetCard bet={item as Bet} index={index} commentsData={item.commentsData ?? null} />;
     },
     [],
   );

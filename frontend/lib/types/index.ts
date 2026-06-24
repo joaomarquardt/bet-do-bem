@@ -171,7 +171,6 @@ export interface CreateProofRequest {
 
 export interface CreateCommentRequest {
     content: string;
-    authorId: number;
 }
 
 export interface CreateActivityRequest {
@@ -299,6 +298,7 @@ export interface FeedItemResponse {
     feedItemType: ContextType;
     createdAt: string;
     content: any;
+    comments: PaginatedResponse<CommentResponse>;
 }
 
 export interface GroupResponse {

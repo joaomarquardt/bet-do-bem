@@ -250,4 +250,56 @@ export const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     lineHeight: 18,
   },
+  commentItem: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 6,
+  },
+  commentItemContent: {
+    flex: 1,
+    gap: 2,
+  },
+  commentTime: {
+    fontSize: 10,
+    fontFamily: 'Inter_400Regular',
+    marginTop: 2,
+  },
+  commentInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  commentInput: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    minHeight: 36,
+  },
+  commentSendBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  commentSendBtnText: {
+    fontSize: 12,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  loadMoreBtn: {
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  loadMoreText: {
+    fontSize: 12,
+    fontFamily: 'Inter_600SemiBold',
+  },
 });

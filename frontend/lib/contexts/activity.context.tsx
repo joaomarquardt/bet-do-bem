@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Activity, CreateActivityRequest, FeedItemResponse } from '@/lib/types';
+import { Activity, CreateActivityRequest, FeedItemResponse, PaginatedResponse, CommentResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { activityService } from '@/lib/api/activity.service';
 import { uploadToPresignedUrl } from '@/lib/utils/uploadFileToAWS';
@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/contexts';
 
 interface ActivityContextValue {
   activities: Activity[];
+  activityCommentsMap: Record<number, PaginatedResponse<CommentResponse>>;
   isLoading: boolean;
   voteActivity: (activityId: string, approved: boolean) => void;
   createActivity: (
@@ -27,6 +28,7 @@ const STORAGE_KEYS = {
 export function ActivityProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [activityCommentsMap, setActivityCommentsMap] = useState<Record<number, PaginatedResponse<CommentResponse>>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -46,11 +48,16 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
       if (!user?.id) return;
       try {
         const feedItems = await feedService.getMyFeed();
-        const mappedActivities: Activity[] = (feedItems || [])
-          .filter(it => it.feedItemType === 'ACTIVITY')
+        const activityFeedItems = (feedItems || []).filter(it => it.feedItemType === 'ACTIVITY');
+        const mappedActivities: Activity[] = activityFeedItems
           .map((it) => mapFeedItemToActivity(it, user?.id));
+        const commentsMap: Record<number, PaginatedResponse<CommentResponse>> = {};
+        activityFeedItems.forEach((it) => {
+          if (it.comments) commentsMap[it.id] = it.comments;
+        });
         if (!mounted) return;
         setActivities(mappedActivities);
+        setActivityCommentsMap(commentsMap);
         persistActivities(mappedActivities);
       } catch (e) {
         // ignore
@@ -122,10 +129,15 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     try {
         if (!user?.id) return;
         const feedItems = await feedService.getMyFeed();
-        const mappedActivities: Activity[] = (feedItems || [])
-          .filter(it => it.feedItemType === 'ACTIVITY')
+        const activityFeedItems = (feedItems || []).filter(it => it.feedItemType === 'ACTIVITY');
+        const mappedActivities: Activity[] = activityFeedItems
           .map((it) => mapFeedItemToActivity(it, user?.id));
+        const commentsMap: Record<number, PaginatedResponse<CommentResponse>> = {};
+        activityFeedItems.forEach((it) => {
+          if (it.comments) commentsMap[it.id] = it.comments;
+        });
         setActivities(mappedActivities);
+        setActivityCommentsMap(commentsMap);
         persistActivities(mappedActivities);
     } catch (e) {
       // ignore
@@ -149,8 +161,8 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ activities, isLoading, voteActivity, createActivity, refreshData }),
-    [activities, isLoading, voteActivity, createActivity, refreshData],
+    () => ({ activities, activityCommentsMap, isLoading, voteActivity, createActivity, refreshData }),
+    [activities, activityCommentsMap, isLoading, voteActivity, createActivity, refreshData],
   );
 
   return <ActivityContext.Provider value={value}>{children}</ActivityContext.Provider>;

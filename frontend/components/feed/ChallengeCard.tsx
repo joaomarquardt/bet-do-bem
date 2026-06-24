@@ -7,7 +7,8 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar';
 import { ProofMediaFrame } from '@/components/feed/ProofMediaFrame';
-import { Challenge } from '@/lib/types';
+import { CommentSection } from '@/components/feed/CommentSection';
+import { Challenge, PaginatedResponse, CommentResponse } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils/formatters';
 import { useChallenge } from '@/lib/contexts';
 import { styles } from './BetCard.styles';
@@ -19,9 +20,10 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 interface ChallengeCardProps {
   challenge: Challenge;
   index: number;
+  commentsData: PaginatedResponse<CommentResponse> | null;
 }
 
-export function ChallengeCard({ challenge, index }: ChallengeCardProps) {
+export function ChallengeCard({ challenge, index, commentsData }: ChallengeCardProps) {
   const { voteChallenge } = useChallenge();
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<boolean | null>(null);
@@ -149,6 +151,12 @@ export function ChallengeCard({ challenge, index }: ChallengeCardProps) {
             <Text style={[styles.totalVotes, { color: c.textTertiary }]}>Voto computado!</Text>
         </View>
       )}
+
+      <CommentSection
+        entityType="CHALLENGE"
+        entityId={challenge.id}
+        commentsData={commentsData}
+      />
     </Animated.View>
   );
 }

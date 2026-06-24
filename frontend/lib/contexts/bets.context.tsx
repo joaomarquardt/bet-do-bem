@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Bet, CreateBetRequest } from '@/lib/types';
+import { Bet, CreateBetRequest, PaginatedResponse, CommentResponse } from '@/lib/types';
 import { feedService } from '@/lib/api/feed.service';
 import { betsService } from '@/lib/api/bets.service';
 import { mapFeedItemToBet } from '@/lib/utils/feedItemMappers';
@@ -20,6 +20,7 @@ type WalletLike = {
 
 interface BetsContextValue {
   feedBets: Bet[];
+  betCommentsMap: Record<number, PaginatedResponse<CommentResponse>>;
   wallet: WalletLike;
   isLoading: boolean;
   voteBet: (betId: string, votedForUserId: string) => void;
@@ -39,6 +40,7 @@ const STORAGE_KEYS = {
 export function BetsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [feedBets, setFeedBets] = useState<Bet[]>([]);
+  const [betCommentsMap, setBetCommentsMap] = useState<Record<number, PaginatedResponse<CommentResponse>>>({});
   const [wallet, setWallet] = useState<WalletLike>({ balance: 0, transactions: [] });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,11 +68,15 @@ export function BetsProvider({ children }: { children: ReactNode }) {
       if (!user?.id) return;
       try {
         const feedItems = await feedService.getMyFeed();
-        const mappedFeedBets: Bet[] = (feedItems || [])
-          .filter((it) => it.feedItemType === 'BET')
-          .map((it) => mapFeedItemToBet(it));
+        const betFeedItems = (feedItems || []).filter((it) => it.feedItemType === 'BET');
+        const mappedFeedBets: Bet[] = betFeedItems.map((it) => mapFeedItemToBet(it));
+        const commentsMap: Record<number, PaginatedResponse<CommentResponse>> = {};
+        betFeedItems.forEach((it) => {
+          if (it.comments) commentsMap[it.id] = it.comments;
+        });
         if (!mounted) return;
         setFeedBets(mappedFeedBets);
+        setBetCommentsMap(commentsMap);
         persistFeed(mappedFeedBets);
       } catch (e) {
         console.error('BetsProvider: failed to load feed from API', e);
@@ -111,11 +117,15 @@ export function BetsProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const feedItems = await feedService.getMyFeed();
-      const mappedFeedBets: Bet[] = (feedItems || [])
-        .filter((it) => it.feedItemType === 'BET')
-        .map((it) => mapFeedItemToBet(it));
+      const betFeedItems = (feedItems || []).filter((it) => it.feedItemType === 'BET');
+      const mappedFeedBets: Bet[] = betFeedItems.map((it) => mapFeedItemToBet(it));
+      const commentsMap: Record<number, PaginatedResponse<CommentResponse>> = {};
+      betFeedItems.forEach((it) => {
+        if (it.comments) commentsMap[it.id] = it.comments;
+      });
 
       setFeedBets(mappedFeedBets);
+      setBetCommentsMap(commentsMap);
       persistFeed(mappedFeedBets);
     } catch (e) {
       console.error('BetsProvider: failed to refresh feed', e);
@@ -138,8 +148,8 @@ export function BetsProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ feedBets, wallet, isLoading, voteBet, acceptBet, declineBet, createBet, refreshData }),
-    [feedBets, wallet, isLoading, voteBet, acceptBet, declineBet, createBet, refreshData],
+    () => ({ feedBets, betCommentsMap, wallet, isLoading, voteBet, acceptBet, declineBet, createBet, refreshData }),
+    [feedBets, betCommentsMap, wallet, isLoading, voteBet, acceptBet, declineBet, createBet, refreshData],
   );
 
   return <BetsContext.Provider value={value}>{children}</BetsContext.Provider>;

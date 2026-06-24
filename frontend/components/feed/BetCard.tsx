@@ -8,7 +8,8 @@ import Colors from '@/constants/colors';
 import { Image } from 'react-native';
 import { Avatar } from '@/components/ui/Avatar';
 import { proofService } from '@/lib/api/proof.service';
-import { Bet, Proof } from '@/lib/types';
+import { CommentSection } from '@/components/feed/CommentSection';
+import { Bet, Proof, PaginatedResponse, CommentResponse } from '@/lib/types';
 import { formatTimeAgo, formatDeadline } from '@/lib/utils/formatters';
 import { useBets } from '@/lib/contexts';
 import { styles } from './BetCard.styles';
@@ -37,11 +38,11 @@ function proofForParticipant(
 interface BetCardProps {
   bet: Bet;
   index: number;
+  commentsData: PaginatedResponse<CommentResponse> | null;
 }
 
-export function BetCard({ bet, index }: BetCardProps) {
+export function BetCard({ bet, index, commentsData }: BetCardProps) {
   const { voteBet } = useBets();
-  const [showComments, setShowComments] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<string | null>(null);
   const c = Colors.dark;
@@ -63,11 +64,6 @@ export function BetCard({ bet, index }: BetCardProps) {
     },
     [hasVoted, bet.id, voteBet],
   );
-
-  const toggleComments = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setShowComments((prev) => !prev);
-  }, []);
 
   const creatorProof = proofForParticipant(bet.proofs, bet.creator?.id, 0);
   const opponentProof = proofForParticipant(bet.proofs, bet.opponent?.id, 1);
@@ -207,21 +203,11 @@ export function BetCard({ bet, index }: BetCardProps) {
         </View>
       )}
 
-      <View style={[styles.cardFooter, { borderTopColor: c.border }]}>
-        <Pressable style={styles.footerAction} onPress={toggleComments}>
-          <Ionicons name="chatbubble-outline" size={18} color={c.textSecondary} />
-          <Text style={[styles.footerText, { color: c.textSecondary }]}>0</Text>
-        </Pressable>
-        <View style={styles.footerAction}>
-          <Ionicons name="time-outline" size={18} color={c.textTertiary} />
-          <Text style={[styles.footerText, { color: c.textTertiary }]}>{formatDeadline(bet.expiresAt)}</Text>
-        </View>
-      </View>
-
-      {showComments && (
-        <Animated.View entering={FadeIn.duration(200)} style={[styles.commentsSection, { borderTopColor: c.border }]}>
-        </Animated.View>
-      )}
+      <CommentSection
+        entityType="BET"
+        entityId={bet.id}
+        commentsData={commentsData}
+      />
     </Animated.View>
   );
 }
