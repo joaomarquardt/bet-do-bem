@@ -6,6 +6,8 @@ import com.api.betdobem.dtos.requests.CreateProofRequest;
 import com.api.betdobem.dtos.requests.CreateVoteRequest;
 import com.api.betdobem.dtos.requests.UpdateProofRequest;
 import com.api.betdobem.dtos.responses.ProofResponse;
+import com.api.betdobem.dtos.responses.VotePercentageItemResponse;
+import com.api.betdobem.dtos.responses.VotePercentageResponse;
 import com.api.betdobem.dtos.responses.VotesByProof;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
@@ -56,7 +58,7 @@ public class ProofService {
         return savedProof;
     }
 
-    public void voteInProof(Long id, CreateVoteRequest vote, Long voterId) {
+    public VotePercentageResponse voteInProof(Long id, CreateVoteRequest vote, Long voterId) {
         Proof proof = getProofEntityById(id);
         if (!groupService.isUserMemberOfGroupLinkedToProof(voterId, id)) {
             throw new UnauthorizedActionException("User must be a member of the group linked to the proof to vote.");
@@ -73,6 +75,46 @@ public class ProofService {
         ContextType contextType = proofRepository.findContextTypeByProofId(id);
         voteService.createVote(proof, voter, vote.approved());
         checkAndProcessConsensus(proof.getId(), contextType);
+        long contextItemId = proofRepository.getContextItemIdByProofId(proof.getId());
+        return buildVotePercentageResponse(proof.getId(), contextType, contextItemId);
+    }
+
+    private VotePercentageResponse buildVotePercentageResponse(Long proofId, ContextType contextType, Long contextItemId) {
+        if (contextType == ContextType.ACTIVITY || contextType == ContextType.CHALLENGE) {
+            return buildSingleProofResponse(proofId, contextType, contextItemId);
+        } else if (contextType == ContextType.BET) {
+            return buildBetResponse(proofId, contextType, contextItemId);
+        }
+        throw new IllegalStateException("Context type not supported for voting calculation: " + contextType);
+    }
+
+    private VotePercentageResponse buildSingleProofResponse(Long proofId, ContextType type, Long contextItemId) {
+        long approvedVotes = voteService.countVotesByProofIdAndApprovedValue(proofId, true);
+        long rejectedVotes = voteService.countVotesByProofIdAndApprovedValue(proofId, false);
+        long totalVotes = approvedVotes + rejectedVotes;
+        double approvalPercentage = safeCalculatePercentage(approvedVotes, totalVotes);
+        double rejectionPercentage = safeCalculatePercentage(rejectedVotes, totalVotes);
+        VotePercentageItemResponse votePercentageItem = new VotePercentageItemResponse(proofId, approvalPercentage, rejectionPercentage);
+        return new VotePercentageResponse(totalVotes, type, contextItemId, List.of(votePercentageItem));
+    }
+
+    private VotePercentageResponse buildBetResponse(Long proofId, ContextType type, Long contextItemId) {
+        Long otherProofId = proofRepository.getOtherProofIdByContextItemIdAndProofId(contextItemId, proofId);
+        long approvedFirstProof = voteService.countVotesByProofIdAndApprovedValue(proofId, true);
+        long approvedOtherProof = voteService.countVotesByProofIdAndApprovedValue(otherProofId, true);
+        long totalVotes = approvedFirstProof + approvedOtherProof;
+        double approvalFirstProof = safeCalculatePercentage(approvedFirstProof, totalVotes);
+        double approvalOtherProof = safeCalculatePercentage(approvedOtherProof, totalVotes);
+        double rejectionFirstProof = safeCalculatePercentage(totalVotes - approvedFirstProof, totalVotes);
+        double rejectionOtherProof = safeCalculatePercentage(totalVotes - approvedOtherProof, totalVotes);
+        VotePercentageItemResponse firstProofItem = new VotePercentageItemResponse(proofId, approvalFirstProof, rejectionFirstProof);
+        VotePercentageItemResponse otherProofItem = new VotePercentageItemResponse(otherProofId, approvalOtherProof, rejectionOtherProof);
+        return new VotePercentageResponse(totalVotes, type, contextItemId, List.of(firstProofItem, otherProofItem));
+    }
+
+    private double safeCalculatePercentage(long part, long total) {
+        if (total == 0) return 0.0;
+        return (double) part / total * 100;
     }
 
     public ProofResponse getProofById(Long id) {

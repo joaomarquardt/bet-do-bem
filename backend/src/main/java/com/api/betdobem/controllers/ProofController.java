@@ -4,6 +4,7 @@ import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateVoteRequest;
 import com.api.betdobem.dtos.requests.UpdateProofRequest;
 import com.api.betdobem.dtos.responses.ProofResponse;
+import com.api.betdobem.dtos.responses.VotePercentageResponse;
 import com.api.betdobem.services.ProofService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -35,9 +36,9 @@ public class ProofController {
     }
 
     @PostMapping("/{id}/votes")
-    public ResponseEntity<Void> voteInProof(@PathVariable Long id, @RequestBody @Valid CreateVoteRequest vote, @AuthenticationPrincipal User loggedUser) {
-        proofService.voteInProof(id, vote, loggedUser.getId());
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<VotePercentageResponse> voteInProof(@PathVariable Long id, @RequestBody @Valid CreateVoteRequest vote, @AuthenticationPrincipal User loggedUser) {
+        VotePercentageResponse votePercentage = proofService.voteInProof(id, vote, loggedUser.getId());
+        return new ResponseEntity<>(votePercentage, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
