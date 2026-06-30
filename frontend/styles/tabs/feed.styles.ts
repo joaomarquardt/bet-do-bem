@@ -40,6 +40,7 @@ export const styles = StyleSheet.create({
   },
   list: {
     paddingTop: 4,
+    paddingHorizontal: 16,
   },
   empty: {
     flex: 1,

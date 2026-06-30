@@ -8,6 +8,9 @@ import { Avatar } from '@/components/ui/Avatar';
 import { FeedItemResponse, BetResponse, ActivityResponse, ChallengeResponse, Bet, Activity, Challenge, Proof, PaginatedResponse, CommentResponse} from '@/lib/types';
 import { formatDeadline, formatDateTime } from '@/lib/utils/formatters';
 import { CommentSection } from '@/components/feed/CommentSection';
+import { BetCard } from '@/components/feed/BetCard';
+import { ChallengeCard } from '@/components/feed/ChallengeCard';
+import { ActivityCard } from '@/components/feed/ActivityCard';
 import { styles } from './MyFeedItemCard.styles';
 import { useAuth } from '@/lib/contexts/auth.context';
 
@@ -189,6 +192,18 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
     const otherPlayer = isCreator ? bet.opponent : bet.creator;
     const hasMyProof = bet.proofs && bet.proofs.length > 0 && bet.proofs.some(p => p.authorId === currentUserId);
 
+    if (bet.status !== 'INVITED' && bet.status !== 'IN_PROGRESS') {
+      return (
+        <BetCard
+          bet={bet as unknown as Bet}
+          index={index}
+          commentsData={(item as any).commentsData ?? null}
+          hideVotingControls={true}
+          statusBadge={statusConfig as any}
+        />
+      );
+    }
+
     return (
       <Animated.View entering={FadeInRight.delay(index * 60).duration(300)} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
         <View style={styles.topRow}>
@@ -222,92 +237,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
           ) : null}
         </View>
 
-        {bet.status === 'IN_JUDGMENT' && bet.proofs && bet.proofs.length > 0 && (
-          <View style={styles.proofsMediaRow}>
-            {(() => {
-              const creatorProof = proofForParticipant(
-                bet.proofs as any,
-                bet.creator?.id,
-                0,
-              );
-              const opponentProof = proofForParticipant(
-                bet.proofs as any,
-                bet.opponent?.id,
-                1,
-              );
-              const creatorMedia = getMediaInfo(creatorProof);
-              const opponentMedia = getMediaInfo(opponentProof);
 
-              const hasCreator = !!creatorMedia.uri;
-              const hasOpponent = !!opponentMedia.uri;
-
-              if (!hasCreator && !hasOpponent) return null;
-
-              if (hasCreator && hasOpponent) {
-                return (
-                  <>
-                    <View style={styles.proofMediaWrapper}>
-                      <Image
-                        source={{ uri: creatorMedia.uri }}
-                        style={styles.proofMediaImage}
-                      />
-                      <View style={[styles.proofOwnerChip, { backgroundColor: c.surfaceHighlight }]}>
-                        <Text style={[styles.proofOwnerText, { color: c.textSecondary }]}>
-                          @{bet.creator?.name ?? 'Criador'}
-                        </Text>
-                      </View>
-                      {creatorMedia.isVideo && (
-                        <View style={styles.proofMediaOverlay}>
-                          <Ionicons name="play" size={18} color="#fff" />
-                        </View>
-                      )}
-                    </View>
-                    <View style={styles.proofMediaWrapper}>
-                      <Image
-                        source={{ uri: opponentMedia.uri }}
-                        style={styles.proofMediaImage}
-                      />
-                      <View style={[styles.proofOwnerChip, { backgroundColor: c.surfaceHighlight }]}>
-                        <Text style={[styles.proofOwnerText, { color: c.textSecondary }]}>
-                          @{bet.opponent?.name ?? 'Oponente'}
-                        </Text>
-                      </View>
-                      {opponentMedia.isVideo && (
-                        <View style={styles.proofMediaOverlay}>
-                          <Ionicons name="play" size={18} color="#fff" />
-                        </View>
-                      )}
-                    </View>
-                  </>
-                );
-              }
-
-              const singleMedia = hasCreator ? creatorMedia : opponentMedia;
-              const ownerName = hasCreator
-                ? bet.creator?.name ?? 'Criador'
-                : bet.opponent?.name ?? 'Oponente';
-
-              return (
-                <View style={styles.proofMediaWrapperSingle}>
-                  <Image
-                    source={{ uri: singleMedia.uri }}
-                    style={styles.proofMediaImage}
-                  />
-                  <View style={[styles.proofOwnerChip, { backgroundColor: c.surfaceHighlight }]}>
-                    <Text style={[styles.proofOwnerText, { color: c.textSecondary }]}>
-                      @{ownerName}
-                    </Text>
-                  </View>
-                  {singleMedia.isVideo && (
-                    <View style={styles.proofMediaOverlay}>
-                      <Ionicons name="play" size={18} color="#fff" />
-                    </View>
-                  )}
-                </View>
-              );
-            })()}
-          </View>
-        )}
 
         {bet.status === 'INVITED' && !isCreator && onAccept && onDecline && (
           <View style={styles.actionRow}>
@@ -361,6 +291,18 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
     const otherPlayer = isChallenger ? challenge.challenged : challenge.challenger;
     const proofMedia = getMediaInfo(challenge.proof);
 
+    if (challenge.status !== 'INVITED' && challenge.status !== 'IN_PROGRESS') {
+      return (
+        <ChallengeCard
+          challenge={challenge as unknown as Challenge}
+          index={index}
+          commentsData={(item as any).commentsData ?? null}
+          hideVotingControls={true}
+          statusBadge={statusConfig as any}
+        />
+      );
+    }
+
     return (
       <Animated.View entering={FadeInRight.delay(index * 60).duration(300)} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
         <View style={styles.topRow}>
@@ -391,44 +333,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
           <Text style={[styles.deadline, { color: c.textTertiary }]}>{formatDeadline(challenge.deadline)}</Text>
         </View>
 
-        {challenge.status === 'IN_JUDGMENT' && proofMedia.uri && (
-          <View style={styles.challengeProofContainer}>
-            <View style={styles.challengeHeaderRow}>
-              <View style={styles.challengeHeaderColumn}>
-                <Text style={[styles.challengeHeaderLabel, { color: c.textTertiary }]}>
-                  Desafiante
-                </Text>
-                <Text style={[styles.challengeHeaderValue, { color: c.text }]}>
-                  @{challenge.challenger?.name ?? '...'}
-                </Text>
-              </View>
-              <View style={styles.challengeHeaderColumn}>
-                <Text style={[styles.challengeHeaderLabel, { color: c.textTertiary }]}>
-                  Desafiado
-                </Text>
-                <Text style={[styles.challengeHeaderValue, { color: c.text }]}>
-                  @{challenge.challenged?.name ?? '...'}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.proofMediaWrapperSingle}>
-              <Image
-                source={{ uri: proofMedia.uri }}
-                style={styles.proofMediaImage}
-              />
-              <View style={[styles.proofOwnerChip, { backgroundColor: c.surfaceHighlight }]}>
-                <Text style={[styles.proofOwnerText, { color: c.textSecondary }]}>
-                  Prova enviada
-                </Text>
-              </View>
-              {proofMedia.isVideo && (
-                <View style={styles.proofMediaOverlay}>
-                  <Ionicons name="play" size={18} color="#fff" />
-                </View>
-              )}
-            </View>
-          </View>
-        )}
+
 
         {challenge.status === 'INVITED' && !isChallenger && onAccept && onDecline && (
           <View style={styles.actionRow}>
@@ -481,55 +386,14 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
     const media = getMediaInfo(activity.proof);
 
     return (
-      <Animated.View entering={FadeInRight.delay(index * 60).duration(300)} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
-        <View style={styles.topRow}>
-          <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
-            <Ionicons name={statusConfig.icon} size={12} color={statusConfig.color} />
-            <Text style={[styles.statusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
-          </View>
-        </View>
-
-        <Text style={[styles.title, { color: c.text }]} numberOfLines={1}>{activity.description}</Text>
-
-        {activity.author && (
-          <View style={styles.opponentRow}>
-            <Text style={[styles.vsLabel, { color: c.textTertiary }]}>por</Text>
-            <Avatar name={activity.author.name ?? '?'} color={"#CCCCCC"} size={24} />
-            <Text style={[styles.opponentName, { color: c.textSecondary }]}>@{activity.author.name ?? '...'}</Text>
-          </View>
-        )}
-
-        {activity.status === 'IN_JUDGMENT' && media.uri && (
-          <View style={styles.activityProofContainer}>
-            <View style={styles.proofMediaWrapperSingle}>
-              <Image
-                source={{ uri: media.uri }}
-                style={styles.proofMediaImage}
-              />
-              <View style={[styles.proofOwnerChip, { backgroundColor: c.surfaceHighlight }]}>
-                <Text style={[styles.proofOwnerText, { color: c.textSecondary }]}>
-                  Prova do autor
-                </Text>
-              </View>
-              {media.isVideo && (
-                <View style={styles.proofMediaOverlay}>
-                  <Ionicons name="play" size={18} color="#fff" />
-                </View>
-              )}
-            </View>
-          </View>
-        )}
-
-        <View style={styles.commentsWrapper}>
-          <CommentSection
-            entityType="ACTIVITY"
-            entityId={activity.id}
-            commentsData={(item as any).commentsData ?? null}
-          />
-        </View>
-      </Animated.View>
+      <ActivityCard
+        activity={activity as unknown as Activity}
+        index={index}
+        commentsData={(item as any).commentsData ?? null}
+        hideVotingControls={true}
+        statusBadge={statusConfig as any}
+      />
     );
   }
-
   return null;
 }
