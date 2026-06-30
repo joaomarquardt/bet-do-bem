@@ -23,8 +23,14 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        TokenResponse token = authenticationService.login(loginRequest);
-        return new ResponseEntity<>(token, HttpStatus.OK);
+        LoginResult loginResult = authenticationService.login(loginRequest);
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResult.refreshToken())
+                .httpOnly(true)
+                .sameSite("Strict")
+                .path("/api/auth")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new TokenResponse(loginResult.accessToken()));
     }
 
     @PostMapping("/register")

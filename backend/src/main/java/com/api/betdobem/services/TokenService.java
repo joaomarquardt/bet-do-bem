@@ -1,6 +1,8 @@
 package com.api.betdobem.services;
 
+import com.api.betdobem.domain.RefreshToken;
 import com.api.betdobem.domain.User;
+import com.api.betdobem.repositories.RefreshTokenRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
@@ -9,11 +11,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 public class TokenService {
     @Value("${app.jwt.secret}")
     private String secret;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    public TokenService(RefreshTokenRepository refreshTokenRepository) {
+        this.refreshTokenRepository = refreshTokenRepository;
+    }
 
     public String generateToken(User user) {
         try {
@@ -43,5 +51,15 @@ public class TokenService {
         } catch (JWTVerificationException e) {
             return "";
         }
+    }
+
+    public RefreshToken generateRefreshToken(User user) {
+        String refreshTokenString = UUID.randomUUID().toString();
+        Instant expirationInstant = Instant.now().plusSeconds(604800); // Refresh token expires in 7 days
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(refreshTokenString);
+        refreshToken.setExpirationInstant(expirationInstant);
+        refreshToken.setUser(user);
+        return refreshTokenRepository.save(refreshToken);
     }
 }

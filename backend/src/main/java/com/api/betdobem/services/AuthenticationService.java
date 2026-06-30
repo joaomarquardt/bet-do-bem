@@ -1,9 +1,11 @@
 package com.api.betdobem.services;
 
+import com.api.betdobem.domain.RefreshToken;
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.LoginRequest;
 import com.api.betdobem.dtos.requests.RegisterRequest;
+import com.api.betdobem.dtos.responses.LoginResult;
 import com.api.betdobem.dtos.responses.TokenResponse;
 import com.api.betdobem.infra.exceptions.DifferentPasswordsException;
 import com.api.betdobem.infra.exceptions.EmailAlreadyExistsException;
@@ -27,13 +29,14 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public TokenResponse login(LoginRequest loginRequest) {
+    public LoginResult login(LoginRequest loginRequest) {
         var userPassword = new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password());
         try {
             var auth = authenticationManager.authenticate(userPassword);
             User userAuth = (User) auth.getPrincipal();
-            String token = tokenService.generateToken(userAuth);
-            return new TokenResponse(token);
+            String accessToken = tokenService.generateToken(userAuth);
+            RefreshToken refreshToken = tokenService.generateRefreshToken(userAuth);
+            return new LoginResult(accessToken, refreshToken.getToken());
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Invalid email or password");
         }
