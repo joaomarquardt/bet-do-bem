@@ -32,7 +32,7 @@ public class TokenService {
                     .withSubject(user.getUsername())
                     .withClaim("idUser", user.getId())
                     .withClaim("name", user.getName().split(" ")[0])
-                    .withExpiresAt(Instant.now().plusSeconds(3600))
+                    .withExpiresAt(Instant.now().plusSeconds(900)) // Token expires in 15 minutes
                     .withClaim("role", role)
                     .sign(algorithm);
         } catch (JWTCreationException e) {
