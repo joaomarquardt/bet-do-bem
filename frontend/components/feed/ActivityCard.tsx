@@ -34,6 +34,7 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
   const c = Colors.dark;
   const authorName =
     activity.author?.name ?? (activity.author as any)?.displayName ?? (activity.author as any)?.username ?? '...';
+  const authorUsername = (activity.author as any)?.username ?? authorName;
   const proofUri = activity.proof?.imageUrl ?? (activity.proof as any)?.mediaUri ?? '';
   const isVideo =
     String(activity.proof?.contentType ?? '').toLowerCase().startsWith('video') ||
@@ -85,16 +86,21 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
 
       <Text style={[styles.betDescription, { color: c.textSecondary }]}>{activity.description}</Text>
 
-      <View style={[styles.proofCard, { backgroundColor: c.surfaceElevated, borderColor: c.border, marginTop: 12 }]}>
-        <View style={styles.proofHeader}>
-          <Avatar name={authorName} color={"#CCCCCC"} size={28} />
-          <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{authorName}</Text>
+      <View style={[styles.vsContainer, { borderColor: c.border, borderBottomWidth: 0 }]}>
+        <View style={styles.playerSide}>
+          <Avatar name={authorName} color={"#CCCCCC"} size={36} />
+          <View style={styles.playerInfo}>
+            <Text style={[styles.playerName, { color: c.text }]}>{authorName}</Text>
+            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{authorUsername}</Text>
+          </View>
         </View>
+      </View>
+
+      <View style={{ paddingHorizontal: 16 }}>
         {proofUri ? (
           <ProofMediaFrame
             uri={proofUri}
             backgroundColor={c.surfaceHighlight}
-            marginTop={8}
             isVideo={isVideo}
             overlay={
               isVideo ? (
@@ -110,7 +116,6 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
               styles.proofMediaPlaceholder,
               {
                 backgroundColor: c.surfaceHighlight,
-                marginTop: 8,
                 aspectRatio: 3 / 4,
               },
             ]}
