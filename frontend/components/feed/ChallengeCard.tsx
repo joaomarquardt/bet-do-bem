@@ -40,8 +40,6 @@ export function ChallengeCard({ challenge, index, commentsData }: ChallengeCardP
     (challenge.challenged as any)?.displayName ??
     (challenge.challenged as any)?.username ??
     '...';
-  const challengerEmail = challenge.challenger?.email ?? (challenge.challenger as any)?.username ?? '...';
-  const challengedEmail = challenge.challenged?.email ?? (challenge.challenged as any)?.username ?? '...';
   const proofUri = challenge.proof?.imageUrl ?? (challenge.proof as any)?.mediaUri ?? '';
   const isVideo =
     String(challenge.proof?.contentType ?? '').toLowerCase().startsWith('video') ||
@@ -93,7 +91,6 @@ export function ChallengeCard({ challenge, index, commentsData }: ChallengeCardP
           <Avatar name={challengerName} color={"#CCCCCC"} size={36} />
           <View style={styles.playerInfo}>
             <Text style={[styles.playerName, { color: c.text }]}>{challengerName}</Text>
-            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{challengerEmail}</Text>
           </View>
         </View>
 
@@ -103,19 +100,15 @@ export function ChallengeCard({ challenge, index, commentsData }: ChallengeCardP
 
         <View style={[styles.playerSide, { alignItems: 'flex-end' }]}>
           <View style={[styles.playerInfo, { alignItems: 'flex-end' }]}>
+            <Text style={{ fontSize: 10, color: c.accent, fontFamily: 'Inter_700Bold', marginBottom: 2 }}>DESAFIADO</Text>
             <Text style={[styles.playerName, { color: c.text }]}>{challengedName}</Text>
-            <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{challengedEmail}</Text>
           </View>
           <Avatar name={challengedName} color={"#CCCCCC"} size={36} />
         </View>
       </View>
 
       {challenge.proof && (
-        <View style={[styles.proofCard, { backgroundColor: c.surfaceElevated, borderColor: c.border }]}>
-          <View style={styles.proofHeader}>
-            <Avatar name={challengerName} color={"#CCCCCC"} size={24} />
-            <Text style={[styles.proofAuthor, { color: c.textSecondary }]}>{challengerName}</Text>
-          </View>
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
           {proofUri ? (
             <ProofMediaFrame
               uri={proofUri}
