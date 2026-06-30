@@ -9,11 +9,15 @@ import com.api.betdobem.dtos.responses.LoginResult;
 import com.api.betdobem.dtos.responses.TokenResponse;
 import com.api.betdobem.infra.exceptions.DifferentPasswordsException;
 import com.api.betdobem.infra.exceptions.EmailAlreadyExistsException;
+import com.api.betdobem.repositories.RefreshTokenRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
 
 @Service
 public class AuthenticationService {
@@ -21,12 +25,14 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public AuthenticationService(UserService userService, AuthenticationManager authenticationManager, TokenService tokenService, PasswordEncoder passwordEncoder) {
+    public AuthenticationService(UserService userService, AuthenticationManager authenticationManager, TokenService tokenService, PasswordEncoder passwordEncoder, RefreshTokenRepository refreshTokenRepository) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
         this.passwordEncoder = passwordEncoder;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public LoginResult login(LoginRequest loginRequest) {
@@ -54,4 +60,14 @@ public class AuthenticationService {
         userService.createUser(createUser);
     }
 
+    @Transactional
+    public TokenResponse refreshToken(String refreshTokenString) {
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenString).orElseThrow(() -> new RuntimeException("Refresh token not found"));
+        if (refreshToken.getExpirationInstant().compareTo(Instant.now()) < 0) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new RuntimeException("Refresh token expired");
+        }
+        String newAccessToken = tokenService.generateToken(refreshToken.getUser());
+        return new TokenResponse(newAccessToken);
+    }
 }
