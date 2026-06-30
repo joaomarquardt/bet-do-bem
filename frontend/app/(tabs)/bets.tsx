@@ -75,7 +75,7 @@ export default function MyBetsScreen() {
 
       const handleSendProof = async (
         itemId: number,
-        itemType: 'BET' | 'CHALLENGE',
+        itemType: 'BET' | 'CHALLENGE' | 'ACTIVITY',
       ) => {
         try {
           const pickFileWebFile = (): Promise<File | null> =>

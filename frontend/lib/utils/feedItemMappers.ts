@@ -1,7 +1,7 @@
-import { Bet, Challenge, FeedItemResponse, PaginatedResponse, CommentResponse } from '@/lib/types';
+import { Bet, Challenge, Activity, FeedItemResponse, PaginatedResponse, CommentResponse } from '@/lib/types';
 
-export type BetsTabItem = (Bet | Challenge) & {
-  feedItemType: 'BET' | 'CHALLENGE';
+export type BetsTabItem = (Bet | Challenge | Activity) & {
+  feedItemType: 'BET' | 'CHALLENGE' | 'ACTIVITY';
   commentsData?: PaginatedResponse<CommentResponse> | null;
 };
 
@@ -115,6 +115,28 @@ export function mapFeedItemToChallenge(item: FeedItemResponse): Challenge {
   };
 }
 
+export function mapFeedItemToActivity(item: FeedItemResponse): Activity {
+  const content = (item.content ?? item) as Record<string, unknown>;
+  const author = (content.author ??
+    content.authorResponse ??
+    content.authorUser) as Record<string, unknown> | undefined;
+  const proof = (content.proof ?? content.proofResponse) as
+    | Record<string, unknown>
+    | undefined;
+
+  return {
+    id: Number(content.id ?? item.id ?? 0),
+    author: safeUser(author, String(content.authorId ?? '')) as Activity['author'],
+    proof: mapProof(proof) as Activity['proof'],
+    description: (content.description ?? '') as string,
+    status: (content.status ?? 'IN_JUDGMENT') as Activity['status'],
+    createdAt: (content.createdAt ?? new Date().toISOString()) as string,
+    closedAt: (content.closedAt ?? new Date().toISOString()) as string,
+    expiresAt: (content.expiresAt ?? new Date().toISOString()) as string,
+    group: content.group as Activity['group'],
+  };
+}
+
 export function mapFeedItemToBetsTabItem(
   item: FeedItemResponse,
 ): BetsTabItem | null {
@@ -123,6 +145,9 @@ export function mapFeedItemToBetsTabItem(
   }
   if (item.feedItemType === 'CHALLENGE') {
     return { ...mapFeedItemToChallenge(item), feedItemType: 'CHALLENGE', commentsData: item.comments ?? null };
+  }
+  if (item.feedItemType === 'ACTIVITY') {
+    return { ...mapFeedItemToActivity(item), feedItemType: 'ACTIVITY', commentsData: item.comments ?? null };
   }
   return null;
 }
