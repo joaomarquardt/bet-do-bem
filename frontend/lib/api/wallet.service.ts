@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Wallet, Transaction, PaginatedResponse } from '@/lib/types';
+import { Transaction, PaginatedResponse } from '@/lib/types';
 
 const ENDPOINTS = {
   WALLET: '/api/wallet',
@@ -7,8 +7,8 @@ const ENDPOINTS = {
 } as const;
 
 export const walletService = {
-  async getWallet(): Promise<Wallet> {
-    return apiClient.get<Wallet>(ENDPOINTS.WALLET);
+  async getWallet(): Promise<Record<string, unknown>> {
+    return apiClient.get<Record<string, unknown>>(ENDPOINTS.WALLET);
   },
 
   async getTransactions(page = 0, size = 20): Promise<PaginatedResponse<Transaction>> {

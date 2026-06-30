@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Group, CreateGroupRequest, UpdateGroupRequest } from '@/lib/types';
+import { Group, CreateGroupRequest } from '@/lib/types';
 
 const ENDPOINTS = {
   GROUPS: '/api/groups',
@@ -18,7 +18,7 @@ export const groupService = {
     return apiClient.get(`${ENDPOINTS.GROUPS}/${id}`);
   },
 
-  updateGroup(id: string, data: UpdateGroupRequest): Promise<Group> {
+  updateGroup(id: string, data: Partial<CreateGroupRequest>): Promise<Group> {
     return apiClient.put(`${ENDPOINTS.GROUPS}/${id}`, data);
   },
 
