@@ -179,4 +179,9 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_600SemiBold',
   },
+  commentsWrapper: {
+    marginHorizontal: -14,
+    marginBottom: -14,
+    marginTop: 4,
+  },
 });

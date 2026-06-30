@@ -1,7 +1,8 @@
-import { Bet, Challenge, FeedItemResponse } from '@/lib/types';
+import { Bet, Challenge, FeedItemResponse, PaginatedResponse, CommentResponse } from '@/lib/types';
 
 export type BetsTabItem = (Bet | Challenge) & {
   feedItemType: 'BET' | 'CHALLENGE';
+  commentsData?: PaginatedResponse<CommentResponse> | null;
 };
 
 function safeUser(u: Record<string, unknown> | undefined, fallbackId = '') {
@@ -118,10 +119,10 @@ export function mapFeedItemToBetsTabItem(
   item: FeedItemResponse,
 ): BetsTabItem | null {
   if (item.feedItemType === 'BET') {
-    return { ...mapFeedItemToBet(item), feedItemType: 'BET' };
+    return { ...mapFeedItemToBet(item), feedItemType: 'BET', commentsData: item.comments ?? null };
   }
   if (item.feedItemType === 'CHALLENGE') {
-    return { ...mapFeedItemToChallenge(item), feedItemType: 'CHALLENGE' };
+    return { ...mapFeedItemToChallenge(item), feedItemType: 'CHALLENGE', commentsData: item.comments ?? null };
   }
   return null;
 }

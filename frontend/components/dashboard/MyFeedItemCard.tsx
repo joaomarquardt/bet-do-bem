@@ -5,15 +5,16 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar';
-import { FeedItemResponse, BetResponse, ActivityResponse, ChallengeResponse, Bet, Activity, Challenge, Proof} from '@/lib/types';
+import { FeedItemResponse, BetResponse, ActivityResponse, ChallengeResponse, Bet, Activity, Challenge, Proof, PaginatedResponse, CommentResponse} from '@/lib/types';
 import { formatDeadline, formatDateTime } from '@/lib/utils/formatters';
+import { CommentSection } from '@/components/feed/CommentSection';
 import { styles } from './MyFeedItemCard.styles';
 import { useAuth } from '@/lib/contexts/auth.context';
 
 const c = Colors.dark;
 
 interface MyFeedItemCardProps {
-  item: FeedItemResponse | (Bet | Activity | Challenge) & { feedItemType: 'BET' | 'ACTIVITY' | 'CHALLENGE' };
+  item: FeedItemResponse | ((Bet | Activity | Challenge) & { feedItemType: 'BET' | 'ACTIVITY' | 'CHALLENGE', commentsData?: PaginatedResponse<CommentResponse> | null });
   index: number;
   onAccept?: () => void;
   onDecline?: () => void;
@@ -342,6 +343,14 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
             </Pressable>
           </View>
         )}
+
+        <View style={styles.commentsWrapper}>
+          <CommentSection
+            entityType="BET"
+            entityId={bet.id}
+            commentsData={(item as any).commentsData ?? null}
+          />
+        </View>
       </Animated.View>
     );
   }
@@ -455,6 +464,14 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
             </Pressable>
           </View>
         )}
+
+        <View style={styles.commentsWrapper}>
+          <CommentSection
+            entityType="CHALLENGE"
+            entityId={challenge.id}
+            commentsData={(item as any).commentsData ?? null}
+          />
+        </View>
       </Animated.View>
     );
   }
@@ -502,6 +519,14 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
             </View>
           </View>
         )}
+
+        <View style={styles.commentsWrapper}>
+          <CommentSection
+            entityType="ACTIVITY"
+            entityId={activity.id}
+            commentsData={(item as any).commentsData ?? null}
+          />
+        </View>
       </Animated.View>
     );
   }
