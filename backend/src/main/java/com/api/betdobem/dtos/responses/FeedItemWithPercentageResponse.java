@@ -1,0 +1,15 @@
+package com.api.betdobem.dtos.responses;
+
+import com.api.betdobem.enums.ContextType;
+
+import java.time.LocalDateTime;
+
+public record FeedItemWithPercentageResponse(
+        Long id,
+        ContextType feedItemType,
+        LocalDateTime createdAt,
+        Object content,
+        PagedResponse<CommentResponse> comments,
+        VotePercentageResponse votePercentage
+) {
+}

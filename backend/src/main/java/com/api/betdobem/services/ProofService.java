@@ -76,10 +76,10 @@ public class ProofService {
         voteService.createVote(proof, voter, vote.approved());
         checkAndProcessConsensus(proof.getId(), contextType);
         long contextItemId = proofRepository.getContextItemIdByProofId(proof.getId());
-        return buildVotePercentageResponse(proof.getId(), contextType, contextItemId);
+        return getVotePercentage(proof.getId(), contextType, contextItemId);
     }
 
-    private VotePercentageResponse buildVotePercentageResponse(Long proofId, ContextType contextType, Long contextItemId) {
+    public VotePercentageResponse getVotePercentage(Long proofId, ContextType contextType, Long contextItemId) {
         if (contextType == ContextType.ACTIVITY || contextType == ContextType.CHALLENGE) {
             return buildSingleProofResponse(proofId, contextType, contextItemId);
         } else if (contextType == ContextType.BET) {

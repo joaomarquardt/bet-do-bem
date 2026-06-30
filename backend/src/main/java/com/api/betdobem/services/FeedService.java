@@ -20,12 +20,14 @@ public class FeedService {
     private final ChallengeService challengeService;
     private final ActivityService activityService;
     private final CommentService commentService;
+    private final ProofService proofService;
 
-    public FeedService(BetService betService, ChallengeService challengeService, ActivityService activityService, CommentService commentService) {
+    public FeedService(BetService betService, ChallengeService challengeService, ActivityService activityService, CommentService commentService, ProofService proofService) {
         this.betService = betService;
         this.challengeService = challengeService;
         this.activityService = activityService;
         this.commentService = commentService;
+        this.proofService = proofService;
     }
 
     public List<FeedItemResponse> getVotingFeed(Long userId) {
@@ -57,22 +59,25 @@ public class FeedService {
         return feedItems;
     }
 
-    public List<FeedItemResponse> getInProgressItems(Long userId) {
-        List<FeedItemResponse> feedItems = new ArrayList<>();
+    public List<FeedItemWithPercentageResponse> getInProgressItems(Long userId) {
+        List<FeedItemWithPercentageResponse> feedItems = new ArrayList<>();
         
         List<BetStatus> betStatuses = List.of(BetStatus.IN_PROGRESS, BetStatus.IN_JUDGMENT);
-        addFeedItems(feedItems, betService.getBetsByStatusesAndInvolvedUserId(betStatuses, userId), 
-                ContextType.BET, BetResponse::id, BetResponse::createdAt);
+        addFeedItemsWithPercentage(feedItems, betService.getBetsByStatusesAndInvolvedUserId(betStatuses, userId), 
+                ContextType.BET, BetResponse::id, BetResponse::createdAt,
+                bet -> bet.proofs() != null && !bet.proofs().isEmpty() ? bet.proofs().get(0).id() : null);
 
         List<ActivityStatus> activityStatuses = List.of(ActivityStatus.IN_JUDGMENT);
-        addFeedItems(feedItems, activityService.getActivitiesByStatusesAndInvolvedUserId(activityStatuses, userId),
-                ContextType.ACTIVITY, ActivityResponse::id, ActivityResponse::createdAt);
+        addFeedItemsWithPercentage(feedItems, activityService.getActivitiesByStatusesAndInvolvedUserId(activityStatuses, userId),
+                ContextType.ACTIVITY, ActivityResponse::id, ActivityResponse::createdAt,
+                activity -> activity.proof() != null ? activity.proof().id() : null);
 
         List<ChallengeStatus> challengeStatuses = List.of(ChallengeStatus.IN_PROGRESS, ChallengeStatus.IN_JUDGMENT);
-        addFeedItems(feedItems, challengeService.getChallengesByStatusesAndInvolvedUserId(challengeStatuses, userId), 
-                ContextType.CHALLENGE, ChallengeResponse::id, ChallengeResponse::createdAt);
+        addFeedItemsWithPercentage(feedItems, challengeService.getChallengesByStatusesAndInvolvedUserId(challengeStatuses, userId), 
+                ContextType.CHALLENGE, ChallengeResponse::id, ChallengeResponse::createdAt,
+                challenge -> challenge.proof() != null ? challenge.proof().id() : null);
 
-        feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
+        feedItems.sort(Comparator.comparing(FeedItemWithPercentageResponse::createdAt).reversed());
         return feedItems;
     }
 
@@ -100,6 +105,24 @@ public class FeedService {
                     dateExtractor.apply(item).toLocalDateTime(),
                     item,
                     comments
+            ));
+        }
+    }
+
+    private <T> void addFeedItemsWithPercentage(List<FeedItemWithPercentageResponse> feedItems, List<T> items, ContextType type, 
+                                                Function<T, Long> idExtractor, Function<T, Timestamp> dateExtractor, Function<T, Long> proofIdExtractor) {
+        for (T item : items) {
+            Long itemId = idExtractor.apply(item);
+            PagedResponse<CommentResponse> comments = commentService.getComments(type, itemId, Pageable.ofSize(5));
+            Long proofId = proofIdExtractor.apply(item);
+            VotePercentageResponse votePercentage = proofId != null ? proofService.getVotePercentage(proofId, type, itemId) : null;
+            feedItems.add(new FeedItemWithPercentageResponse(
+                    itemId,
+                    type,
+                    dateExtractor.apply(item).toLocalDateTime(),
+                    item,
+                    comments,
+                    votePercentage
             ));
         }
     }

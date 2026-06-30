@@ -2,6 +2,7 @@ package com.api.betdobem.controllers;
 
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.responses.FeedItemResponse;
+import com.api.betdobem.dtos.responses.FeedItemWithPercentageResponse;
 import com.api.betdobem.services.FeedService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +33,8 @@ public class FeedController {
     }
 
     @GetMapping("/me/in-progress-items")
-    public ResponseEntity<List<FeedItemResponse>> getMyInProgressItems(@AuthenticationPrincipal User loggedUser) {
-        List<FeedItemResponse> inProgressItems = feedService.getInProgressItems(loggedUser.getId());
+    public ResponseEntity<List<FeedItemWithPercentageResponse>> getMyInProgressItems(@AuthenticationPrincipal User loggedUser) {
+        List<FeedItemWithPercentageResponse> inProgressItems = feedService.getInProgressItems(loggedUser.getId());
         return new ResponseEntity<>(inProgressItems, HttpStatus.OK);
     }
 
