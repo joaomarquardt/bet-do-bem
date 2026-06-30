@@ -70,4 +70,11 @@ public class AuthenticationService {
         String newAccessToken = tokenService.generateToken(refreshToken.getUser());
         return new TokenResponse(newAccessToken);
     }
+
+    @Transactional
+    public void logout(String refreshTokenString, Long userId) {
+        if (refreshTokenString != null && !refreshTokenString.isBlank()) {
+            refreshTokenRepository.deleteByTokenAndUserId(refreshTokenString, userId);
+        }
+    }
 }
