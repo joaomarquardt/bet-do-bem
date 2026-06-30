@@ -1,7 +1,6 @@
 package com.api.betdobem.repositories;
 
 import com.api.betdobem.domain.Activity;
-import com.api.betdobem.domain.Bet;
 import com.api.betdobem.enums.ActivityStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +16,14 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     Optional<Activity> findByProofId(@Param("proofId") Long proofId);
 
     List<Activity> findByStatusAndExpiresAtBefore(ActivityStatus status, Timestamp now);
+
+    @Query("""
+            SELECT a FROM Activity a
+            WHERE a.status IN :statuses
+            AND (a.author.id = :userId)
+            ORDER BY a.createdAt DESC
+            """)
+    List<Activity> findByStatusesAndInvolvedUserId(@Param("statuses") List<ActivityStatus> statuses, @Param("userId") Long userId);
 
     @Query("""
         SELECT a FROM Activity a

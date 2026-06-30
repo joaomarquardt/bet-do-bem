@@ -90,6 +90,11 @@ public class ActivityService {
         return activityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Activity with ID " + id + " not found."));
     }
 
+    public List<ActivityResponse> getActivitiesByStatusesAndInvolvedUserId(List<ActivityStatus> statuses, Long userId) {
+        List<Activity> activities = activityRepository.findByStatusesAndInvolvedUserId(statuses, userId);
+        return activityMapper.toActivityResponseList(activities);
+    }
+
     @Transactional
     public CreatedActivityResponse createActivity(CreateActivityRequest activity, Long userId) {
         Activity activityEntity = activityMapper.toActivityEntity(activity);

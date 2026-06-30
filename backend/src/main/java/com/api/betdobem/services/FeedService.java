@@ -1,6 +1,7 @@
 package com.api.betdobem.services;
 
 import com.api.betdobem.dtos.responses.*;
+import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
@@ -62,6 +63,10 @@ public class FeedService {
         List<BetStatus> betStatuses = List.of(BetStatus.IN_PROGRESS, BetStatus.IN_JUDGMENT);
         addFeedItems(feedItems, betService.getBetsByStatusesAndInvolvedUserId(betStatuses, userId), 
                 ContextType.BET, BetResponse::id, BetResponse::createdAt);
+
+        List<ActivityStatus> activityStatuses = List.of(ActivityStatus.IN_JUDGMENT);
+        addFeedItems(feedItems, activityService.getActivitiesByStatusesAndInvolvedUserId(activityStatuses, userId),
+                ContextType.ACTIVITY, ActivityResponse::id, ActivityResponse::createdAt);
 
         List<ChallengeStatus> challengeStatuses = List.of(ChallengeStatus.IN_PROGRESS, ChallengeStatus.IN_JUDGMENT);
         addFeedItems(feedItems, challengeService.getChallengesByStatusesAndInvolvedUserId(challengeStatuses, userId), 
