@@ -200,6 +200,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
           commentsData={(item as any).commentsData ?? null}
           hideVotingControls={true}
           statusBadge={statusConfig as any}
+          initialVoteData={(item as any).votePercentage ?? null}
         />
       );
     }
@@ -299,6 +300,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
           commentsData={(item as any).commentsData ?? null}
           hideVotingControls={true}
           statusBadge={statusConfig as any}
+          initialVoteData={(item as any).votePercentage ?? null}
         />
       );
     }
@@ -392,6 +394,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
         commentsData={(item as any).commentsData ?? null}
         hideVotingControls={true}
         statusBadge={statusConfig as any}
+        initialVoteData={(item as any).votePercentage ?? null}
       />
     );
   }

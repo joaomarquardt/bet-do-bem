@@ -48,13 +48,14 @@ interface BetCardProps {
   commentsData: PaginatedResponse<CommentResponse> | null;
   hideVotingControls?: boolean;
   statusBadge?: { label: string; icon: keyof typeof MaterialCommunityIcons.glyphMap | keyof typeof Ionicons.glyphMap; color: string; bg: string };
+  initialVoteData?: VotePercentageResponse | null;
 }
 
-export function BetCard({ bet, index, commentsData, hideVotingControls, statusBadge }: BetCardProps) {
+export function BetCard({ bet, index, commentsData, hideVotingControls, statusBadge, initialVoteData }: BetCardProps) {
   const { voteBet } = useBets();
-  const [hasVoted, setHasVoted] = useState(false);
+  const [hasVoted, setHasVoted] = useState(!!initialVoteData);
   const [votedFor, setVotedFor] = useState<string | null>(null);
-  const [voteData, setVoteData] = useState<VotePercentageResponse | null>(null);
+  const [voteData, setVoteData] = useState<VotePercentageResponse | null>(initialVoteData || null);
   const [isVoting, setIsVoting] = useState(false);
   const c = Colors.dark;
   const creatorName = bet.creator?.name ?? (bet.creator as any)?.displayName ?? (bet.creator as any)?.username ?? '...';
@@ -197,25 +198,33 @@ export function BetCard({ bet, index, commentsData, hideVotingControls, statusBa
         </View>
       )}
 
-      {hasVoted && voteData && (
+      {voteData && (
         <Animated.View entering={FadeIn.duration(300)} style={styles.voteResults}>
-          <Text style={[styles.totalVotes, { color: c.textTertiary }]}>
-            {voteData.totalVotes} {voteData.totalVotes === 1 ? 'voto' : 'votos'}
-          </Text>
-          <View style={styles.voteBarContainer}>
-            <View style={styles.voteBarRow}>
-              {creatorPct > 0 && (
-                <View style={{ flex: creatorPct, backgroundColor: c.accent, borderTopLeftRadius: 4, borderBottomLeftRadius: 4, borderTopRightRadius: opponentPct === 0 ? 4 : 0, borderBottomRightRadius: opponentPct === 0 ? 4 : 0 }} />
-              )}
-              {opponentPct > 0 && (
-                <View style={{ flex: opponentPct, backgroundColor: c.warning, borderTopRightRadius: 4, borderBottomRightRadius: 4, borderTopLeftRadius: creatorPct === 0 ? 4 : 0, borderBottomLeftRadius: creatorPct === 0 ? 4 : 0 }} />
-              )}
-            </View>
-            <View style={styles.voteLabels}>
-              <Text style={[styles.voteLabel, { color: c.accent }]}>{Math.round(creatorPct)}% {creatorName}</Text>
-              <Text style={[styles.voteLabel, { color: c.warning }]}>{Math.round(opponentPct)}% {opponentName}</Text>
-            </View>
-          </View>
+          {voteData.totalVotes === 0 ? (
+            <Text style={[styles.totalVotes, { color: c.textTertiary }]}>
+              Ainda não há votos registrados
+            </Text>
+          ) : (
+            <>
+              <Text style={[styles.totalVotes, { color: c.textTertiary }]}>
+                {voteData.totalVotes} {voteData.totalVotes === 1 ? 'voto' : 'votos'}
+              </Text>
+              <View style={styles.voteBarContainer}>
+                <View style={styles.voteBarRow}>
+                  {creatorPct > 0 && (
+                    <View style={{ flex: creatorPct, backgroundColor: c.accent, borderTopLeftRadius: 4, borderBottomLeftRadius: 4, borderTopRightRadius: opponentPct === 0 ? 4 : 0, borderBottomRightRadius: opponentPct === 0 ? 4 : 0 }} />
+                  )}
+                  {opponentPct > 0 && (
+                    <View style={{ flex: opponentPct, backgroundColor: c.warning, borderTopRightRadius: 4, borderBottomRightRadius: 4, borderTopLeftRadius: creatorPct === 0 ? 4 : 0, borderBottomLeftRadius: creatorPct === 0 ? 4 : 0 }} />
+                  )}
+                </View>
+                <View style={styles.voteLabels}>
+                  <Text style={[styles.voteLabel, { color: c.accent }]}>{Math.round(creatorPct)}% {creatorName}</Text>
+                  <Text style={[styles.voteLabel, { color: c.warning }]}>{Math.round(opponentPct)}% {opponentName}</Text>
+                </View>
+              </View>
+            </>
+          )}
         </Animated.View>
       )}
 

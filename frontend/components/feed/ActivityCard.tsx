@@ -23,13 +23,14 @@ interface ActivityCardProps {
   commentsData: PaginatedResponse<CommentResponse> | null;
   hideVotingControls?: boolean;
   statusBadge?: { label: string; icon: keyof typeof MaterialCommunityIcons.glyphMap | keyof typeof Ionicons.glyphMap; color: string; bg: string };
+  initialVoteData?: VotePercentageResponse | null;
 }
 
-export function ActivityCard({ activity, index, commentsData, hideVotingControls, statusBadge }: ActivityCardProps) {
+export function ActivityCard({ activity, index, commentsData, hideVotingControls, statusBadge, initialVoteData }: ActivityCardProps) {
   const { voteActivity } = useActivity();
-  const [hasVoted, setHasVoted] = useState(false);
+  const [hasVoted, setHasVoted] = useState(!!initialVoteData);
   const [votedFor, setVotedFor] = useState<boolean | null>(null);
-  const [voteData, setVoteData] = useState<VotePercentageResponse | null>(null);
+  const [voteData, setVoteData] = useState<VotePercentageResponse | null>(initialVoteData || null);
   const [isVoting, setIsVoting] = useState(false);
   const c = Colors.dark;
   const authorName =
@@ -96,7 +97,7 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
         </View>
       </View>
 
-      <View style={{ paddingHorizontal: 16 }}>
+      <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
         {proofUri ? (
           <ProofMediaFrame
             uri={proofUri}
@@ -147,25 +148,33 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
         </View>
       )}
 
-      {hasVoted && voteData && (
+      {voteData && (
         <Animated.View entering={FadeIn.duration(300)} style={styles.voteResults}>
-          <Text style={[styles.totalVotes, { color: c.textTertiary }]}>
-            {voteData.totalVotes} {voteData.totalVotes === 1 ? 'voto' : 'votos'}
-          </Text>
-          <View style={styles.voteBarContainer}>
-            <View style={styles.voteBarRow}>
-              {approvedPct > 0 && (
-                <View style={{ flex: approvedPct, backgroundColor: c.accent, borderRadius: rejectedPct === 0 ? 4 : 0, borderTopLeftRadius: 4, borderBottomLeftRadius: 4 }} />
-              )}
-              {rejectedPct > 0 && (
-                <View style={{ flex: rejectedPct, backgroundColor: c.danger, borderRadius: approvedPct === 0 ? 4 : 0, borderTopRightRadius: 4, borderBottomRightRadius: 4 }} />
-              )}
-            </View>
-            <View style={styles.voteLabels}>
-              <Text style={[styles.voteLabel, { color: c.accent }]}>{Math.round(approvedPct)}% Aprovado</Text>
-              <Text style={[styles.voteLabel, { color: c.danger }]}>{Math.round(rejectedPct)}% Rejeitado</Text>
-            </View>
-          </View>
+          {voteData.totalVotes === 0 ? (
+            <Text style={[styles.totalVotes, { color: c.textTertiary }]}>
+              Ainda não há votos registrados
+            </Text>
+          ) : (
+            <>
+              <Text style={[styles.totalVotes, { color: c.textTertiary }]}>
+                {voteData.totalVotes} {voteData.totalVotes === 1 ? 'voto' : 'votos'}
+              </Text>
+              <View style={styles.voteBarContainer}>
+                <View style={styles.voteBarRow}>
+                  {approvedPct > 0 && (
+                    <View style={{ flex: approvedPct, backgroundColor: c.accent, borderTopLeftRadius: 4, borderBottomLeftRadius: 4, borderTopRightRadius: rejectedPct === 0 ? 4 : 0, borderBottomRightRadius: rejectedPct === 0 ? 4 : 0 }} />
+                  )}
+                  {rejectedPct > 0 && (
+                    <View style={{ flex: rejectedPct, backgroundColor: c.danger, borderTopRightRadius: 4, borderBottomRightRadius: 4, borderTopLeftRadius: approvedPct === 0 ? 4 : 0, borderBottomLeftRadius: approvedPct === 0 ? 4 : 0 }} />
+                  )}
+                </View>
+                <View style={styles.voteLabels}>
+                  <Text style={[styles.voteLabel, { color: c.accent }]}>{Math.round(approvedPct)}% Aprovado</Text>
+                  <Text style={[styles.voteLabel, { color: c.danger }]}>{Math.round(rejectedPct)}% Rejeitado</Text>
+                </View>
+              </View>
+            </>
+          )}
         </Animated.View>
       )}
 

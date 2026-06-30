@@ -1,8 +1,9 @@
-import { Bet, Challenge, Activity, FeedItemResponse, PaginatedResponse, CommentResponse } from '@/lib/types';
+import { Bet, Challenge, Activity, FeedItemResponse, PaginatedResponse, CommentResponse, VotePercentageResponse } from '@/lib/types';
 
 export type BetsTabItem = (Bet | Challenge | Activity) & {
   feedItemType: 'BET' | 'CHALLENGE' | 'ACTIVITY';
   commentsData?: PaginatedResponse<CommentResponse> | null;
+  votePercentage?: VotePercentageResponse | null;
 };
 
 function safeUser(u: Record<string, unknown> | undefined, fallbackId = '') {
@@ -138,16 +139,16 @@ export function mapFeedItemToActivity(item: FeedItemResponse): Activity {
 }
 
 export function mapFeedItemToBetsTabItem(
-  item: FeedItemResponse,
+  item: FeedItemResponse | any,
 ): BetsTabItem | null {
   if (item.feedItemType === 'BET') {
-    return { ...mapFeedItemToBet(item), feedItemType: 'BET', commentsData: item.comments ?? null };
+    return { ...mapFeedItemToBet(item), feedItemType: 'BET', commentsData: item.comments ?? null, votePercentage: item.votePercentage ?? null };
   }
   if (item.feedItemType === 'CHALLENGE') {
-    return { ...mapFeedItemToChallenge(item), feedItemType: 'CHALLENGE', commentsData: item.comments ?? null };
+    return { ...mapFeedItemToChallenge(item), feedItemType: 'CHALLENGE', commentsData: item.comments ?? null, votePercentage: item.votePercentage ?? null };
   }
   if (item.feedItemType === 'ACTIVITY') {
-    return { ...mapFeedItemToActivity(item), feedItemType: 'ACTIVITY', commentsData: item.comments ?? null };
+    return { ...mapFeedItemToActivity(item), feedItemType: 'ACTIVITY', commentsData: item.comments ?? null, votePercentage: item.votePercentage ?? null };
   }
   return null;
 }
