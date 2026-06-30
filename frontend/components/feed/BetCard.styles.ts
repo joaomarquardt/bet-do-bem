@@ -4,7 +4,6 @@ export const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     borderWidth: 1,
-    marginHorizontal: 16,
     marginBottom: 16,
     overflow: 'hidden',
   },

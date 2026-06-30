@@ -46,9 +46,11 @@ interface BetCardProps {
   bet: Bet;
   index: number;
   commentsData: PaginatedResponse<CommentResponse> | null;
+  hideVotingControls?: boolean;
+  statusBadge?: { label: string; icon: keyof typeof MaterialCommunityIcons.glyphMap | keyof typeof Ionicons.glyphMap; color: string; bg: string };
 }
 
-export function BetCard({ bet, index, commentsData }: BetCardProps) {
+export function BetCard({ bet, index, commentsData, hideVotingControls, statusBadge }: BetCardProps) {
   const { voteBet } = useBets();
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<string | null>(null);
@@ -111,10 +113,17 @@ export function BetCard({ bet, index, commentsData }: BetCardProps) {
     <Animated.View entering={FadeInDown.delay(index * 80).duration(400)} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
       <View style={styles.cardHeader}>
         <View style={styles.betMeta}>
-          <View style={[styles.statusBadge, { backgroundColor: c.accentDim }]}>
-            <MaterialCommunityIcons name="gavel" size={12} color={c.accent} />
-            <Text style={[styles.statusText, { color: c.accent }]}>Em Julgamento</Text>
-          </View>
+          {statusBadge ? (
+            <View style={[styles.statusBadge, { backgroundColor: statusBadge.bg }]}>
+              <Ionicons name={statusBadge.icon as any} size={12} color={statusBadge.color} />
+              <Text style={[styles.statusText, { color: statusBadge.color }]}>{statusBadge.label}</Text>
+            </View>
+          ) : (
+            <View style={[styles.statusBadge, { backgroundColor: c.accentDim }]}>
+              <MaterialCommunityIcons name="gavel" size={12} color={c.accent} />
+              <Text style={[styles.statusText, { color: c.accent }]}>Em Julgamento</Text>
+            </View>
+          )}
           <Text style={[styles.timeAgo, { color: c.textTertiary }]}>{formatTimeAgo(bet.createdAt)}</Text>
         </View>
         <View style={[styles.buyInBadge, { backgroundColor: c.warningDim }]}>
@@ -210,7 +219,7 @@ export function BetCard({ bet, index, commentsData }: BetCardProps) {
         </Animated.View>
       )}
 
-      {!hasVoted && bet.creator && bet.opponent && (
+      {!hideVotingControls && !hasVoted && bet.creator && bet.opponent && (
         <View style={styles.voteButtons}>
           <Pressable
             style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed || isVoting ? 0.7 : 1 }]}

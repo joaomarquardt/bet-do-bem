@@ -21,9 +21,11 @@ interface ActivityCardProps {
   activity: Activity;
   index: number;
   commentsData: PaginatedResponse<CommentResponse> | null;
+  hideVotingControls?: boolean;
+  statusBadge?: { label: string; icon: keyof typeof MaterialCommunityIcons.glyphMap | keyof typeof Ionicons.glyphMap; color: string; bg: string };
 }
 
-export function ActivityCard({ activity, index, commentsData }: ActivityCardProps) {
+export function ActivityCard({ activity, index, commentsData, hideVotingControls, statusBadge }: ActivityCardProps) {
   const { voteActivity } = useActivity();
   const [hasVoted, setHasVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<boolean | null>(null);
@@ -63,10 +65,17 @@ export function ActivityCard({ activity, index, commentsData }: ActivityCardProp
     <Animated.View entering={FadeInDown.delay(index * 80).duration(400)} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
       <View style={styles.cardHeader}>
         <View style={styles.betMeta}>
-          <View style={[styles.statusBadge, { backgroundColor: c.accentDim }]}>
-            <MaterialCommunityIcons name="image" size={12} color={c.accent} />
-            <Text style={[styles.statusText, { color: c.accent }]}>Atividade</Text>
-          </View>
+          {statusBadge ? (
+            <View style={[styles.statusBadge, { backgroundColor: statusBadge.bg }]}>
+              <Ionicons name={statusBadge.icon as any} size={12} color={statusBadge.color} />
+              <Text style={[styles.statusText, { color: statusBadge.color }]}>{statusBadge.label}</Text>
+            </View>
+          ) : (
+            <View style={[styles.statusBadge, { backgroundColor: c.accentDim }]}>
+              <MaterialCommunityIcons name="image" size={12} color={c.accent} />
+              <Text style={[styles.statusText, { color: c.accent }]}>Atividade</Text>
+            </View>
+          )}
           <Text style={[styles.timeAgo, { color: c.textTertiary }]}>{formatTimeAgo(activity.createdAt)}</Text>
         </View>
         <View style={[styles.buyInBadge, { backgroundColor: c.surfaceHighlight }]}>
@@ -111,7 +120,7 @@ export function ActivityCard({ activity, index, commentsData }: ActivityCardProp
         )}
       </View>
 
-      {!hasVoted && (
+      {!hideVotingControls && !hasVoted && (
         <View style={styles.voteButtons}>
           <Pressable
             style={({ pressed }) => [styles.voteBtn, { backgroundColor: c.surfaceElevated, borderColor: c.accentBorder, opacity: pressed || isVoting ? 0.7 : 1 }]}
