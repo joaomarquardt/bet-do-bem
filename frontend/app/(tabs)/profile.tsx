@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Platform, Alert } from 'react-native';
+import { useCallback, useState, useEffect } from 'react';
+import { View, Text, ScrollView, Pressable, Platform, Alert, Modal, RefreshControl, DeviceEventEmitter } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -95,16 +95,20 @@ export default function ProfileScreen() {
   const [totalTransactions, setTotalTransactions] = useState(0);
   const [hasMoreThanPreview, setHasMoreThanPreview] = useState(false);
   const [showFullHistory, setShowFullHistory] = useState(false);
+  const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPadding = Platform.OS === 'web' ? 84 : insets.bottom + 90;
 
   const handleLogout = useCallback(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setIsLogoutModalVisible(true);
+  }, []);
+
+  const confirmLogout = useCallback(() => {
+    setIsLogoutModalVisible(false);
     logout();
   }, [logout]);
-
-  if (!user) return null;
 
   const mapApiTransactionsToDomain = (apiTxs: any[]): ProfileTransaction[] => {
     return apiTxs.map((t: any) => {
@@ -132,11 +136,19 @@ export default function ProfileScreen() {
     });
   };
 
-  const loadProfileAndTransactions = useCallback(async () => {
-    setIsLoadingWallet(true);
-    setWalletError(null);
-    setIsLoadingTransactions(true);
-    setTransactionsError(null);
+  const loadProfileAndTransactions = useCallback(async (silent = false) => {
+    if (!silent) {
+      setIsLoadingWallet(true);
+      setWalletError(null);
+      setIsLoadingTransactions(true);
+      setTransactionsError(null);
+    }
+
+    if (!user) {
+      setIsLoadingWallet(false);
+      setIsLoadingTransactions(false);
+      return;
+    }
 
     try {
       const profile = await userService.getMyProfile();
@@ -187,6 +199,25 @@ export default function ProfileScreen() {
     };
   }, [loadProfileAndTransactions]);
 
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener('onSessionRefreshed', () => {
+      loadProfileAndTransactions(true);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [loadProfileAndTransactions]);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadProfileAndTransactions(true);
+    setRefreshing(false);
+  }, [loadProfileAndTransactions]);
+
+  if (!user) return null;
+
   const totalGames = (typeof wins === 'number' && typeof losses === 'number' && typeof draws === 'number') ? wins + losses + draws : 0;
   const winRate = totalGames > 0 && typeof wins === 'number' ? Math.round((wins / totalGames) * 100) : 0;
 
@@ -195,6 +226,7 @@ export default function ProfileScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       contentContainerStyle={{ paddingBottom: bottomPadding }}
       showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.accent} />}
     >
       <View style={[styles.header, { paddingTop: topPadding + 20 }]}>
         <EditableProfileAvatar
@@ -337,6 +369,53 @@ export default function ProfileScreen() {
         initialTransactions={previewTransactions ?? []}
         totalElements={totalTransactions}
       />
+
+      <Modal
+        visible={isLogoutModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsLogoutModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <View style={{ backgroundColor: c.surface, width: '100%', maxWidth: 400, borderRadius: 16, padding: 24, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, borderWidth: 1, borderColor: c.border }}>
+            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: `${c.danger}20`, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
+              <Ionicons name="log-out-outline" size={24} color={c.danger} />
+            </View>
+            <Text style={{ fontSize: 20, fontFamily: 'Inter_700Bold', color: c.text, marginBottom: 8 }}>Sair da conta</Text>
+            <Text style={{ fontSize: 16, fontFamily: 'Inter_400Regular', color: c.textSecondary, textAlign: 'center', marginBottom: 24 }}>
+              Tem certeza que deseja sair? Você precisará fazer login novamente para acessar a plataforma.
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+              <Pressable
+                onPress={() => setIsLogoutModalVisible(false)}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  backgroundColor: c.surface,
+                  borderWidth: 1,
+                  borderColor: c.border,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text style={{ textAlign: 'center', color: c.text, fontFamily: 'Inter_600SemiBold', fontSize: 16 }}>Cancelar</Text>
+              </Pressable>
+              <Pressable
+                onPress={confirmLogout}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  backgroundColor: c.danger,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text style={{ textAlign: 'center', color: '#fff', fontFamily: 'Inter_600SemiBold', fontSize: 16 }}>Sair</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }

@@ -127,6 +127,7 @@ class ApiClient {
           this.isRefreshing = false;
 
           if (newToken) {
+            DeviceEventEmitter.emit('onSessionRefreshed');
             this.onRefreshed(newToken);
             return this.request<T>(originalRequest.method, originalRequest.path, originalRequest.body, originalRequest.config);
           } else {
