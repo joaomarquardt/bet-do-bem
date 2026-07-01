@@ -9,6 +9,7 @@ import com.api.betdobem.dtos.responses.LoginResult;
 import com.api.betdobem.dtos.responses.TokenResponse;
 import com.api.betdobem.infra.exceptions.DifferentPasswordsException;
 import com.api.betdobem.infra.exceptions.EmailAlreadyExistsException;
+import com.api.betdobem.infra.exceptions.RefreshTokenExpiredException;
 import com.api.betdobem.repositories.RefreshTokenRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -65,7 +66,7 @@ public class AuthenticationService {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenString).orElseThrow(() -> new RuntimeException("Refresh token not found"));
         if (refreshToken.getExpirationInstant().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(refreshToken);
-            throw new RuntimeException("Refresh token expired");
+            throw new RefreshTokenExpiredException("Refresh token expired");
         }
         String newAccessToken = tokenService.generateToken(refreshToken.getUser());
         return new TokenResponse(newAccessToken);

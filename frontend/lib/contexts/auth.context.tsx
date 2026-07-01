@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
+import { DeviceEventEmitter, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiClient } from '@/lib/api/client';
 import { authService } from '@/lib/api/auth.service';
@@ -38,6 +39,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initializeAuth();
+    
+    const subscription = DeviceEventEmitter.addListener('onSessionExpired', async () => {
+      await apiClient.clearTokens();
+      await AsyncStorage.removeItem(USER_KEY);
+      setUser(null);
+      
+      setTimeout(() => {
+        Alert.alert(
+          'Sessão Expirada',
+          'Sua sessão expirou por inatividade. Por favor, faça login novamente para continuar.'
+        );
+      }, 500);
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   const persistUser = useCallback(async (userData: User) => {
@@ -72,10 +90,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await apiClient.clearTokens();
-    await AsyncStorage.removeItem(USER_KEY);
-    setUser(null);
-  }, []);
+    try {
+      if (user) {
+        await authService.logout();
+      }
+    } catch (error) {
+      console.error("Erro ao fazer logout na API", error);
+    } finally {
+      await apiClient.clearTokens();
+      await AsyncStorage.removeItem(USER_KEY);
+      setUser(null);
+    }
+  }, [user]);
 
   const updateUser = useCallback((newData: Partial<User>) => {
     setUser(prev => {

@@ -2,6 +2,7 @@ package com.api.betdobem.services;
 
 import com.api.betdobem.domain.RefreshToken;
 import com.api.betdobem.domain.User;
+import com.api.betdobem.infra.exceptions.AuthenticationFailedException;
 import com.api.betdobem.repositories.RefreshTokenRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -49,7 +50,7 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         } catch (JWTVerificationException e) {
-            return "";
+            throw new AuthenticationFailedException("Authentication failed: Invalid or expired token");
         }
     }
 

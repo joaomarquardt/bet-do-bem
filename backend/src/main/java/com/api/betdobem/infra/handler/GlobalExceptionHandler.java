@@ -53,11 +53,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             ForbiddenActionException.class,
-            AuthenticationFailedException.class
+            AuthenticationFailedException.class,
+            RefreshTokenExpiredException.class
     })
     public ResponseEntity<RestErrorResponse> handleSecurityExceptions(RuntimeException ex) {
         HttpStatus status;
-        if (ex instanceof AuthenticationFailedException) {
+        if (ex instanceof AuthenticationFailedException || ex instanceof RefreshTokenExpiredException) {
             status = HttpStatus.UNAUTHORIZED;
         } else {
             status = HttpStatus.FORBIDDEN;

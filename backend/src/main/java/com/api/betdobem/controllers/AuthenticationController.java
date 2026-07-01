@@ -50,12 +50,8 @@ public class AuthenticationController {
         if (refreshToken == null || refreshToken.isBlank()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        try {
-            TokenResponse newToken = authenticationService.refreshToken(refreshToken);
-            return ResponseEntity.ok(newToken);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+        TokenResponse newToken = authenticationService.refreshToken(refreshToken);
+        return new ResponseEntity<>(newToken, HttpStatus.OK);
     }
 
     @PostMapping("/logout")
