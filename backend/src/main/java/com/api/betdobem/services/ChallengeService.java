@@ -11,7 +11,7 @@ import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.infra.exceptions.InvalidStatusException;
 import com.api.betdobem.infra.exceptions.SelfInteractionException;
-import com.api.betdobem.infra.exceptions.UnauthorizedActionException;
+import com.api.betdobem.infra.exceptions.ForbiddenActionException;
 import com.api.betdobem.mappers.ChallengeMapper;
 import com.api.betdobem.repositories.ChallengeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -66,7 +66,7 @@ public class ChallengeService {
             throw new EntityNotFoundException("Challenge with ID " + challengeId + " not found.");
         }
         if (!challengeRepository.canUserViewChallenge(challengeId, loggedUser.getId())) {
-            throw new UnauthorizedActionException("User does not have access to comment on this challenge.");
+            throw new ForbiddenActionException("User does not have access to comment on this challenge.");
         }
         return commentService.addComment(ContextType.CHALLENGE, challengeId, comment.content(), loggedUser);
     }
@@ -76,7 +76,7 @@ public class ChallengeService {
             throw new EntityNotFoundException("Challenge with ID " + challengeId + " not found.");
         }
         if (!challengeRepository.canUserViewChallenge(challengeId, loggedUser.getId())) {
-            throw new UnauthorizedActionException("User cannot access the comments for this challenge.");
+            throw new ForbiddenActionException("User cannot access the comments for this challenge.");
         }
         return commentService.getComments(ContextType.CHALLENGE, challengeId, Pageable.ofSize(size).withPage(page));
     }
@@ -158,7 +158,7 @@ public class ChallengeService {
             throw new InvalidStatusException("Cannot add proof to a challenge that is not open.");
         }
         if (!challenge.getChallenged().getId().equals(userId)) {
-            throw new UnauthorizedActionException("Only the challenged user can add proof to this challenge.");
+            throw new ForbiddenActionException("Only the challenged user can add proof to this challenge.");
         }
         // TODO: Check if user already posted a proof in this challenge
         String uniqueObjectKey = String.format("proofs/challenges/user_%d_%d_%s",

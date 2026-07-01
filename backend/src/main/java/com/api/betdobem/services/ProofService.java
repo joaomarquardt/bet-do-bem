@@ -14,7 +14,7 @@ import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.events.ProofDrawEvent;
 import com.api.betdobem.infra.exceptions.DuplicateActionException;
 import com.api.betdobem.infra.exceptions.SelfInteractionException;
-import com.api.betdobem.infra.exceptions.UnauthorizedActionException;
+import com.api.betdobem.infra.exceptions.ForbiddenActionException;
 import com.api.betdobem.mappers.ProofMapper;
 import com.api.betdobem.repositories.ProofRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -61,7 +61,7 @@ public class ProofService {
     public VotePercentageResponse voteInProof(Long id, CreateVoteRequest vote, Long voterId) {
         Proof proof = getProofEntityById(id);
         if (!groupService.isUserMemberOfGroupLinkedToProof(voterId, id)) {
-            throw new UnauthorizedActionException("User must be a member of the group linked to the proof to vote.");
+            throw new ForbiddenActionException("User must be a member of the group linked to the proof to vote.");
         }
         // TODO: Check if the proof is still open for voting
         if (proof.getAuthor().getId().equals(voterId)) {

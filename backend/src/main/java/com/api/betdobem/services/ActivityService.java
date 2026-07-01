@@ -12,7 +12,7 @@ import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
-import com.api.betdobem.infra.exceptions.UnauthorizedActionException;
+import com.api.betdobem.infra.exceptions.ForbiddenActionException;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -66,7 +66,7 @@ public class ActivityService {
             throw new EntityNotFoundException("Activity with ID " + activityId + " not found.");
         }
         if (!activityRepository.canUserViewActivity(activityId, loggedUser.getId())) {
-                throw new UnauthorizedActionException("User does not have access to comment on this activity.");
+                throw new ForbiddenActionException("User does not have access to comment on this activity.");
         }
         return commentService.addComment(ContextType.ACTIVITY, activityId, comment.content(), loggedUser);
     }
@@ -76,7 +76,7 @@ public class ActivityService {
             throw new EntityNotFoundException("Activity with ID " + activityId + " not found.");
         }
         if (!activityRepository.canUserViewActivity(activityId, loggedUser.getId())) {
-            throw new UnauthorizedActionException("User cannot access the comments for this activity.");
+            throw new ForbiddenActionException("User cannot access the comments for this activity.");
         }
         return commentService.getComments(ContextType.ACTIVITY, activityId, Pageable.ofSize(size).withPage(page));
     }

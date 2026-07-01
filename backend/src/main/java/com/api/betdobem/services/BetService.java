@@ -12,7 +12,7 @@ import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.events.ProofDrawEvent;
 import com.api.betdobem.infra.exceptions.InvalidStatusException;
 import com.api.betdobem.infra.exceptions.SelfInteractionException;
-import com.api.betdobem.infra.exceptions.UnauthorizedActionException;
+import com.api.betdobem.infra.exceptions.ForbiddenActionException;
 import com.api.betdobem.mappers.BetMapper;
 import com.api.betdobem.repositories.BetRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -67,7 +67,7 @@ public class BetService {
             throw new EntityNotFoundException("Bet with ID " + betId + " not found.");
         }
         if (!betRepository.canUserViewBet(betId, loggedUser.getId())) {
-            throw new UnauthorizedActionException("User does not have access to comment on this bet.");
+            throw new ForbiddenActionException("User does not have access to comment on this bet.");
         }
         return commentService.addComment(ContextType.BET, betId, comment.content(), loggedUser);
     }
@@ -77,7 +77,7 @@ public class BetService {
             throw new EntityNotFoundException("Bet with ID " + betId + " not found.");
         }
         if (!betRepository.canUserViewBet(betId, loggedUser.getId())) {
-            throw new UnauthorizedActionException("User cannot access the comments for this bet.");
+            throw new ForbiddenActionException("User cannot access the comments for this bet.");
         }
         return commentService.getComments(ContextType.BET, betId, Pageable.ofSize(size).withPage(page));
     }
@@ -151,7 +151,7 @@ public class BetService {
     public ProofUploadResponse addProofToBet(Long id, CreateProofRequest proof, Long userId) {
         Bet bet = getBetEntityById(id);
         if (!bet.getCreator().getId().equals(userId) && !bet.getOpponent().getId().equals(userId)) {
-            throw new UnauthorizedActionException("Only the creator or opponent can add proofs to this bet.");
+            throw new ForbiddenActionException("Only the creator or opponent can add proofs to this bet.");
         }
         if (bet.getStatus() != BetStatus.IN_PROGRESS) {
             throw new InvalidStatusException("Cannot add proof to a bet that is not in progress.");

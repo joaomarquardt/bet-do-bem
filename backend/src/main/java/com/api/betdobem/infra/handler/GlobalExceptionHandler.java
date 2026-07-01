@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            UnauthorizedActionException.class,
+            ForbiddenActionException.class,
             AuthenticationFailedException.class
     })
     public ResponseEntity<RestErrorResponse> handleSecurityExceptions(RuntimeException ex) {
