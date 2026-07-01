@@ -32,7 +32,8 @@ public class GlobalExceptionHandler {
             InsufficientFundsException.class,
             InvalidOperationException.class,
             DifferentPasswordsException.class,
-            InvalidStatusException.class
+            InvalidStatusException.class,
+            ActivityCreationLimitException.class
     })
     public ResponseEntity<RestErrorResponse> handleBadRequestExceptions(RuntimeException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;

@@ -12,17 +12,20 @@ import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
+import com.api.betdobem.infra.exceptions.ActivityCreationLimitException;
 import com.api.betdobem.infra.exceptions.ForbiddenActionException;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,6 +38,9 @@ public class ActivityService {
     private WalletService walletService;
     private S3StorageService s3StorageService;
     private CommentService commentService;
+
+    @Value("${app.activity.daily-limit}")
+    private int dailyActivityLimit;
 
     public ActivityService(ActivityRepository activityRepository, ActivityMapper activityMapper, ProofService proofService, UserService userService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService, CommentService commentService) {
         this.activityRepository = activityRepository;
@@ -97,6 +103,11 @@ public class ActivityService {
 
     @Transactional
     public CreatedActivityResponse createActivity(CreateActivityRequest activity, Long userId) {
+        LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(24);
+        long recentActivitiesCount = activityRepository.countRecentActivities(userId, twentyFourHoursAgo);
+        if (recentActivitiesCount >= dailyActivityLimit) {
+            throw new ActivityCreationLimitException("User has reached the daily limit of activities.");
+        }
         Activity activityEntity = activityMapper.toActivityEntity(activity);
         User author = userService.getUserEntityById(userId);
         String uniqueObjectKey = String.format("proofs/activities/user_%d_%d_%s",

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,13 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     Optional<Activity> findByProofId(@Param("proofId") Long proofId);
 
     List<Activity> findByStatusAndExpiresAtBefore(ActivityStatus status, Timestamp now);
+
+    @Query("""
+        SELECT COUNT(a) FROM Activity a
+        WHERE a.author.id = :authorId
+        AND a.createdAt >= :hoursAgo
+        """)
+    long countRecentActivities(@Param("authorId") Long authorId, @Param("twentyFourHoursAgo") LocalDateTime hoursAgo);
 
     @Query("""
             SELECT a FROM Activity a
