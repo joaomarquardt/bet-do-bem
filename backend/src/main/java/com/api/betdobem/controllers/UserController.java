@@ -4,10 +4,7 @@ import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdatePictureRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
-import com.api.betdobem.dtos.responses.PagedResponse;
-import com.api.betdobem.dtos.responses.TransactionResponse;
-import com.api.betdobem.dtos.responses.UploadPictureResponse;
-import com.api.betdobem.dtos.responses.UserResponse;
+import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
@@ -48,8 +45,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getMyProfile(@AuthenticationPrincipal User loggedUser) {
-        UserResponse user = userService.getUserById(loggedUser.getId());
+    public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal User loggedUser) {
+        UserProfileResponse user = userService.getUserProfileById(loggedUser.getId());
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 

@@ -7,4 +7,6 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
     boolean existsByProofIdAndVoterId(Long proofId, Long voterId);
 
     long countByProofIdAndApproved(Long proofId, boolean approved);
+
+    long countByVoterId(Long voterId);
 }

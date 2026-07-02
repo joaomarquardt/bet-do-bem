@@ -54,4 +54,6 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
         WHERE a.id = :activityId AND u.id = :userId
     """)
     boolean canUserViewActivity(@Param("activityId") Long activityId, @Param("userId") Long userId);
+
+    long countByAuthorId(Long authorId);
 }

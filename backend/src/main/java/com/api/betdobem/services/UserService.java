@@ -4,13 +4,13 @@ import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdatePictureRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
-import com.api.betdobem.dtos.responses.PagedResponse;
-import com.api.betdobem.dtos.responses.TransactionResponse;
-import com.api.betdobem.dtos.responses.UploadPictureResponse;
-import com.api.betdobem.dtos.responses.UserResponse;
+import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.UserRole;
 import com.api.betdobem.mappers.UserMapper;
+import com.api.betdobem.repositories.ActivityRepository;
+import com.api.betdobem.repositories.BetRepository;
 import com.api.betdobem.repositories.UserRepository;
+import com.api.betdobem.repositories.VoteRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,12 +24,18 @@ public class UserService {
     private UserMapper userMapper;
     private WalletService walletService;
     private S3StorageService s3StorageService;
+    private BetRepository betRepository;
+    private ActivityRepository activityRepository;
+    private VoteRepository voteRepository;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, WalletService walletService, S3StorageService s3StorageService) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, WalletService walletService, S3StorageService s3StorageService, BetRepository betRepository, ActivityRepository activityRepository, VoteRepository voteRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.walletService = walletService;
         this.s3StorageService = s3StorageService;
+        this.betRepository = betRepository;
+        this.activityRepository = activityRepository;
+        this.voteRepository = voteRepository;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -67,6 +73,14 @@ public class UserService {
     public UserResponse getUserById(Long id) {
         User user = getUserEntityById(id);
         return userMapper.toUserResponse(user);
+    }
+
+    public UserProfileResponse getUserProfileById(Long id) {
+        User user = getUserEntityById(id);
+        long winningBets = betRepository.countWinningBetsByUserId(id);
+        long registeredActivities = activityRepository.countByAuthorId(id);
+        long computedVotes = voteRepository.countByVoterId(id);
+        return userMapper.toUserProfileResponse(user, winningBets, registeredActivities, computedVotes);
     }
 
     public UserResponse updateUser(Long id, UpdateUserRequest user) {

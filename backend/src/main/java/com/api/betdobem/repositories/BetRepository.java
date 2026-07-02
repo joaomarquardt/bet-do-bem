@@ -67,4 +67,11 @@ public interface BetRepository extends JpaRepository<Bet, Long> {
         WHERE b.id = :betId AND u.id = :userId
     """)
     boolean canUserViewBet(@Param("betId") Long betId, @Param("userId") Long userId);
+
+    @Query("""
+        SELECT COUNT(b) FROM Bet b 
+        WHERE (b.status = 'FINISHED_WIN_CREATOR' AND b.creator.id = :userId)
+           OR (b.status = 'FINISHED_WIN_OPPONENT' AND b.opponent.id = :userId)
+    """)
+    long countWinningBetsByUserId(@Param("userId") Long userId);
 }
