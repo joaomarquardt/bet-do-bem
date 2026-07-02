@@ -17,9 +17,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public abstract class ProofMapper {
-    @Autowired
-    private S3StorageService s3StorageService;
-
     @Value("${aws.cloudfront.domain.name}")
     private String cloudFrontDomainName;
 
@@ -42,16 +39,4 @@ public abstract class ProofMapper {
         }
         return "https://" + cloudFrontDomainName + "/" + imagePath;
     }
-
-    // Old way
-    //@Named("generateS3Url")
-    //protected String generateS3Url(String imagePath) {
-    //    if (imagePath == null || imagePath.trim().isEmpty()) {
-    //        return null;
-    //    }
-    //    if (imagePath.startsWith("http")) {
-    //        return imagePath;
-    //    }
-    //    return s3StorageService.generatePresignedDownloadUrl(imagePath);
-    //}
 }
