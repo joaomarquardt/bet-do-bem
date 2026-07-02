@@ -53,7 +53,7 @@ public class WalletService {
     @Transactional
     private void processHoldFunds(User user, Long amount, TransactionType transactionType, ContextType contextType, Long contextId) {
         if (!userHasSufficientFunds(user, amount)) {
-            throw new InsufficientFundsException("User " + user.getName() + " does not have enough coins to perform this action.");
+            throw new InsufficientFundsException("User " + user.getUsername() + " does not have enough coins to perform this action.");
         }
         subtractAmountFromUser(user, amount);
         Transaction transaction = new Transaction();
@@ -68,7 +68,7 @@ public class WalletService {
     @Transactional
     public void buyChallengeOption(User user, Long cost) {
         if (!userHasSufficientFunds(user, cost)) {
-            throw new InsufficientFundsException("User " + user.getName() + " does not have enough coins to perform this action.");
+            throw new InsufficientFundsException("User " + user.getUsername() + " does not have enough coins to perform this action.");
         }
         subtractAmountFromUser(user, cost);
         Transaction transaction = new Transaction();
