@@ -1,13 +1,8 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
-import {
-  View,
-  Image,
-  type NativeSyntheticEvent,
-  type ImageLoadEventData,
-} from 'react-native';
+import { View, Image as RNImage } from 'react-native';
+import { Image, ImageLoadEventData as ExpoImageLoadEventData } from 'expo-image';
 import { styles } from './BetCard.styles';
 
-/** width / height — evita cards gigantes ou faixas minúsculas */
 const ASPECT_MIN = 0.5;
 const ASPECT_MAX = 2.25;
 
@@ -47,16 +42,16 @@ export function ProofMediaFrame({
   }, []);
 
   useEffect(() => {
-    Image.getSize(
+    RNImage.getSize(
       uri,
-      (w, h) => applyAspectFromDimensions(w, h),
+      (w: number, h: number) => applyAspectFromDimensions(w, h),
       () => {},
     );
   }, [uri, applyAspectFromDimensions]);
 
   const onLoad = useCallback(
-    (e: NativeSyntheticEvent<ImageLoadEventData>) => {
-      const src = e.nativeEvent?.source;
+    (e: ExpoImageLoadEventData) => {
+      const src = e.source;
       const width = src?.width;
       const height = src?.height;
       if (width != null && height != null && width > 0 && height > 0) {
@@ -76,8 +71,9 @@ export function ProofMediaFrame({
       <Image
         source={{ uri }}
         style={styles.proofImage}
-        resizeMode="cover"
+        contentFit="cover"
         onLoad={onLoad}
+        transition={200}
       />
       {overlay}
     </View>

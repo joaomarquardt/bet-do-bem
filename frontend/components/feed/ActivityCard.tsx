@@ -89,7 +89,7 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
 
       <View style={[styles.vsContainer, { borderColor: c.border, borderBottomWidth: 0 }]}>
         <View style={styles.playerSide}>
-          <Avatar name={authorName} color={"#CCCCCC"} size={36} />
+          <Avatar name={authorName} color={"#CCCCCC"} size={36} imageUri={activity.author?.profilePictureUrl} />
           <View style={styles.playerInfo}>
             <Text style={[styles.playerName, { color: c.text }]}>{authorName}</Text>
             <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{authorUsername}</Text>

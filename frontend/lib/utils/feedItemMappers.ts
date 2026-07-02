@@ -16,6 +16,7 @@ function safeUser(u: Record<string, unknown> | undefined, fallbackId = '') {
     role: (u?.role ?? 'USER') as string,
     coins: Number(u?.coins ?? 0),
     avatarColor: (u?.avatarColor ?? '#CCCCCC') as string,
+    profilePictureUrl: (u?.profilePictureUrl ?? null) as string | null,
     wins: Number(u?.wins ?? 0),
     losses: Number(u?.losses ?? 0),
     draws: Number(u?.draws ?? 0),

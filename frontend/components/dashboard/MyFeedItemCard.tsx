@@ -1,5 +1,5 @@
 
-import { View, Text, Pressable, Image } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInRight } from 'react-native-reanimated';
@@ -229,7 +229,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
 
         <View style={styles.opponentRow}>
           <Text style={[styles.vsLabel, { color: c.textTertiary }]}>{isCreator ? 'vs' : 'de'}</Text>
-          <Avatar name={otherPlayer?.fullName ?? '?'} color={"#CCCCCC"} size={24} />
+          <Avatar name={otherPlayer?.fullName ?? '?'} color={"#CCCCCC"} size={24} imageUri={otherPlayer?.profilePictureUrl} />
           <Text style={[styles.opponentName, { color: c.textSecondary }]}>@{otherPlayer?.username ?? '...'}</Text>
           {bet.status !== 'INVITED' ? (
             <Text style={[styles.deadline, { color: c.textTertiary }]}>
@@ -324,7 +324,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
 
         <View style={styles.opponentRow}>
           <Text style={[styles.vsLabel, { color: c.textTertiary }]}>{isChallenger ? 'vs' : 'de'}</Text>
-          <Avatar name={otherPlayer?.fullName ?? '?'} color={"#CCCCCC"} size={24} />
+          <Avatar name={otherPlayer?.fullName ?? '?'} color={"#CCCCCC"} size={24} imageUri={otherPlayer?.profilePictureUrl} />
           <Text style={[styles.opponentName, { color: c.textSecondary }]}>@{otherPlayer?.username ?? '...'}</Text>
           <Text style={[styles.deadline, { color: c.textTertiary }]}>{formatDeadline(challenge.deadline)}</Text>
         </View>

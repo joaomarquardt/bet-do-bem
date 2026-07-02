@@ -5,7 +5,7 @@ import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-ico
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
-import { Image } from 'react-native';
+import { Image } from 'expo-image';
 import { Avatar } from '@/components/ui/Avatar';
 import { CommentSection } from '@/components/feed/CommentSection';
 import { Bet, Proof, PaginatedResponse, CommentResponse, VotePercentageResponse, VotePercentageItemResponse } from '@/lib/types';
@@ -138,7 +138,7 @@ export function BetCard({ bet, index, commentsData, hideVotingControls, statusBa
 
       <View style={[styles.vsContainer, { borderColor: c.border }]}>
         <View style={styles.playerSide}>
-          <Avatar name={creatorName} color={"#CCCCCC"} size={36} />
+          <Avatar name={creatorName} color={"#CCCCCC"} size={36} imageUri={bet.creator?.profilePictureUrl} />
           <View style={styles.playerInfo}>
             <Text style={[styles.playerName, { color: c.text }]}>{creatorName}</Text>
             <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{creatorName}</Text>
@@ -152,7 +152,7 @@ export function BetCard({ bet, index, commentsData, hideVotingControls, statusBa
             <Text style={[styles.playerName, { color: c.text }]}>{opponentName}</Text>
             <Text style={[styles.playerUsername, { color: c.textTertiary }]}>@{opponentName}</Text>
           </View>
-          <Avatar name={opponentName} color={"#CCCCCC"} size={36} />
+          <Avatar name={opponentName} color={"#CCCCCC"} size={36} imageUri={bet.opponent?.profilePictureUrl} />
         </View>
       </View>
       {(creatorMedia.uri || opponentMedia.uri) && (

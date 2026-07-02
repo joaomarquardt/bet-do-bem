@@ -88,7 +88,7 @@ export function CommentSection({ entityType, entityId, commentsData }: CommentSe
         <Animated.View entering={FadeIn.duration(200)} style={[styles.commentsSection, { borderTopColor: c.border }]}>
           {comments.map((comment) => (
             <View key={comment.id} style={styles.commentItem}>
-              <Avatar name={comment.authorFullName ?? '?'} color="#CCCCCC" size={24} />
+              <Avatar name={comment.authorFullName ?? '?'} color="#CCCCCC" size={24} imageUri={comment.authorProfilePictureUrl} />
               <View style={styles.commentItemContent}>
                 <Text style={[styles.commentAuthor, { color: c.text }]}>{comment.authorFullName}</Text>
                 {comment.authorUsername && (

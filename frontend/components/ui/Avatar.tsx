@@ -1,4 +1,5 @@
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { getInitials } from '@/lib/utils/formatters';
 
 interface AvatarProps {
@@ -20,7 +21,7 @@ export function Avatar({ name, color, size = 40, imageUri }: AvatarProps) {
   if (imageUri) {
     return (
       <View style={[styles.container, circleStyle, styles.overflowHidden]}>
-        <Image source={{ uri: imageUri }} style={{ width: size, height: size }} resizeMode="cover" />
+        <Image source={{ uri: imageUri }} style={{ width: size, height: size }} contentFit="cover" transition={200} />
       </View>
     );
   }

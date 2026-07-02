@@ -96,7 +96,7 @@ export function ChallengeCard({ challenge, index, commentsData, hideVotingContro
 
       <View style={[styles.vsContainer, { borderColor: c.border }]}>
         <View style={styles.playerSide}>
-          <Avatar name={challengerName} color={"#CCCCCC"} size={36} />
+          <Avatar name={challengerName} color={"#CCCCCC"} size={36} imageUri={challenge.challenger?.profilePictureUrl} />
           <View style={styles.playerInfo}>
             <Text style={[styles.playerName, { color: c.text }]}>{challengerName}</Text>
           </View>
@@ -111,7 +111,7 @@ export function ChallengeCard({ challenge, index, commentsData, hideVotingContro
             <Text style={{ fontSize: 10, color: c.accent, fontFamily: 'Inter_700Bold', marginBottom: 2 }}>DESAFIADO</Text>
             <Text style={[styles.playerName, { color: c.text }]}>{challengedName}</Text>
           </View>
-          <Avatar name={challengedName} color={"#CCCCCC"} size={36} />
+          <Avatar name={challengedName} color={"#CCCCCC"} size={36} imageUri={challenge.challenged?.profilePictureUrl} />
         </View>
       </View>
 

@@ -297,6 +297,7 @@ export interface CommentResponse {
     authorId: number;
     authorFullName: string;
     authorUsername: string;
+    authorProfilePictureUrl?: string;
     postedAt: string;
 }
 
