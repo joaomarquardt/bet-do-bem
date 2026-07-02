@@ -3,6 +3,7 @@ package com.api.betdobem.mappers;
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
+import com.api.betdobem.dtos.responses.UserProfileResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
 import com.api.betdobem.services.S3StorageService;
 import org.mapstruct.Mapper;
@@ -22,6 +23,9 @@ public abstract class UserMapper {
 
     @Mapping(source = "profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "generateS3Url")
     public abstract UserResponse toUserResponse(User user);
+
+    @Mapping(source = "user.profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "generateS3Url")
+    public abstract UserProfileResponse toUserProfileResponse(User user, Long winningBets, Long registeredActivities, Long computedVotes);
 
     public abstract List<UserResponse> toUserResponseList(List<User> users);
 
