@@ -19,6 +19,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+import { feedService } from '@/lib/api/feed.service';
+import { challengeService } from '@/lib/api/challenge.service';
 import Colors from '@/constants/colors';
 import {
   useActivity,
@@ -122,6 +125,26 @@ export function CreateContentModal({
   const { createActivity } = useActivity();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isBuyingChallenge, setIsBuyingChallenge] = useState(false);
+
+  const { data: stats, refetch: refetchStats } = useQuery({
+    queryKey: ['creationStats'],
+    queryFn: () => feedService.getStatsBeforeCreate(),
+    enabled: visible,
+  });
+
+  const handleBuyChallenge = async () => {
+    setIsBuyingChallenge(true);
+    try {
+      await challengeService.buyChallengeRight();
+      await refetchStats();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      Alert.alert('Erro', getErrorMessage(e));
+    } finally {
+      setIsBuyingChallenge(false);
+    }
+  };
 
   const [step, setStep] = useState<Step>('type');
   const [contentType, setContentType] = useState<ContentKind | null>(null);
@@ -276,10 +299,17 @@ export function CreateContentModal({
   );
 
   const handleSelectType = useCallback((kind: ContentKind) => {
+    if (kind === 'ACTIVITY' && (!stats || !stats.canCreateActivity)) {
+      Alert.alert(
+        'Limite atingido',
+        'Você já atingiu o limite de atividades diárias (2) ou as permissões estão carregando. Tente novamente.',
+      );
+      return;
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setContentType(kind);
     setStep('form');
-  }, []);
+  }, [stats]);
 
   const handleBackToTypes = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -310,6 +340,7 @@ export function CreateContentModal({
           groupId: selectedGroupId!,
         };
         await createChallenge(body);
+        await refetchStats();
       } else {
         if (!actProof) return;
         const body: CreateActivityRequest = {
@@ -321,6 +352,7 @@ export function CreateContentModal({
           groupId: selectedGroupId!,
         };
         await createActivity(body, { uri: actProof.uri });
+        await refetchStats();
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onCreated?.(contentType);
@@ -350,6 +382,7 @@ export function CreateContentModal({
     createBet,
     createChallenge,
     createActivity,
+    refetchStats,
     onClose,
     onCreated,
   ]);
@@ -812,10 +845,15 @@ export function CreateContentModal({
                 </Pressable>
 
                 <Pressable
-                  onPress={() => handleSelectType('CHALLENGE')}
+                  onPress={() => {
+                    if (!stats?.hasBoughtChallenge) {
+                      return;
+                    }
+                    handleSelectType('CHALLENGE');
+                  }}
                   style={[
                     localStyles.typeCard,
-                    { borderColor: c.border, backgroundColor: c.surfaceElevated },
+                    { borderColor: c.border, backgroundColor: c.surfaceElevated, opacity: stats?.hasBoughtChallenge ? 1 : 0.7 },
                   ]}
                 >
                   <Ionicons name="flash-outline" size={32} color={c.accent} />
@@ -831,15 +869,48 @@ export function CreateContentModal({
                     >
                       Proposta unilateral com prazo e recompensa
                     </Text>
+                    {stats && !stats.hasBoughtChallenge && (
+                      <Pressable 
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleBuyChallenge();
+                        }}
+                        disabled={isBuyingChallenge}
+                        style={{
+                          backgroundColor: c.accent,
+                          padding: 8,
+                          borderRadius: 8,
+                          marginTop: 8,
+                          alignItems: 'center',
+                        }}
+                      >
+                        {isBuyingChallenge ? (
+                          <ActivityIndicator color="#000" size="small" />
+                        ) : (
+                          <Text style={{ color: '#000', fontWeight: 'bold' }}>
+                            Comprar direito por 50 moedas
+                          </Text>
+                        )}
+                      </Pressable>
+                    )}
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={c.textTertiary} />
+                  {stats?.hasBoughtChallenge ? (
+                    <Ionicons name="chevron-forward" size={20} color={c.textTertiary} />
+                  ) : (
+                    <Ionicons name="lock-closed" size={20} color={c.textTertiary} />
+                  )}
                 </Pressable>
 
                 <Pressable
-                  onPress={() => handleSelectType('ACTIVITY')}
+                  onPress={() => {
+                    if (!stats?.canCreateActivity) {
+                      return;
+                    }
+                    handleSelectType('ACTIVITY');
+                  }}
                   style={[
                     localStyles.typeCard,
-                    { borderColor: c.border, backgroundColor: c.surfaceElevated },
+                    { borderColor: c.border, backgroundColor: c.surfaceElevated, opacity: stats?.canCreateActivity ? 1 : 0.7 },
                   ]}
                 >
                   <Ionicons name="images-outline" size={32} color={c.accent} />
@@ -855,8 +926,17 @@ export function CreateContentModal({
                     >
                       Poste uma conquista com prova em foto ou vídeo
                     </Text>
+                    {stats && !stats.canCreateActivity && (
+                      <Text style={{ color: '#ef4444', marginTop: 8, fontSize: 13, fontWeight: '600' }}>
+                        Limite diário atingido (2/2)
+                      </Text>
+                    )}
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={c.textTertiary} />
+                  {stats?.canCreateActivity ? (
+                    <Ionicons name="chevron-forward" size={20} color={c.textTertiary} />
+                  ) : (
+                    <Ionicons name="lock-closed" size={20} color={c.textTertiary} />
+                  )}
                 </Pressable>
               </View>
             </>
