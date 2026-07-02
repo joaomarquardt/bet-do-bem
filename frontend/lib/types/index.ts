@@ -161,6 +161,8 @@ export interface CreateBetRequest {
   buyIn: number;
   opponentId: number;
   groupId: number;
+  inviteExpiresAt: string;
+  deadline: string;
 }
 
 export interface CreateVoteRequest {
@@ -190,6 +192,7 @@ export interface CreateChallengeRequest {
     amount: number;
     deadline: string;
     groupId: number;
+    inviteExpiresAt: string;
 }
 
 export interface CreateGroupRequest {

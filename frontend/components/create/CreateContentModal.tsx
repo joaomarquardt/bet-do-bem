@@ -155,6 +155,18 @@ export function CreateContentModal({
   const [betDescription, setBetDescription] = useState('');
   const [betBuyIn, setBetBuyIn] = useState('');
   const [betOpponentId, setBetOpponentId] = useState<number | null>(null);
+  const [betDeadline, setBetDeadline] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return d;
+  });
+  const [showBetDeadlinePicker, setShowBetDeadlinePicker] = useState(false);
+  const [betInviteExpiresAt, setBetInviteExpiresAt] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d;
+  });
+  const [showBetInviteExpiresAtPicker, setShowBetInviteExpiresAtPicker] = useState(false);
 
   const [chTitle, setChTitle] = useState('');
   const [chDescription, setChDescription] = useState('');
@@ -162,10 +174,16 @@ export function CreateContentModal({
   const [chChallengedId, setChChallengedId] = useState<number | null>(null);
   const [chDeadline, setChDeadline] = useState(() => {
     const d = new Date();
-    d.setHours(d.getHours() + 1);
+    d.setDate(d.getDate() + 3);
     return d;
   });
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
+  const [chInviteExpiresAt, setChInviteExpiresAt] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d;
+  });
+  const [showChInviteExpiresAtPicker, setShowChInviteExpiresAtPicker] = useState(false);
 
   const [actDescription, setActDescription] = useState('');
   const [actProof, setActProof] = useState<ActivityProofDraft | null>(null);
@@ -178,14 +196,27 @@ export function CreateContentModal({
     setBetDescription('');
     setBetBuyIn('');
     setBetOpponentId(null);
+    const bd = new Date();
+    bd.setDate(bd.getDate() + 3);
+    setBetDeadline(bd);
+    setShowBetDeadlinePicker(false);
+    const bi = new Date();
+    bi.setDate(bi.getDate() + 1);
+    setBetInviteExpiresAt(bi);
+    setShowBetInviteExpiresAtPicker(false);
+    
     setChTitle('');
     setChDescription('');
     setChAmount('');
     setChChallengedId(null);
     const d = new Date();
-    d.setHours(d.getHours() + 1);
+    d.setDate(d.getDate() + 3);
     setChDeadline(d);
     setShowDeadlinePicker(false);
+    const ci = new Date();
+    ci.setDate(ci.getDate() + 1);
+    setChInviteExpiresAt(ci);
+    setShowChInviteExpiresAtPicker(false);
     setActDescription('');
     setActProof(null);
   }, []);
@@ -218,13 +249,34 @@ export function CreateContentModal({
     return m;
   }, []);
 
+  const minBetDeadline = useMemo(() => {
+    const m = new Date(betInviteExpiresAt);
+    m.setDate(m.getDate() + 2);
+    return m;
+  }, [betInviteExpiresAt]);
+
+  const minChDeadline = useMemo(() => {
+    const m = new Date(chInviteExpiresAt);
+    m.setDate(m.getDate() + 2);
+    return m;
+  }, [chInviteExpiresAt]);
+
+  const minIntervalMs = 2 * 24 * 60 * 60 * 1000;
+
+  const isBetInviteAfterDeadline = betInviteExpiresAt.getTime() >= betDeadline.getTime();
+  const betDatesValid = betDeadline.getTime() - betInviteExpiresAt.getTime() >= minIntervalMs;
+
+  const isChInviteAfterDeadline = chInviteExpiresAt.getTime() >= chDeadline.getTime();
+  const chDatesValid = chDeadline.getTime() - chInviteExpiresAt.getTime() >= minIntervalMs;
+
   const betValid =
     !!betTitle.trim() &&
     !!betDescription.trim() &&
     !!betBuyIn.trim() &&
     Number.parseInt(betBuyIn, 10) >= 1 &&
     betOpponentId != null &&
-    selectedGroupId != null;
+    selectedGroupId != null &&
+    betDatesValid;
 
   const chValid =
     !!chTitle.trim() &&
@@ -233,7 +285,7 @@ export function CreateContentModal({
     Number.parseInt(chAmount, 10) >= 1 &&
     chChallengedId != null &&
     selectedGroupId != null &&
-    chDeadline.getTime() > Date.now();
+    chDatesValid;
 
   const actValid =
     !!actDescription.trim() &&
@@ -298,6 +350,54 @@ export function CreateContentModal({
     [],
   );
 
+  const onChInviteChange = useCallback(
+    (event: DateTimePickerEvent, date?: Date) => {
+      if (event.type === 'dismissed') {
+        setShowChInviteExpiresAtPicker(false);
+        return;
+      }
+      if (Platform.OS === 'android') {
+        setShowChInviteExpiresAtPicker(false);
+      }
+      if (date) {
+        setChInviteExpiresAt(date);
+      }
+    },
+    [],
+  );
+
+  const onBetDeadlineChange = useCallback(
+    (event: DateTimePickerEvent, date?: Date) => {
+      if (event.type === 'dismissed') {
+        setShowBetDeadlinePicker(false);
+        return;
+      }
+      if (Platform.OS === 'android') {
+        setShowBetDeadlinePicker(false);
+      }
+      if (date) {
+        setBetDeadline(date);
+      }
+    },
+    [],
+  );
+
+  const onBetInviteChange = useCallback(
+    (event: DateTimePickerEvent, date?: Date) => {
+      if (event.type === 'dismissed') {
+        setShowBetInviteExpiresAtPicker(false);
+        return;
+      }
+      if (Platform.OS === 'android') {
+        setShowBetInviteExpiresAtPicker(false);
+      }
+      if (date) {
+        setBetInviteExpiresAt(date);
+      }
+    },
+    [],
+  );
+
   const handleSelectType = useCallback((kind: ContentKind) => {
     if (kind === 'ACTIVITY' && (!stats || !stats.canCreateActivity)) {
       Alert.alert(
@@ -328,6 +428,8 @@ export function CreateContentModal({
           buyIn: Number.parseInt(betBuyIn, 10),
           opponentId: betOpponentId!,
           groupId: selectedGroupId!,
+          inviteExpiresAt: betInviteExpiresAt.toISOString(),
+          deadline: betDeadline.toISOString(),
         };
         await createBet(body);
       } else if (contentType === 'CHALLENGE') {
@@ -338,6 +440,7 @@ export function CreateContentModal({
           amount: Number.parseInt(chAmount, 10),
           deadline: chDeadline.toISOString(),
           groupId: selectedGroupId!,
+          inviteExpiresAt: chInviteExpiresAt.toISOString(),
         };
         await createChallenge(body);
         await refetchStats();
@@ -500,23 +603,31 @@ export function CreateContentModal({
     </View>
   );
 
-  const renderDeadlinePicker = () => (
+  const renderDateTimePicker = (
+    label: string,
+    dateValue: Date,
+    setDateValue: (d: Date) => void,
+    showPicker: boolean,
+    setShowPicker: (v: boolean) => void,
+    onChange: (e: DateTimePickerEvent, d?: Date) => void,
+    minDateLimit?: Date,
+  ) => (
     <View style={localStyles.pickerSection}>
       <Text style={[localStyles.pickerLabel, { color: c.textSecondary }]}>
-        Prazo limite
+        {label}
       </Text>
       {Platform.OS === 'web' ? (
         <View style={localStyles.webDatetimeWrap}>
           <WebDatetimeLocalInput
-            value={chDeadline}
-            onChange={setChDeadline}
-            min={minDeadline}
+            value={dateValue}
+            onChange={setDateValue}
+            min={minDateLimit || minDeadline}
           />
         </View>
       ) : (
         <>
           <Pressable
-            onPress={() => setShowDeadlinePicker(true)}
+            onPress={() => setShowPicker(true)}
             style={[
               localStyles.deadlinePressable,
               {
@@ -526,7 +637,7 @@ export function CreateContentModal({
             ]}
           >
             <Text style={[localStyles.deadlineText, { color: c.text }]}>
-              {chDeadline.toLocaleString(
+              {dateValue.toLocaleString(
                 Platform.OS === 'ios' ? 'pt-BR' : undefined,
                 {
                   dateStyle: 'short',
@@ -536,25 +647,25 @@ export function CreateContentModal({
             </Text>
             <Ionicons name="calendar-outline" size={20} color={c.accent} />
           </Pressable>
-          {Platform.OS === 'android' && showDeadlinePicker ? (
+          {Platform.OS === 'android' && showPicker ? (
             <DateTimePicker
-              value={chDeadline}
+              value={dateValue}
               mode="datetime"
               display="default"
-              minimumDate={minDeadline}
-              onChange={onDeadlineChange}
+              minimumDate={minDateLimit || minDeadline}
+              onChange={onChange}
             />
           ) : null}
           {Platform.OS === 'ios' ? (
             <Modal
-              visible={showDeadlinePicker}
+              visible={showPicker}
               transparent
               animationType="slide"
-              onRequestClose={() => setShowDeadlinePicker(false)}
+              onRequestClose={() => setShowPicker(false)}
             >
               <Pressable
                 style={dashStyles.modalOverlay}
-                onPress={() => setShowDeadlinePicker(false)}
+                onPress={() => setShowPicker(false)}
               >
                 <Pressable
                   style={[
@@ -568,14 +679,14 @@ export function CreateContentModal({
                 >
                   <View style={dashStyles.modalHandle} />
                   <DateTimePicker
-                    value={chDeadline}
+                    value={dateValue}
                     mode="datetime"
                     display="spinner"
-                    minimumDate={minDeadline}
-                    onChange={onDeadlineChange}
+                    minimumDate={minDateLimit || minDeadline}
+                    onChange={onChange}
                   />
                   <Pressable
-                    onPress={() => setShowDeadlinePicker(false)}
+                    onPress={() => setShowPicker(false)}
                     style={[
                       dashStyles.createSubmitBtn,
                       { backgroundColor: c.accent, marginTop: 8 },
@@ -663,6 +774,18 @@ export function CreateContentModal({
         </View>
       </View>
       {renderMemberPicker('Oponente', betOpponentId, setBetOpponentId)}
+      {renderDateTimePicker('Expiração do Convite', betInviteExpiresAt, setBetInviteExpiresAt, showBetInviteExpiresAtPicker, setShowBetInviteExpiresAtPicker, onBetInviteChange)}
+      {renderDateTimePicker('Prazo Limite da Aposta', betDeadline, setBetDeadline, showBetDeadlinePicker, setShowBetDeadlinePicker, onBetDeadlineChange, minBetDeadline)}
+      {isBetInviteAfterDeadline && (
+        <Text style={{ color: c.danger, marginTop: 4, marginLeft: 4, fontSize: 13 }}>
+          O convite não pode expirar depois do prazo limite da aposta.
+        </Text>
+      )}
+      {!betDatesValid && !isBetInviteAfterDeadline && (
+        <Text style={{ color: c.warning, marginTop: 4, marginLeft: 4, fontSize: 13 }}>
+          Aviso: O prazo limite deve ser no mínimo 2 dias após a expiração do convite.
+        </Text>
+      )}
     </>
   );
 
@@ -731,7 +854,18 @@ export function CreateContentModal({
           keyboardType="numeric"
         />
       </View>
-      {renderDeadlinePicker()}
+      {renderDateTimePicker('Expiração do Convite', chInviteExpiresAt, setChInviteExpiresAt, showChInviteExpiresAtPicker, setShowChInviteExpiresAtPicker, onChInviteChange)}
+      {renderDateTimePicker('Prazo Limite do Desafio', chDeadline, setChDeadline, showDeadlinePicker, setShowDeadlinePicker, onDeadlineChange, minChDeadline)}
+      {isChInviteAfterDeadline && (
+        <Text style={{ color: c.danger, marginTop: 4, marginLeft: 4, fontSize: 13 }}>
+          O convite não pode expirar depois do prazo limite do desafio.
+        </Text>
+      )}
+      {!chDatesValid && !isChInviteAfterDeadline && (
+        <Text style={{ color: c.warning, marginTop: 4, marginLeft: 4, fontSize: 13 }}>
+          Aviso: O prazo limite deve ser no mínimo 2 dias após a expiração do convite.
+        </Text>
+      )}
     </>
   );
 
@@ -913,7 +1047,7 @@ export function CreateContentModal({
                     { borderColor: c.border, backgroundColor: c.surfaceElevated, opacity: stats?.canCreateActivity ? 1 : 0.7 },
                   ]}
                 >
-                  <FontAwesome5 name="running" size={28} color={c.accent} style={{ transform: [{ translateY: -10 }] }} />
+                  <FontAwesome5 name="running" size={28} color={c.accent} />
                   <View style={localStyles.typeCardTextBlock}>
                     <Text style={[localStyles.typeCardTitle, { color: c.text }]}>
                       Atividade
