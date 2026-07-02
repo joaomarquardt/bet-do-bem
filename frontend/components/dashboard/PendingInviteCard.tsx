@@ -12,7 +12,6 @@ import { formatDateTime } from '@/lib/utils/formatters';
 const c = Colors.dark;
 
 type ParticipantUser = User & {
-  displayName?: string;
   username?: string;
   avatarColor?: string;
 };
@@ -58,7 +57,7 @@ export function PendingInviteCard({
 
   const challengerSide = isBet ? (bet!.creator as ParticipantUser) : (challenge!.challenger as ParticipantUser);
   
-  const challengerName = challengerSide?.displayName || challengerSide?.name || challengerSide?.username || 'Usuário';
+  const challengerName = challengerSide?.fullName || challengerSide?.username || 'Usuário';
   const challengerHandle = challengerSide?.username ? `@${challengerSide.username}` : `#${challengerSide?.id || '?'}`;
 
   const expirationText = getExpirationText(inviteExpiresAt);

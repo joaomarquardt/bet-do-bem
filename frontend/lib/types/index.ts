@@ -45,7 +45,8 @@ export type UserRole =
 
 export interface User {
   id: number;
-  name: string;
+  fullName: string;
+  username: string;
   email: string;
   role: UserRole;
   coins: number;
@@ -149,7 +150,8 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  name: string;
+  fullName: string;
+  username: string;
   email: string;
   password: string;
   passwordConfirmation: string;
@@ -203,7 +205,8 @@ export interface CreateGroupRequest {
 }
 
 export interface CreateUserRequest {
-    name: string;
+    fullName: string;
+    username: string;
     email: string;
     password: string;
 }
@@ -235,7 +238,8 @@ export interface UpdateProofRequest {
 }
 
 export interface UpdateUserRequest {
-    name: string;
+    fullName: string;
+    username: string;
     email: string;
     coins: number;
 }
@@ -291,7 +295,8 @@ export interface CommentResponse {
     id: number;
     content: string;
     authorId: number;
-    authorName: string;
+    authorFullName: string;
+    authorUsername: string;
     postedAt: string;
 }
 
@@ -345,7 +350,8 @@ export interface TransactionResponse {
 
 export interface UserResponse {
     id: number;
-    name: string;
+    fullName: string;
+    username: string;
     email: string;
     coins: number;
     profilePictureUrl?: string | null;

@@ -584,7 +584,7 @@ export function CreateContentModal({
               >
                 <View>
                   <Text style={[localStyles.memberName, { color: c.text }]}>
-                    {m.name}
+                    {m.fullName}
                   </Text>
                   <Text style={[localStyles.memberId, { color: c.textTertiary }]}>
                     ID {m.id}

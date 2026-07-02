@@ -38,8 +38,12 @@ function stringToColor(input: string) {
 export default function ProfileScreen() {
   const { user, logout, updateUser } = useAuth();
   const authUser: any = user;
-  const displayName = authUser?.displayName ?? authUser?.name ?? authUser?.email ?? 'Usuário';
-  const username = authUser?.name ?? (typeof authUser?.email === 'string' ? authUser.email.split('@')[0] : `user${authUser?.id ?? ''}`);
+  const rawFullName = authUser?.fullName ?? authUser?.name ?? authUser?.email ?? 'Usuário';
+  const nameParts = rawFullName.trim().split(' ');
+  const displayName = nameParts.length > 1 
+    ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
+    : nameParts[0];
+  const username = authUser?.username ?? (typeof authUser?.email === 'string' ? authUser.email.split('@')[0] : `user${authUser?.id ?? ''}`);
   const avatarColor = authUser?.avatarColor ?? stringToColor(displayName);
   const initialProfileImageUri = user?.profilePictureUrl ?? null;
   const [profileImageUri, setProfileImageUri] = useState<string | null>(initialProfileImageUri);
@@ -233,7 +237,7 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.accent} />}
     >
-      <View style={[styles.header, { paddingTop: topPadding + 20 }]}>
+      <View style={[styles.header, { paddingTop: topPadding + 20, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }]}>
         <EditableProfileAvatar
           name={displayName}
           color={avatarColor}
@@ -242,8 +246,10 @@ export default function ProfileScreen() {
           onImageSelected={handleProfileImageSelected}
           disabled={isUploadingPicture}
         />
-        <Text style={[styles.displayName, { color: c.text }]}>{displayName}</Text>
-        <Text style={[styles.username, { color: c.textSecondary }]}>{username ? `@${username}` : ''}</Text>
+        <View style={{ flex: 1, justifyContent: 'center', marginLeft: 16 }}>
+          <Text style={[styles.displayName, { color: c.text, textAlign: 'left' }]}>{displayName}</Text>
+          <Text style={[styles.username, { color: c.textSecondary, textAlign: 'left' }]}>{username ? `@${username}` : ''}</Text>
+        </View>
       </View>
 
       {profileStats ? (

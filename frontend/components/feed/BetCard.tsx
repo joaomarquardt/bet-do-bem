@@ -58,8 +58,8 @@ export function BetCard({ bet, index, commentsData, hideVotingControls, statusBa
   const [voteData, setVoteData] = useState<VotePercentageResponse | null>(initialVoteData || null);
   const [isVoting, setIsVoting] = useState(false);
   const c = Colors.dark;
-  const creatorName = bet.creator?.name ?? (bet.creator as any)?.displayName ?? (bet.creator as any)?.username ?? '...';
-  const opponentName = bet.opponent?.name ?? (bet.opponent as any)?.displayName ?? (bet.opponent as any)?.username ?? '...';
+  const creatorName = bet.creator?.fullName ?? (bet.creator as any)?.username ?? '...';
+  const opponentName = bet.opponent?.fullName ?? (bet.opponent as any)?.username ?? '...';
 
   const handleVote = useCallback(
     async (proofId: number, userId: string) => {

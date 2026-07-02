@@ -10,10 +10,9 @@ function safeUser(u: Record<string, unknown> | undefined, fallbackId = '') {
   const idRaw = String(u?.id ?? fallbackId);
   return {
     id: Number(idRaw) || 0,
-    name: (u?.name ?? u?.displayName ?? u?.username ?? `User ${idRaw}`) as string,
+    fullName: (u?.fullName ?? u?.name ?? u?.displayName ?? u?.username ?? `User ${idRaw}`) as string,
     email: (u?.email ?? '') as string,
     username: (u?.username ?? u?.name ?? u?.displayName ?? `user${idRaw}`) as string,
-    displayName: (u?.displayName ?? u?.name ?? u?.username ?? `User ${idRaw}`) as string,
     role: (u?.role ?? 'USER') as string,
     coins: Number(u?.coins ?? 0),
     avatarColor: (u?.avatarColor ?? '#CCCCCC') as string,
@@ -47,7 +46,7 @@ export function mapFeedItemToBet(item: FeedItemResponse): Bet {
     content.creatorUser ?? {
       id: String(content.creatorId ?? ''),
       username: content.creatorUsername ?? '',
-      displayName: content.creatorDisplayName ?? '',
+      fullName: content.creatorFullName ?? content.creatorDisplayName ?? content.creatorName ?? '',
       avatarColor: '#CCCCCC',
       wins: 0,
       losses: 0,
@@ -57,7 +56,7 @@ export function mapFeedItemToBet(item: FeedItemResponse): Bet {
     content.opponentResponse ?? {
       id: String(content.opponentId ?? ''),
       username: content.opponentUsername ?? '',
-      displayName: content.opponentDisplayName ?? '',
+      fullName: content.opponentFullName ?? content.opponentDisplayName ?? content.opponentName ?? '',
       avatarColor: '#CCCCCC',
       wins: 0,
       losses: 0,

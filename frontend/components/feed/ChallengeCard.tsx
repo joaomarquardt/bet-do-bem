@@ -34,13 +34,11 @@ export function ChallengeCard({ challenge, index, commentsData, hideVotingContro
   const [isVoting, setIsVoting] = useState(false);
   const c = Colors.dark;
   const challengerName =
-    challenge.challenger?.name ??
-    (challenge.challenger as any)?.displayName ??
+    challenge.challenger?.fullName ??
     (challenge.challenger as any)?.username ??
     '...';
   const challengedName =
-    challenge.challenged?.name ??
-    (challenge.challenged as any)?.displayName ??
+    challenge.challenged?.fullName ??
     (challenge.challenged as any)?.username ??
     '...';
   const proofUri = challenge.proof?.imageUrl ?? (challenge.proof as any)?.mediaUri ?? '';

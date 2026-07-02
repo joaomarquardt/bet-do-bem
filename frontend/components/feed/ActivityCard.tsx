@@ -34,8 +34,8 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
   const [isVoting, setIsVoting] = useState(false);
   const c = Colors.dark;
   const authorName =
-    activity.author?.name ?? (activity.author as any)?.displayName ?? (activity.author as any)?.username ?? '...';
-  const authorUsername = (activity.author as any)?.username ?? authorName;
+    activity.author?.fullName ?? (activity.author as any)?.username ?? '...';
+  const authorUsername = (activity.author as any)?.username ?? '...';
   const proofUri = activity.proof?.imageUrl ?? (activity.proof as any)?.mediaUri ?? '';
   const isVideo =
     String(activity.proof?.contentType ?? '').toLowerCase().startsWith('video') ||

@@ -11,7 +11,6 @@ import { formatDateTime } from '@/lib/utils/formatters';
 const c = Colors.dark;
 
 type ParticipantUser = User & {
-  displayName?: string;
   username?: string;
   avatarColor?: string;
 };
@@ -55,7 +54,7 @@ export function AwaitingAcceptanceCard({
   // We want to display the opponent's info (the challenged side).
   const challengedSide = isBet ? (bet!.opponent as ParticipantUser) : (challenge!.challenged as ParticipantUser);
   
-  const challengedName = challengedSide?.displayName || challengedSide?.name || challengedSide?.username || 'Usuário';
+  const challengedName = challengedSide?.fullName || challengedSide?.username || 'Usuário';
   const challengedHandle = challengedSide?.username ? `@${challengedSide.username}` : `#${challengedSide?.id || '?'}`;
 
   const expirationText = getExpirationText(inviteExpiresAt);

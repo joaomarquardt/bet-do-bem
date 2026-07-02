@@ -229,8 +229,8 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
 
         <View style={styles.opponentRow}>
           <Text style={[styles.vsLabel, { color: c.textTertiary }]}>{isCreator ? 'vs' : 'de'}</Text>
-          <Avatar name={otherPlayer?.name ?? '?'} color={"#CCCCCC"} size={24} />
-          <Text style={[styles.opponentName, { color: c.textSecondary }]}>@{otherPlayer?.name ?? '...'}</Text>
+          <Avatar name={otherPlayer?.fullName ?? '?'} color={"#CCCCCC"} size={24} />
+          <Text style={[styles.opponentName, { color: c.textSecondary }]}>@{otherPlayer?.username ?? '...'}</Text>
           {bet.status !== 'INVITED' ? (
             <Text style={[styles.deadline, { color: c.textTertiary }]}>
               {formatDeadline(bet.expiresAt)}
@@ -324,8 +324,8 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
 
         <View style={styles.opponentRow}>
           <Text style={[styles.vsLabel, { color: c.textTertiary }]}>{isChallenger ? 'vs' : 'de'}</Text>
-          <Avatar name={otherPlayer?.name ?? '?'} color={"#CCCCCC"} size={24} />
-          <Text style={[styles.opponentName, { color: c.textSecondary }]}>@{otherPlayer?.name ?? '...'}</Text>
+          <Avatar name={otherPlayer?.fullName ?? '?'} color={"#CCCCCC"} size={24} />
+          <Text style={[styles.opponentName, { color: c.textSecondary }]}>@{otherPlayer?.username ?? '...'}</Text>
           <Text style={[styles.deadline, { color: c.textTertiary }]}>{formatDeadline(challenge.deadline)}</Text>
         </View>
 
