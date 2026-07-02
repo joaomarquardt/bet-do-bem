@@ -22,6 +22,7 @@ public class User implements UserDetails {
     private UserRole role;
     private String profilePictureUrl;
     private Long coins = 500L;
+    private boolean hasBoughtChallenge = false;
 
     public User() {
     }
@@ -82,6 +83,14 @@ public class User implements UserDetails {
 
     public void setProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public boolean isHasBoughtChallenge() {
+        return hasBoughtChallenge;
+    }
+
+    public void setHasBoughtChallenge(boolean hasBoughtChallenge) {
+        this.hasBoughtChallenge = hasBoughtChallenge;
     }
 
     @Override

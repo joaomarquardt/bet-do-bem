@@ -2,6 +2,7 @@ package com.api.betdobem.enums;
 
 public enum TransactionType {
     DEPOSIT,
+    CHALLENGE_BUY,
     CHALLENGE_ENTRY,
     CHALLENGE_WIN,
     CHALLENGE_REFUND,

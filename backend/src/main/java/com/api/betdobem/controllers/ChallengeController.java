@@ -39,6 +39,12 @@ public class ChallengeController {
         return new ResponseEntity<>(newChallenge, HttpStatus.CREATED);
     }
 
+    @PostMapping("/buy")
+    public ResponseEntity<Void> buyChallengeOption(@AuthenticationPrincipal User loggedUser) {
+        challengeService.purchaseChallengeOption(loggedUser.getId());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PostMapping("/{id}/proofs")
     public ResponseEntity<ProofUploadResponse> addProofToChallenge(@PathVariable Long id, @RequestBody @Valid CreateProofRequest proof, @AuthenticationPrincipal User loggedUser) {
         ProofUploadResponse proofUpload = challengeService.addProofToChallenge(id, proof, loggedUser.getId());

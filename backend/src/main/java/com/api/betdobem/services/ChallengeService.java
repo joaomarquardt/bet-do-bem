@@ -16,6 +16,7 @@ import com.api.betdobem.mappers.ChallengeMapper;
 import com.api.betdobem.repositories.ChallengeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -35,6 +36,9 @@ public class ChallengeService {
     private WalletService walletService;
     private S3StorageService s3StorageService;
     private CommentService commentService;
+
+    @Value("${app.challenge.buy-cost}")
+    private Long challengeBuyCost;
 
     public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService, CommentService commentService) {
         this.challengeRepository = challengeRepository;
@@ -105,12 +109,27 @@ public class ChallengeService {
         return challengeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Challenge with ID " + id + " not found."));
     }
 
+    @Transactional
+    public void purchaseChallengeOption(Long userId) {
+        User user = userService.getUserEntityById(userId);
+        if (user.isHasBoughtChallenge()) {
+            throw new ForbiddenActionException("User already has the right to create a challenge.");
+        }
+        walletService.buyChallengeOption(user, challengeBuyCost);
+        user.setHasBoughtChallenge(true);
+    }
+
+    @Transactional
     public ChallengeResponse createChallenge(CreateChallengeRequest challenge, Long userId) {
         if (userId.equals(challenge.challengedId())) {
             throw new SelfInteractionException("Challenger and challenged cannot be the same user.");
         }
-        Group group = groupService.getGroupEntityById(challenge.groupId());
         User challenger = userService.getUserEntityById(userId);
+        if (!challenger.isHasBoughtChallenge()) {
+            throw new ForbiddenActionException("User must buy the right to create a challenge first.");
+        }
+        challenger.setHasBoughtChallenge(false);
+        Group group = groupService.getGroupEntityById(challenge.groupId());
         User challenged = userService.getUserEntityById(challenge.challengedId());
         Challenge challengeEntity = challengeMapper.toChallengeEntity(challenge);
         challengeEntity.setChallenger(challenger);

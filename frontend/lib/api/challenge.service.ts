@@ -14,6 +14,10 @@ export const challengeService = {
     return apiClient.post(ENDPOINTS.CHALLENGES, data);
   },
 
+  buyChallengeRight(): Promise<void> {
+    return apiClient.post(`${ENDPOINTS.CHALLENGES}/buy`);
+  },
+
   addProofToChallenge(id: string, data: CreateProofRequest): Promise<ProofUploadResponse> {
     return apiClient.post(`${ENDPOINTS.CHALLENGES}/${id}/proofs`, data);
   },

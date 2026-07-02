@@ -66,6 +66,21 @@ public class WalletService {
     }
 
     @Transactional
+    public void buyChallengeOption(User user, Long cost) {
+        if (!userHasSufficientFunds(user, cost)) {
+            throw new InsufficientFundsException("User " + user.getName() + " does not have enough coins to perform this action.");
+        }
+        subtractAmountFromUser(user, cost);
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setAmount(cost * (-1));
+        transaction.setTransactionType(TransactionType.CHALLENGE_BUY);
+        transaction.setContextType(ContextType.CHALLENGE);
+        transaction.setContextId(null);
+        transactionRepository.save(transaction);
+    }
+
+    @Transactional
     public void returnsFundsForDeclinedBet(Bet bet) {
         if (transactionRepository.existsByTransactionTypeAndContextIdAndUserId(TransactionType.BET_REFUND, bet.getId(), bet.getCreator().getId())) return;
         if (bet.getStatus() != BetStatus.DECLINED) return;
