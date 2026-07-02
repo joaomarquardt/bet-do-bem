@@ -88,7 +88,7 @@ export function EditableProfileAvatar({
         accessibilityLabel="Alterar foto de perfil"
         accessibilityRole="button"
       >
-        <Ionicons name="pencil" size={Math.round(badgeSize * 0.5)} color={c.accent} />
+        <Ionicons name="camera" size={Math.round(badgeSize * 0.6)} color={c.accent} />
       </Pressable>
     </View>
   );
