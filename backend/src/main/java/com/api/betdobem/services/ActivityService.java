@@ -101,11 +101,15 @@ public class ActivityService {
         return activityMapper.toActivityResponseList(activities);
     }
 
+    public boolean canUserCreateActivity(Long userId) {
+        LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+        long recentActivitiesCount = activityRepository.countRecentActivities(userId, startOfDay);
+        return recentActivitiesCount < dailyActivityLimit;
+    }
+
     @Transactional
     public CreatedActivityResponse createActivity(CreateActivityRequest activity, Long userId) {
-        LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(24);
-        long recentActivitiesCount = activityRepository.countRecentActivities(userId, twentyFourHoursAgo);
-        if (recentActivitiesCount >= dailyActivityLimit) {
+        if (!canUserCreateActivity(userId)) {
             throw new ActivityCreationLimitException("User has reached the daily limit of activities.");
         }
         Activity activityEntity = activityMapper.toActivityEntity(activity);

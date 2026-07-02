@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { FeedItemResponse } from '@/lib/types';
+import { FeedItemResponse, UserCreationRights } from '@/lib/types';
 
 const ENDPOINTS = {
   FEED: '/api/feed',
@@ -8,6 +8,9 @@ const ENDPOINTS = {
 export const feedService = {
   getMyFeed(): Promise<FeedItemResponse[]> {
     return apiClient.get(`${ENDPOINTS.FEED}/me/home`);
+  },
+  getStatsBeforeCreate(): Promise<UserCreationRights> {
+    return apiClient.get(`${ENDPOINTS.FEED}/me/stats-before-create`);
   },
   getMyPendingInvites(): Promise<FeedItemResponse[]> {
     return apiClient.get(`${ENDPOINTS.FEED}/me/pending-invites`);

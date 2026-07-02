@@ -389,6 +389,11 @@ export interface PaginatedResponse<T> {
   hasNext: boolean;
 }
 
+export interface UserCreationRights {
+  hasBoughtChallenge: boolean;
+  canCreateActivity: boolean;
+}
+
 export interface ApiError {
   status: number;
   message: string;

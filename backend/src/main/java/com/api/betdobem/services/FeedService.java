@@ -1,5 +1,6 @@
 package com.api.betdobem.services;
 
+import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.ActivityStatus;
 import com.api.betdobem.enums.BetStatus;
@@ -21,13 +22,15 @@ public class FeedService {
     private final ActivityService activityService;
     private final CommentService commentService;
     private final ProofService proofService;
+    private final UserService userService;
 
-    public FeedService(BetService betService, ChallengeService challengeService, ActivityService activityService, CommentService commentService, ProofService proofService) {
+    public FeedService(BetService betService, ChallengeService challengeService, ActivityService activityService, CommentService commentService, ProofService proofService, UserService userService) {
         this.betService = betService;
         this.challengeService = challengeService;
         this.activityService = activityService;
         this.commentService = commentService;
         this.proofService = proofService;
+        this.userService = userService;
     }
 
     public List<FeedItemResponse> getVotingFeed(Long userId) {
@@ -44,6 +47,13 @@ public class FeedService {
 
         feedItems.sort(Comparator.comparing(FeedItemResponse::createdAt).reversed());
         return feedItems;
+    }
+
+    public UserCreationRights getStatsBeforeCreate(Long userId) {
+        User user = userService.getUserEntityById(userId);
+        boolean hasBoughtChallenge = user.isHasBoughtChallenge();
+        boolean canCreateActivity = activityService.canUserCreateActivity(userId);
+        return new UserCreationRights(hasBoughtChallenge, canCreateActivity);
     }
 
     public List<FeedItemResponse> getPendingInvites(Long userId) {
