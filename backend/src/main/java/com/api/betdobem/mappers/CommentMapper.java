@@ -16,11 +16,13 @@ public interface CommentMapper {
     Comment toCommentEntity(CreateCommentRequest request);
 
     @Mapping(source = "author.id", target = "authorId")
-    @Mapping(source = "author.name", target = "authorName")
+    @Mapping(source = "author.fullName", target = "authorFullName")
+    @Mapping(source = "author.username", target = "authorUsername")
     CommentResponse toCommentResponse(Comment comment);
 
     @Mapping(source = "author.id", target = "authorId")
-    @Mapping(source = "author.name", target = "authorName")
+    @Mapping(source = "author.fullName", target = "authorName")
+    @Mapping(source = "author.username", target = "authorUsername")
     List<CommentResponse> toCommentResponseList(List<Comment> comments);
 }
 

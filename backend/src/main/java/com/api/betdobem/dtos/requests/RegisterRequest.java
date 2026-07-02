@@ -1,7 +1,8 @@
 package com.api.betdobem.dtos.requests;
 
 public record RegisterRequest(
-        String name,
+        String fullName,
+        String username,
         String email,
         String password,
         String passwordConfirmation

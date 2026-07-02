@@ -6,7 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 
 public record UpdateUserRequest(
         @NotBlank(message = "Name cannot be blank")
-        String name,
+        String fullName,
+        @NotBlank(message = "Username cannot be blank")
+        String username,
         @NotBlank(message = "Email cannot be blank")
         @Email(message = "Email should be valid")
         String email,

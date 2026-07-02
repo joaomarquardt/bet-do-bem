@@ -6,7 +6,8 @@ public record CommentResponse(
         Long id,
         String content,
         Long authorId,
-        String authorName,
+        String authorFullName,
+        String authorUsername,
         Timestamp postedAt
 ) {
 }

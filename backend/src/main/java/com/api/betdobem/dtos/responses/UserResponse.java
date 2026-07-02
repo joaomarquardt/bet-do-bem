@@ -2,7 +2,8 @@ package com.api.betdobem.dtos.responses;
 
 public record UserResponse(
         Long id,
-        String name,
+        String fullName,
+        String username,
         String email,
         String profilePictureUrl,
         Long coins
