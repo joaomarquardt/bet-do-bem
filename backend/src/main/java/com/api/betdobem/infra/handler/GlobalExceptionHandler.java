@@ -44,7 +44,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             DuplicateActionException.class,
-            EmailAlreadyExistsException.class
+            EmailAlreadyExistsException.class,
+            UsernameAlreadyExistsException.class
     })
     public ResponseEntity<RestErrorResponse> handleConflictExceptions(RuntimeException ex) {
         HttpStatus status = HttpStatus.CONFLICT;

@@ -55,8 +55,16 @@ public class UserService {
         return userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User with email " + email + " not found."));
     }
 
+    public User getUserEntityByUsername(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User with username " + username + " not found."));
+    }
+
     public boolean existsUserByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    public boolean existsUserByUsername(String username) {
+        return userRepository.existsByUsername(username);
     }
 
     public PagedResponse<TransactionResponse> getUserTransactions(Long id, Pageable pageable) {

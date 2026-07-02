@@ -9,6 +9,7 @@ import com.api.betdobem.dtos.responses.LoginResult;
 import com.api.betdobem.dtos.responses.TokenResponse;
 import com.api.betdobem.infra.exceptions.DifferentPasswordsException;
 import com.api.betdobem.infra.exceptions.EmailAlreadyExistsException;
+import com.api.betdobem.infra.exceptions.UsernameAlreadyExistsException;
 import com.api.betdobem.infra.exceptions.RefreshTokenExpiredException;
 import com.api.betdobem.repositories.RefreshTokenRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -56,8 +57,11 @@ public class AuthenticationService {
         if (userService.existsUserByEmail(registerRequest.email())) {
             throw new EmailAlreadyExistsException("Email already in use");
         }
+        if (userService.existsUserByUsername(registerRequest.username())) {
+            throw new UsernameAlreadyExistsException("Username already in use");
+        }
         String encryptedPassword = passwordEncoder.encode(registerRequest.password());
-        CreateUserRequest createUser = new CreateUserRequest(registerRequest.name(), registerRequest.email(), encryptedPassword);
+        CreateUserRequest createUser = new CreateUserRequest(registerRequest.fullName(), registerRequest.username(), registerRequest.email(), encryptedPassword);
         userService.createUser(createUser);
     }
 
