@@ -27,7 +27,7 @@
       }
     },
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/bet-do-bem-runner-white-logo.png"
     },
     "plugins": [
       "expo-router",

@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { useAuth } from '@/lib/contexts';
@@ -38,8 +39,12 @@ export default function LoginScreen() {
     >
       <View style={[styles.content, { paddingTop: topPadding + 60 }]}>
         <Animated.View entering={FadeInDown.delay(100).duration(500)} style={styles.brandSection}>
-          <View style={[styles.logoContainer, { backgroundColor: c.accentDim }]}>
-            <MaterialCommunityIcons name="lightning-bolt" size={40} color={c.accent} />
+          <View style={[styles.logoContainer, { backgroundColor: 'transparent' }]}>
+            <Image 
+              source={require('@/assets/images/bet-do-bem-white-logo.svg')} 
+              style={{ width: 80, height: 80 }} 
+              contentFit="contain" 
+            />
           </View>
           <Text style={[styles.appName, { color: c.text }]}>BetDoBem</Text>
           <Text style={[styles.tagline, { color: c.textSecondary }]}>Desafie seus amigos. Prove seu valor.</Text>
@@ -83,7 +88,6 @@ export default function LoginScreen() {
               <Text style={[styles.submitBtnText, { color: '#000' }]}>Entrando...</Text>
             ) : (
               <>
-                <Ionicons name="flash" size={18} color={isValid ? '#000' : c.textTertiary} />
                 <Text style={[styles.submitBtnText, { color: isValid ? '#000' : c.textTertiary }]}>Entrar</Text>
               </>
             )}
