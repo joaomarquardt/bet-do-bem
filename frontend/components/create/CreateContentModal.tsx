@@ -15,7 +15,7 @@ import {
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -827,7 +827,7 @@ export function CreateContentModal({
                     { borderColor: c.border, backgroundColor: c.surfaceElevated },
                   ]}
                 >
-                  <Ionicons name="trophy-outline" size={32} color={c.accent} />
+                  <FontAwesome5 name="handshake" size={28} color={c.accent} />
                   <View style={localStyles.typeCardTextBlock}>
                     <Text style={[localStyles.typeCardTitle, { color: c.text }]}>
                       Aposta
@@ -856,7 +856,7 @@ export function CreateContentModal({
                     { borderColor: c.border, backgroundColor: c.surfaceElevated, opacity: stats?.hasBoughtChallenge ? 1 : 0.7 },
                   ]}
                 >
-                  <Ionicons name="flash-outline" size={32} color={c.accent} />
+                  <MaterialCommunityIcons name="bullseye-arrow" size={30} color={c.accent} />
                   <View style={localStyles.typeCardTextBlock}>
                     <Text style={[localStyles.typeCardTitle, { color: c.text }]}>
                       Desafio
@@ -913,7 +913,7 @@ export function CreateContentModal({
                     { borderColor: c.border, backgroundColor: c.surfaceElevated, opacity: stats?.canCreateActivity ? 1 : 0.7 },
                   ]}
                 >
-                  <Ionicons name="images-outline" size={32} color={c.accent} />
+                  <FontAwesome5 name="running" size={28} color={c.accent} style={{ transform: [{ translateY: -10 }] }} />
                   <View style={localStyles.typeCardTextBlock}>
                     <Text style={[localStyles.typeCardTitle, { color: c.text }]}>
                       Atividade
