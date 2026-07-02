@@ -25,6 +25,7 @@ export type ChallengeStatus =
 
 export type TransactionType =
   | 'DEPOSIT'
+  | 'CHALLENGE_BUY'
   | 'CHALLENGE_ENTRY'
   | 'CHALLENGE_WIN'
   | 'CHALLENGE_REFUND'

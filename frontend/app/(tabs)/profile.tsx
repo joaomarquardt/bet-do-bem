@@ -116,15 +116,19 @@ export default function ProfileScreen() {
       const apiType = (t.transactionType as TransactionType) || 'BET_ENTRY';
       const mappedType = apiType as TransactionType;
 
-      const contextType = t.contextType || 'UNKNOWN';
-      const description =
-        contextType === 'BET'
-          ? `Aposta #${t.contextId}`
-          : contextType === 'CHALLENGE'
-          ? `Desafio #${t.contextId}`
-          : contextType === 'ACTIVITY'
-          ? `Atividade #${t.contextId}`
-          : `${contextType} #${t.contextId}`;
+      let description = '';
+      switch (mappedType) {
+        case 'DEPOSIT': description = 'Depósito'; break;
+        case 'CHALLENGE_BUY': description = 'Compra de direito de desafiar'; break;
+        case 'CHALLENGE_ENTRY': description = 'Entrada em desafio'; break;
+        case 'CHALLENGE_WIN': description = 'Vitória em desafio'; break;
+        case 'CHALLENGE_REFUND': description = 'Reembolso de desafio'; break;
+        case 'BET_ENTRY': description = 'Entrada em aposta'; break;
+        case 'BET_WIN': description = 'Vitória em aposta'; break;
+        case 'BET_REFUND': description = 'Reembolso de aposta'; break;
+        case 'REWARD': description = 'Recompensa de atividade'; break;
+        default: description = 'Transação'; break;
+      }
 
       return {
         id: String(t.id),
