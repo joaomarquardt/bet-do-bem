@@ -15,6 +15,8 @@ public record ChallengeResponse(
         Long groupId,
         ProofResponse proof,
         Timestamp createdAt,
-        Timestamp deadline
+        Timestamp inviteExpiresAt,
+        Timestamp deadline,
+        Timestamp closedAt
 ) {
 }

@@ -31,7 +31,8 @@ public class Bet {
     private Long buyIn;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
     private Timestamp closedAt;
-    private Timestamp expiresAt;
+    private Timestamp inviteExpiresAt;
+    private Timestamp deadline;
     @Enumerated(EnumType.STRING)
     private BetStatus status;
     @ManyToOne
@@ -41,7 +42,7 @@ public class Bet {
     public Bet() {
     }
 
-    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description, Group group, Timestamp expiresAt, Long buyIn) {
+    public Bet(Long id, User creator, User opponent, List<Proof> proofs, BetStatus status, String title, String description, Group group, Timestamp inviteExpiresAt, Timestamp deadline, Long buyIn) {
         this.id = id;
         this.creator = creator;
         this.opponent = opponent;
@@ -50,7 +51,8 @@ public class Bet {
         this.title = title;
         this.description = description;
         this.group = group;
-        this.expiresAt = expiresAt;
+        this.inviteExpiresAt = inviteExpiresAt;
+        this.deadline = deadline;
         this.buyIn = buyIn;
     }
 
@@ -138,11 +140,19 @@ public class Bet {
         this.buyIn = buyIn;
     }
 
-    public Timestamp getExpiresAt() {
-        return expiresAt;
+    public Timestamp getInviteExpiresAt() {
+        return inviteExpiresAt;
     }
 
-    public void setExpiresAt(Timestamp expiresAt) {
-        this.expiresAt = expiresAt;
+    public void setInviteExpiresAt(Timestamp inviteExpiresAt) {
+        this.inviteExpiresAt = inviteExpiresAt;
+    }
+
+    public Timestamp getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(Timestamp deadline) {
+        this.deadline = deadline;
     }
 }

@@ -16,7 +16,8 @@ public record BetResponse(
         BetStatus status,
         Long groupId,
         Timestamp createdAt,
-        Timestamp closedAt,
-        Timestamp expiresAt
+        Timestamp inviteExpiresAt,
+        Timestamp deadline,
+        Timestamp closedAt
 ) {
 }

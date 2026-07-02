@@ -30,6 +30,7 @@ public class Challenge {
     private Proof proof;
     private final Timestamp createdAt = Timestamp.from(Instant.now());
     private Timestamp closedAt;
+    private Timestamp inviteExpiresAt;
     private Timestamp deadline;
     @Enumerated(EnumType.STRING)
     private ChallengeStatus status;
@@ -40,13 +41,14 @@ public class Challenge {
     public Challenge() {
     }
 
-    public Challenge(Long id, User challenger, User challenged, String description, Long amount, Proof proof, Timestamp deadline, ChallengeStatus status, String title, Group group) {
+    public Challenge(Long id, User challenger, User challenged, String description, Long amount, Proof proof, Timestamp inviteExpiresAt, Timestamp deadline, ChallengeStatus status, String title, Group group) {
         this.id = id;
         this.challenger = challenger;
         this.challenged = challenged;
         this.description = description;
         this.amount = amount;
         this.proof = proof;
+        this.inviteExpiresAt = inviteExpiresAt;
         this.deadline = deadline;
         this.status = status;
         this.title = title;
@@ -91,6 +93,14 @@ public class Challenge {
 
     public void setAmount(Long amount) {
         this.amount = amount;
+    }
+
+    public Timestamp getInviteExpiresAt() {
+        return inviteExpiresAt;
+    }
+
+    public void setInviteExpiresAt(Timestamp inviteExpiresAt) {
+        this.inviteExpiresAt = inviteExpiresAt;
     }
 
     public Timestamp getDeadline() {
