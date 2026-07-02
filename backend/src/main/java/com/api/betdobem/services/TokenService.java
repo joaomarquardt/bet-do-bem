@@ -30,9 +30,9 @@ public class TokenService {
             String role = user.getRole().name();
             return JWT.create()
                     .withIssuer("betdobem-api")
-                    .withSubject(user.getUsername())
+                    .withSubject(user.getEmail())
                     .withClaim("idUser", user.getId())
-                    .withClaim("name", user.getName().split(" ")[0])
+                    .withClaim("username", user.getUsername())
                     .withExpiresAt(Instant.now().plusSeconds(900)) // Token expires in 15 minutes
                     .withClaim("role", role)
                     .sign(algorithm);
