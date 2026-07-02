@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {ProofMapper.class})
+@Mapper(componentModel = "spring", uses = {ProofMapper.class, UserMapper.class})
 public interface ChallengeMapper {
     ChallengeMapper INSTANCE = Mappers.getMapper(ChallengeMapper.class);
 
