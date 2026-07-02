@@ -16,13 +16,14 @@ export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<null | { type: 'success' | 'error'; text: string }>(null);
 
-  const isValid = email.trim() && name.trim() && password.trim() && password.length >= 4;
+  const isValid = email.trim() && name.trim() && username.trim() && password.trim() && password.length >= 4;
 
   const handleRegister = useCallback(async () => {
     if (!isValid) return;
@@ -36,7 +37,7 @@ export default function RegisterScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      await register(name.trim(), email.trim(), password, passwordConfirmation);
+      await register(name.trim(), username.trim(), email.trim(), password, passwordConfirmation);
       console.log('Registro bem-sucedido!');
       setIsLoading(false);
 
@@ -60,7 +61,7 @@ export default function RegisterScreen() {
       } catch {}
       setTimeout(() => setFeedback(null), 6000);
     }
-  }, [isValid, name, email, password, passwordConfirmation, register]);
+  }, [isValid, name, username, email, password, passwordConfirmation, register]);
 
   return (
     <KeyboardAvoidingView
@@ -119,6 +120,19 @@ export default function RegisterScreen() {
               placeholderTextColor={c.textTertiary}
               value={name}
               onChangeText={setName}
+            />
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <Ionicons name="at" size={18} color={c.textTertiary} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, { backgroundColor: c.surfaceElevated, color: c.text, borderColor: c.border }]}
+              placeholder="Nome de usuário"
+              placeholderTextColor={c.textTertiary}
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoCorrect={false}
             />
           </View>
 
