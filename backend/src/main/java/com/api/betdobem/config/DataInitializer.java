@@ -17,9 +17,10 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initAdminUser(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            if (!userRepository.existsByEmail("admin@admin.com")) {
+            if (!userRepository.existsByEmail("admin@admin.com") && !userRepository.existsByUsername("admin")) {
                 User admin = new User();
-                admin.setName("Admin");
+                admin.setFullName("Administrador");
+                admin.setUsername("admin");
                 admin.setEmail("admin@admin.com");
                 admin.setPassword(passwordEncoder.encode(adminPassword));
                 admin.setRole(UserRole.ADMIN);
