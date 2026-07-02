@@ -9,6 +9,7 @@ import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
+import com.api.betdobem.infra.exceptions.InvalidCommentException;
 import com.api.betdobem.infra.exceptions.InvalidStatusException;
 import com.api.betdobem.infra.exceptions.SelfInteractionException;
 import com.api.betdobem.infra.exceptions.ForbiddenActionException;
@@ -71,6 +72,10 @@ public class ChallengeService {
         }
         if (!challengeRepository.canUserViewChallenge(challengeId, loggedUser.getId())) {
             throw new ForbiddenActionException("User does not have access to comment on this challenge.");
+        }
+        Challenge challenge = getChallengeEntityById(challengeId);
+        if (challenge.getStatus() != ChallengeStatus.IN_JUDGMENT) {
+            throw new InvalidCommentException("Cannot comment on a challenge that is not in judgment.");
         }
         return commentService.addComment(ContextType.CHALLENGE, challengeId, comment.content(), loggedUser);
     }

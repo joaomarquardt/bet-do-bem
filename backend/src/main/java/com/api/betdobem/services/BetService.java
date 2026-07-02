@@ -10,6 +10,7 @@ import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.events.ProofDrawEvent;
+import com.api.betdobem.infra.exceptions.InvalidCommentException;
 import com.api.betdobem.infra.exceptions.InvalidStatusException;
 import com.api.betdobem.infra.exceptions.SelfInteractionException;
 import com.api.betdobem.infra.exceptions.ForbiddenActionException;
@@ -68,6 +69,10 @@ public class BetService {
         }
         if (!betRepository.canUserViewBet(betId, loggedUser.getId())) {
             throw new ForbiddenActionException("User does not have access to comment on this bet.");
+        }
+        Bet bet = getBetEntityById(betId);
+        if (bet.getStatus() != BetStatus.IN_PROGRESS && bet.getStatus() != BetStatus.IN_JUDGMENT) {
+            throw new InvalidCommentException("Cannot comment on a bet that is not in progress or in judgment.");
         }
         return commentService.addComment(ContextType.BET, betId, comment.content(), loggedUser);
     }

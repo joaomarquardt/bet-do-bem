@@ -178,11 +178,13 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
         </Animated.View>
       )}
 
-      <CommentSection
-        entityType="ACTIVITY"
-        entityId={activity.id}
-        commentsData={commentsData}
-      />
+      {activity.status === 'IN_JUDGMENT' && (
+        <CommentSection
+          entityType="ACTIVITY"
+          entityId={activity.id}
+          commentsData={commentsData}
+        />
+      )}
     </Animated.View>
   );
 }

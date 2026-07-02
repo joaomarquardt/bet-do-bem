@@ -255,11 +255,13 @@ export function BetCard({ bet, index, commentsData, hideVotingControls, statusBa
         </View>
       )}
 
-      <CommentSection
-        entityType="BET"
-        entityId={bet.id}
-        commentsData={commentsData}
-      />
+      {bet.status === 'IN_JUDGMENT' && (
+        <CommentSection
+          entityType="BET"
+          entityId={bet.id}
+          commentsData={commentsData}
+        />
+      )}
     </Animated.View>
   );
 }

@@ -33,7 +33,8 @@ public class GlobalExceptionHandler {
             InvalidOperationException.class,
             DifferentPasswordsException.class,
             InvalidStatusException.class,
-            ActivityCreationLimitException.class
+            ActivityCreationLimitException.class,
+            InvalidCommentException.class
     })
     public ResponseEntity<RestErrorResponse> handleBadRequestExceptions(RuntimeException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;

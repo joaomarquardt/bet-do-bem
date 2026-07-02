@@ -197,11 +197,13 @@ export function ChallengeCard({ challenge, index, commentsData, hideVotingContro
         </Animated.View>
       )}
 
-      <CommentSection
-        entityType="CHALLENGE"
-        entityId={challenge.id}
-        commentsData={commentsData}
-      />
+      {challenge.status === 'IN_JUDGMENT' && (
+        <CommentSection
+          entityType="CHALLENGE"
+          entityId={challenge.id}
+          commentsData={commentsData}
+        />
+      )}
     </Animated.View>
   );
 }

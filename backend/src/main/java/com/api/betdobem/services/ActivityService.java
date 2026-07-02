@@ -14,6 +14,7 @@ import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.infra.exceptions.ActivityCreationLimitException;
 import com.api.betdobem.infra.exceptions.ForbiddenActionException;
+import com.api.betdobem.infra.exceptions.InvalidCommentException;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -73,6 +74,10 @@ public class ActivityService {
         }
         if (!activityRepository.canUserViewActivity(activityId, loggedUser.getId())) {
                 throw new ForbiddenActionException("User does not have access to comment on this activity.");
+        }
+        Activity activity = getActivityEntityById(activityId);
+        if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) {
+            throw new InvalidCommentException("Cannot comment on an activity that is not in judgment.");
         }
         return commentService.addComment(ContextType.ACTIVITY, activityId, comment.content(), loggedUser);
     }

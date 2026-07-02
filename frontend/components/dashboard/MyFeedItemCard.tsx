@@ -275,13 +275,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
           </View>
         )}
 
-        <View style={styles.commentsWrapper}>
-          <CommentSection
-            entityType="BET"
-            entityId={bet.id}
-            commentsData={(item as any).commentsData ?? null}
-          />
-        </View>
+
       </Animated.View>
     );
   }
@@ -372,13 +366,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
           </View>
         )}
 
-        <View style={styles.commentsWrapper}>
-          <CommentSection
-            entityType="CHALLENGE"
-            entityId={challenge.id}
-            commentsData={(item as any).commentsData ?? null}
-          />
-        </View>
+
       </Animated.View>
     );
   }
