@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Colors from '@/constants/colors';
 import { MyFeedItemCard } from '@/components/dashboard/MyFeedItemCard';
 import { PendingInviteCard } from '@/components/dashboard/PendingInviteCard';
+import { AwaitingAcceptanceCard } from '@/components/dashboard/AwaitingAcceptanceCard';
 import { CreateContentModal } from '@/components/create/CreateContentModal';
 import { CreationSuccessModal } from '@/components/create/CreationSuccessModal';
 import { AcceptInviteModal } from '@/components/create/AcceptInviteModal';
@@ -168,13 +169,19 @@ export default function MyBetsScreen() {
 
       return (
         <View style={styles.cardWrapper}>
-          {isPendingInvite && user?.id != null ? (
+          {section.key === 'pendingInvites' && user?.id != null ? (
             <PendingInviteCard
               item={item}
               index={index}
               currentUserId={user.id}
               onAccept={onAcceptPress}
               onDecline={onDeclinePress}
+            />
+          ) : section.key === 'awaitingAcceptance' && user?.id != null ? (
+            <AwaitingAcceptanceCard
+              item={item}
+              index={index}
+              currentUserId={user.id}
             />
           ) : (
             <MyFeedItemCard

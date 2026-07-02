@@ -113,7 +113,8 @@ export function mapFeedItemToChallenge(item: FeedItemResponse): Challenge {
     deadline: content.deadline as string,
     status: content.status as Challenge['status'],
     group: content.group as Challenge['group'],
-  };
+    inviteExpiresAt: (content.inviteExpiresAt ?? content.expiresAt) as string | undefined,
+  } as Challenge & { inviteExpiresAt?: string };
 }
 
 export function mapFeedItemToActivity(item: FeedItemResponse): Activity {

@@ -1,6 +1,5 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar';
@@ -17,12 +16,10 @@ type ParticipantUser = User & {
   avatarColor?: string;
 };
 
-interface PendingInviteCardProps {
+interface AwaitingAcceptanceCardProps {
   item: BetsTabItem;
   index: number;
   currentUserId: number;
-  onAccept: () => void;
-  onDecline: () => void;
 }
 
 function getExpirationText(expirationDateStr?: string) {
@@ -37,13 +34,11 @@ function getExpirationText(expirationDateStr?: string) {
   return `Expira em ${hours}h e ${minutes}m`;
 }
 
-export function PendingInviteCard({
+export function AwaitingAcceptanceCard({
   item,
   index,
   currentUserId,
-  onAccept,
-  onDecline,
-}: PendingInviteCardProps) {
+}: AwaitingAcceptanceCardProps) {
   const isBet = item.feedItemType === 'BET';
   const bet = isBet ? (item as Bet) : null;
   const challenge = !isBet ? (item as Challenge) : null;
@@ -56,10 +51,12 @@ export function PendingInviteCard({
   const inviteExpiresAt = rawItem.inviteExpiresAt || rawItem.expiresAt;
   const deadline = isBet ? bet?.closedAt : challenge?.deadline;
 
-  const challengerSide = isBet ? (bet!.creator as ParticipantUser) : (challenge!.challenger as ParticipantUser);
+  // The logged in user created this invite, so they are waiting for the opponent.
+  // We want to display the opponent's info (the challenged side).
+  const challengedSide = isBet ? (bet!.opponent as ParticipantUser) : (challenge!.challenged as ParticipantUser);
   
-  const challengerName = challengerSide?.displayName || challengerSide?.name || challengerSide?.username || 'Usuário';
-  const challengerHandle = challengerSide?.username ? `@${challengerSide.username}` : `#${challengerSide?.id || '?'}`;
+  const challengedName = challengedSide?.displayName || challengedSide?.name || challengedSide?.username || 'Usuário';
+  const challengedHandle = challengedSide?.username ? `@${challengedSide.username}` : `#${challengedSide?.id || '?'}`;
 
   const expirationText = getExpirationText(inviteExpiresAt);
 
@@ -71,17 +68,17 @@ export function PendingInviteCard({
       <View style={styles.header}>
         <View style={styles.participantRow}>
           <Avatar
-            name={challengerName}
-            color={challengerSide?.avatarColor ?? '#CCCCCC'}
+            name={challengedName}
+            color={challengedSide?.avatarColor ?? '#CCCCCC'}
             size={40}
-            imageUri={challengerSide?.profilePictureUrl}
+            imageUri={challengedSide?.profilePictureUrl}
           />
           <View style={styles.participantInfo}>
             <Text style={[styles.participantName, { color: c.text }]} numberOfLines={1}>
-              {challengerName}
+              {challengedName}
             </Text>
             <Text style={[styles.participantHandle, { color: c.textSecondary }]} numberOfLines={1}>
-              {challengerHandle}
+              {challengedHandle}
             </Text>
           </View>
         </View>
@@ -129,33 +126,6 @@ export function PendingInviteCard({
             </Text>
           </View>
         ) : null}
-      </View>
-
-      <View style={styles.actionRow}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.declineBtn,
-            { borderColor: c.danger, opacity: pressed ? 0.7 : 1 },
-          ]}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            onDecline();
-          }}
-        >
-          <Text style={[styles.actionText, { color: c.danger }]}>Recusar</Text>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [
-            styles.acceptBtn,
-            { backgroundColor: c.accent, opacity: pressed ? 0.85 : 1 },
-          ]}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            onAccept();
-          }}
-        >
-          <Text style={[styles.actionText, { color: '#000' }]}>Aceitar</Text>
-        </Pressable>
       </View>
     </Animated.View>
   );

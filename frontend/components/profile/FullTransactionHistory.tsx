@@ -122,7 +122,7 @@ export function FullTransactionHistory({
       <View style={modalStyles.empty}>
         <Ionicons name="receipt-outline" size={40} color={c.textTertiary} />
         <Text style={[modalStyles.emptyText, { color: c.textTertiary }]}>
-          Nenhuma transacao encontrada
+          Nenhuma transação encontrada
         </Text>
       </View>
     ),

@@ -306,7 +306,7 @@ export default function ProfileScreen() {
           ) : !previewTransactions || previewTransactions.length === 0 ? (
             <View style={styles.transactionsEmpty}>
               <Ionicons name="receipt-outline" size={32} color={c.textTertiary} />
-              <Text style={[styles.emptyText, { color: c.textTertiary }]}>Nenhuma transacao ainda</Text>
+              <Text style={[styles.emptyText, { color: c.textTertiary }]}>Nenhuma transação ainda</Text>
             </View>
           ) : (
             <View>

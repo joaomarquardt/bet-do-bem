@@ -6,23 +6,33 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     marginBottom: 10,
-    gap: 14,
+    gap: 16,
   },
-  statusBanner: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  participantRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  statusBannerText: {
+    gap: 10,
     flex: 1,
-    fontSize: 13,
+  },
+  participantInfo: {
+    flex: 1,
+  },
+  participantName: {
+    fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
   },
-  mainContent: {
-    gap: 6,
+  participantHandle: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+  },
+  titleContainer: {
+    gap: 4,
   },
   title: {
     fontSize: 18,
@@ -34,118 +44,36 @@ export const styles = StyleSheet.create({
     lineHeight: 20,
     fontFamily: 'Inter_400Regular',
   },
-  stakeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+  detailsContainer: {
     gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    padding: 12,
     borderRadius: 12,
-    marginTop: 2,
   },
-  stakeLabel: {
-    fontSize: 11,
-    fontFamily: 'Inter_500Medium',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  stakeValue: {
-    fontSize: 22,
-    fontFamily: 'Inter_700Bold',
-  },
-  stakeUnit: {
-    fontSize: 13,
-    fontFamily: 'Inter_600SemiBold',
-  },
-  duelSection: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 14,
-    gap: 12,
-  },
-  duelRow: {
+  detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 8,
   },
-  participant: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 6,
-    maxWidth: '38%',
-  },
-  participantHighlight: {
-    borderRadius: 999,
-    padding: 3,
-  },
-  roleLabel: {
-    fontSize: 10,
-    fontFamily: 'Inter_600SemiBold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  participantName: {
-    fontSize: 14,
-    fontFamily: 'Inter_700Bold',
-    textAlign: 'center',
-  },
-  participantHandle: {
-    fontSize: 12,
+  detailText: {
+    fontSize: 13,
     fontFamily: 'Inter_500Medium',
-    textAlign: 'center',
-  },
-  youBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    marginTop: 2,
-  },
-  youBadgeText: {
-    fontSize: 10,
-    fontFamily: 'Inter_700Bold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  vsContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 56,
-  },
-  vsBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-  },
-  vsText: {
-    fontSize: 16,
-    fontFamily: 'Inter_700Bold',
-    letterSpacing: 1,
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 2,
+    gap: 12,
   },
   declineBtn: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1.5,
   },
   acceptBtn: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
     paddingVertical: 12,
     borderRadius: 12,
   },
