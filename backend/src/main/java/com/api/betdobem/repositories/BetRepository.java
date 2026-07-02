@@ -19,7 +19,7 @@ public interface BetRepository extends JpaRepository<Bet, Long> {
     """, nativeQuery = true)
     Optional<Bet> findByProofId(@Param("proofId") Long proofId);
 
-    List<Bet> findByStatusAndExpiresAtBefore(BetStatus status, Timestamp now);
+    List<Bet> findByStatusAndDeadlineBefore(BetStatus status, Timestamp now);
 
     @Query("""
         SELECT b FROM Bet b

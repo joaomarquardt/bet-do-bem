@@ -18,6 +18,7 @@ import com.api.betdobem.mappers.BetMapper;
 import com.api.betdobem.repositories.BetRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -36,7 +37,10 @@ public class BetService {
     private GroupService groupService;
     private WalletService walletService;
     private S3StorageService s3StorageService;
-        private CommentService commentService;
+    private CommentService commentService;
+
+    @Value("${app.bet.minimum-interval-days-invite-and-deadline}")
+    private Long minimumIntervalDaysBetweenInviteAndDeadline;
 
     public BetService(BetRepository betRepository, BetMapper betMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService, CommentService commentService) {
         this.betRepository = betRepository;
@@ -56,7 +60,7 @@ public class BetService {
 
     public List<Bet> getAllExpiredBets() {
         Timestamp now = Timestamp.from(Instant.now());
-        return betRepository.findByStatusAndExpiresAtBefore(BetStatus.IN_JUDGMENT, now);
+        return betRepository.findByStatusAndDeadlineBefore(BetStatus.IN_JUDGMENT, now);
     }
 
     public boolean existsById(Long id) {
@@ -110,6 +114,13 @@ public class BetService {
     public BetResponse createBet(CreateBetRequest bet, Long userId) {
         if (userId.equals(bet.opponentId())) {
             throw new SelfInteractionException("Creator and opponent cannot be the same user.");
+        }
+        if (bet.inviteExpiresAt().after(bet.deadline())) {
+            throw new InvalidStatusException("Invite expiration date must be before the bet deadline.");
+        }
+        long daysBetweenInviteAndDeadline = (bet.deadline().getTime() - bet.inviteExpiresAt().getTime()) / (1000 * 60 * 60 * 24);
+        if (daysBetweenInviteAndDeadline < minimumIntervalDaysBetweenInviteAndDeadline) {
+            throw new InvalidStatusException("The interval between invite expiration and bet deadline must be at least " + minimumIntervalDaysBetweenInviteAndDeadline + " days.");
         }
         User creator = userService.getUserEntityById(userId);
         User opponent = userService.getUserEntityById(bet.opponentId());

@@ -9,10 +9,7 @@ import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.ChallengeStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
-import com.api.betdobem.infra.exceptions.InvalidCommentException;
-import com.api.betdobem.infra.exceptions.InvalidStatusException;
-import com.api.betdobem.infra.exceptions.SelfInteractionException;
-import com.api.betdobem.infra.exceptions.ForbiddenActionException;
+import com.api.betdobem.infra.exceptions.*;
 import com.api.betdobem.mappers.ChallengeMapper;
 import com.api.betdobem.repositories.ChallengeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -40,6 +37,9 @@ public class ChallengeService {
 
     @Value("${app.challenge.buy-cost}")
     private Long challengeBuyCost;
+
+    @Value("${app.challenge.minimum-interval-days-invite-and-deadline}")
+    private Long minimumIntervalDaysBetweenInviteAndDeadline;
 
     public ChallengeService(ChallengeRepository challengeRepository, ChallengeMapper challengeMapper, UserService userService, ProofService proofService, GroupService groupService, WalletService walletService, S3StorageService s3StorageService, CommentService commentService) {
         this.challengeRepository = challengeRepository;
@@ -128,6 +128,13 @@ public class ChallengeService {
     public ChallengeResponse createChallenge(CreateChallengeRequest challenge, Long userId) {
         if (userId.equals(challenge.challengedId())) {
             throw new SelfInteractionException("Challenger and challenged cannot be the same user.");
+        }
+        if (challenge.inviteExpiresAt().after(challenge.deadline())) {
+            throw new InvalidDateException("Invite expiration date must be before the challenge deadline.");
+        }
+        long daysBetweenInviteAndDeadline = (challenge.deadline().getTime() - challenge.inviteExpiresAt().getTime()) / (1000 * 60 * 60 * 24);
+        if (daysBetweenInviteAndDeadline < minimumIntervalDaysBetweenInviteAndDeadline) {
+            throw new InvalidDateException("The interval between invite expiration and challenge deadline must be at least " + minimumIntervalDaysBetweenInviteAndDeadline + " days.");
         }
         User challenger = userService.getUserEntityById(userId);
         if (!challenger.isHasBoughtChallenge()) {
