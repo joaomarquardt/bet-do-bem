@@ -84,9 +84,7 @@ export default function ProfileScreen() {
     },
     [updateUser, user?.profilePictureUrl],
   );
-  const wins: number | undefined = typeof authUser?.wins === 'number' ? authUser.wins : undefined;
-  const losses: number | undefined = typeof authUser?.losses === 'number' ? authUser.losses : undefined;
-  const draws: number | undefined = typeof authUser?.draws === 'number' ? authUser.draws : undefined;
+  const [profileStats, setProfileStats] = useState<{ winningBets: number; registeredActivities: number; computedVotes: number } | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [walletError, setWalletError] = useState<string | null>(null);
@@ -164,6 +162,11 @@ export default function ProfileScreen() {
         setProfileImageUri(displayUrl);
         updateUser({ profilePictureUrl: displayUrl });
       }
+      setProfileStats({
+        winningBets: profile.winningBets ?? 0,
+        registeredActivities: profile.registeredActivities ?? 0,
+        computedVotes: profile.computedVotes ?? 0,
+      });
       setWallet({ balance: profile.coins ?? 0, transactions: [] });
 
       try {
@@ -223,9 +226,6 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  const totalGames = (typeof wins === 'number' && typeof losses === 'number' && typeof draws === 'number') ? wins + losses + draws : 0;
-  const winRate = totalGames > 0 && typeof wins === 'number' ? Math.round((wins / totalGames) * 100) : 0;
-
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: c.background }]}
@@ -246,27 +246,22 @@ export default function ProfileScreen() {
         <Text style={[styles.username, { color: c.textSecondary }]}>{username ? `@${username}` : ''}</Text>
       </View>
 
-      {typeof wins === 'number' && typeof losses === 'number' && typeof draws === 'number' ? (
+      {profileStats ? (
         <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.statsRow}>
           <View style={[styles.statCard, { backgroundColor: c.winDim }]}>
             <Ionicons name="trophy" size={20} color={c.win} />
-            <Text style={[styles.statValue, { color: c.win }]}>{wins}</Text>
-            <Text style={[styles.statLabel, { color: c.textSecondary }]}>Vitorias</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: c.lossDim }]}>
-            <Ionicons name="close-circle" size={20} color={c.loss} />
-            <Text style={[styles.statValue, { color: c.loss }]}>{losses}</Text>
-            <Text style={[styles.statLabel, { color: c.textSecondary }]}>Derrotas</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: c.drawDim }]}>
-            <Ionicons name="swap-horizontal" size={20} color={c.draw} />
-            <Text style={[styles.statValue, { color: c.draw }]}>{draws}</Text>
-            <Text style={[styles.statLabel, { color: c.textSecondary }]}>Empates</Text>
+            <Text style={[styles.statValue, { color: c.win }]}>{profileStats.winningBets}</Text>
+            <Text style={[styles.statLabel, { color: c.textSecondary }]}>Apostas Ganhas</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: c.accentDim }]}>
-            <Ionicons name="analytics" size={20} color={c.accent} />
-            <Text style={[styles.statValue, { color: c.accent }]}>{winRate}%</Text>
-            <Text style={[styles.statLabel, { color: c.textSecondary }]}>Win Rate</Text>
+            <Ionicons name="fitness-outline" size={20} color={c.accent} />
+            <Text style={[styles.statValue, { color: c.accent }]}>{profileStats.registeredActivities}</Text>
+            <Text style={[styles.statLabel, { color: c.textSecondary }]}>Atividades</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: c.warningDim }]}>
+            <Ionicons name="checkmark-done-circle" size={20} color={c.warning} />
+            <Text style={[styles.statValue, { color: c.warning }]}>{profileStats.computedVotes}</Text>
+            <Text style={[styles.statLabel, { color: c.textSecondary }]}>Votos</Text>
           </View>
         </Animated.View>
       ) : null}

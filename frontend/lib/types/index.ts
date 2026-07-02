@@ -50,6 +50,9 @@ export interface User {
   role: UserRole;
   coins: number;
   profilePictureUrl?: string | null;
+  winningBets?: number;
+  registeredActivities?: number;
+  computedVotes?: number;
 }
 
 export interface Proof {
