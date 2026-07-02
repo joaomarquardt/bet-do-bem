@@ -21,9 +21,9 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     @Query("""
         SELECT COUNT(a) FROM Activity a
         WHERE a.author.id = :authorId
-        AND a.createdAt >= :hoursAgo
+        AND a.createdAt >= :startOfDay
         """)
-    long countRecentActivities(@Param("authorId") Long authorId, @Param("twentyFourHoursAgo") LocalDateTime hoursAgo);
+    long countRecentActivities(@Param("authorId") Long authorId, @Param("startOfDay") LocalDateTime startOfDay);
 
     @Query("""
             SELECT a FROM Activity a
