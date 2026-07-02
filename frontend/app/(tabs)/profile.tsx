@@ -1,7 +1,8 @@
 import { useCallback, useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Platform, Alert, Modal, RefreshControl, DeviceEventEmitter } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -269,16 +270,13 @@ export default function ProfileScreen() {
       <Animated.View entering={FadeInDown.delay(200).duration(400)} style={[styles.walletCard, { backgroundColor: c.surface, borderColor: c.border }]}>
             <View style={styles.walletHeader}>
           <View>
-            <Text style={[styles.walletLabel, { color: c.textSecondary }]}>Saldo da Carteira</Text>
+            <Text style={[styles.walletLabel, { color: c.textSecondary }]}>Saldo de Moedas</Text>
             <View style={styles.balanceRow}>
-              <MaterialCommunityIcons name="currency-usd" size={28} color={c.accent} />
+              <FontAwesome5 name="coins" size={24} color={c.accent} style={{ marginRight: 8 }} />
               <Text style={[styles.balanceValue, { color: c.text }]}>
                 {isLoadingWallet ? 'Carregando...' : wallet ? wallet.balance.toLocaleString() : '—'}
               </Text>
             </View>
-          </View>
-          <View style={[styles.walletIcon, { backgroundColor: c.accentDim }]}>
-            <Ionicons name="wallet" size={24} color={c.accent} />
           </View>
         </View>
       </Animated.View>

@@ -1,5 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
@@ -141,7 +141,7 @@ export function PendingInviteCard({
       </View>
 
       <View style={[styles.stakeRow, { backgroundColor: c.surfaceHighlight }]}>
-        <MaterialCommunityIcons name="currency-usd" size={20} color={c.warning} />
+        <FontAwesome5 name="coins" size={18} color={c.warning} />
         <View>
           <Text style={[styles.stakeLabel, { color: c.textTertiary }]}>
             Valor da aposta

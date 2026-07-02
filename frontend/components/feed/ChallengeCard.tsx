@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { View, Text, Pressable, Platform, UIManager } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
@@ -88,7 +88,7 @@ export function ChallengeCard({ challenge, index, commentsData, hideVotingContro
           <Text style={[styles.timeAgo, { color: c.textTertiary }]}>{formatTimeAgo(challenge.createdAt)}</Text>
         </View>
         <View style={[styles.buyInBadge, { backgroundColor: c.warningDim }]}>
-          <MaterialCommunityIcons name="currency-usd" size={14} color={c.warning} />
+          <FontAwesome5 name="coins" size={12} color={c.warning} />
           <Text style={[styles.buyInText, { color: c.warning }]}>{challenge.amount}</Text>
         </View>
       </View>

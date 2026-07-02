@@ -1,6 +1,6 @@
 
 import { View, Text, Pressable, Image } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
@@ -213,7 +213,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
             <Text style={[styles.statusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
           </View>
           <View style={[styles.buyInBadge, { backgroundColor: c.warningDim }]}>
-            <MaterialCommunityIcons name="currency-usd" size={12} color={c.warning} />
+            <FontAwesome5 name="coins" size={12} color={c.warning} />
             <Text style={[styles.buyInText, { color: c.warning }]}>{bet.buyIn}</Text>
           </View>
         </View>
@@ -313,7 +313,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
             <Text style={[styles.statusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
           </View>
           <View style={[styles.buyInBadge, { backgroundColor: c.warningDim }]}>
-            <MaterialCommunityIcons name="currency-usd" size={12} color={c.warning} />
+            <FontAwesome5 name="coins" size={12} color={c.warning} />
             <Text style={[styles.buyInText, { color: c.warning }]}>{challenge.amount}</Text>
           </View>
         </View>
