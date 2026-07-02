@@ -15,7 +15,9 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
+    private String fullName;
+    @Column(unique = true, nullable = false)
+    private String username;
     private String email;
     private String password;
     @Enumerated(EnumType.STRING)
@@ -27,9 +29,10 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(Long id, String name, String email) {
+    public User(Long id, String fullName, String username, String email) {
         this.id = id;
-        this.name = name;
+        this.fullName = fullName;
+        this.username = username;
         this.email = email;
     }
 
@@ -41,12 +44,12 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getEmail() {
@@ -105,7 +108,11 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Override
