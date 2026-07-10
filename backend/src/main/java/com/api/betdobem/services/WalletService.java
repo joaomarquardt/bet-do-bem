@@ -51,13 +51,7 @@ public class WalletService {
             throw new InsufficientFundsException("User " + user.getUsername() + " does not have enough coins to perform this action.");
         }
         subtractAmountFromUser(user, amount);
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setAmount(amount * (-1));
-        transaction.setTransactionType(transactionType);
-        transaction.setContextType(contextType);
-        transaction.setContextId(contextId);
-        transactionRepository.save(transaction);
+        createTransaction(user, amount * (-1), transactionType, contextType, contextId);
     }
 
     @Transactional
@@ -66,13 +60,7 @@ public class WalletService {
             throw new InsufficientFundsException("User " + user.getUsername() + " does not have enough coins to perform this action.");
         }
         subtractAmountFromUser(user, cost);
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setAmount(cost * (-1));
-        transaction.setTransactionType(TransactionType.CHALLENGE_BUY);
-        transaction.setContextType(ContextType.CHALLENGE);
-        transaction.setContextId(null);
-        transactionRepository.save(transaction);
+        createTransaction(user, cost * (-1), TransactionType.CHALLENGE_BUY, ContextType.CHALLENGE, null);
     }
 
     @Transactional
@@ -80,13 +68,7 @@ public class WalletService {
         if (transactionRepository.existsByTransactionTypeAndContextIdAndUserId(TransactionType.BET_REFUND, bet.getId(), bet.getCreator().getId())) return;
         if (bet.getStatus() != BetStatus.DECLINED) return;
         addAmountToUser(bet.getCreator(), bet.getBuyIn());
-        Transaction transaction = new Transaction();
-        transaction.setUser(bet.getCreator());
-        transaction.setAmount(bet.getBuyIn());
-        transaction.setTransactionType(TransactionType.BET_REFUND);
-        transaction.setContextType(ContextType.BET);
-        transaction.setContextId(bet.getId());
-        transactionRepository.save(transaction);
+        createTransaction(bet.getCreator(), bet.getBuyIn(), TransactionType.BET_REFUND, ContextType.BET, bet.getId());
     }
 
     @Transactional
@@ -94,13 +76,7 @@ public class WalletService {
         if (transactionRepository.existsByTransactionTypeAndContextIdAndUserId(TransactionType.CHALLENGE_REFUND, challenge.getId(), challenge.getChallenger().getId())) return;
         if (challenge.getStatus() != ChallengeStatus.DECLINED) return;
         addAmountToUser(challenge.getChallenger(), challenge.getAmount());
-        Transaction transaction = new Transaction();
-        transaction.setUser(challenge.getChallenger());
-        transaction.setAmount(challenge.getAmount());
-        transaction.setTransactionType(TransactionType.BET_REFUND);
-        transaction.setContextType(ContextType.BET);
-        transaction.setContextId(challenge.getId());
-        transactionRepository.save(transaction);
+        createTransaction(challenge.getChallenger(), challenge.getAmount(), TransactionType.CHALLENGE_REFUND, ContextType.CHALLENGE, challenge.getId());
     }
 
     @Transactional
@@ -111,13 +87,7 @@ public class WalletService {
         addAmountToUser(bet.getCreator(), bet.getBuyIn());
         addAmountToUser(bet.getOpponent(), bet.getBuyIn());
         for (User user : new User[]{bet.getCreator(), bet.getOpponent()}) {
-            Transaction transaction = new Transaction();
-            transaction.setUser(user);
-            transaction.setAmount(bet.getBuyIn());
-            transaction.setTransactionType(TransactionType.BET_REFUND);
-            transaction.setContextType(ContextType.BET);
-            transaction.setContextId(bet.getId());
-            transactionRepository.save(transaction);
+            createTransaction(user, bet.getBuyIn(), TransactionType.BET_REFUND, ContextType.BET, bet.getId());
         }
     }
 
@@ -156,13 +126,7 @@ public class WalletService {
             return;
         }
         addAmountToUser(user, amount);
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setAmount(amount);
-        transaction.setTransactionType(transactionType);
-        transaction.setContextType(contextType);
-        transaction.setContextId(contextId);
-        transactionRepository.save(transaction);
+        createTransaction(user, amount, transactionType, contextType, contextId);
     }
 
     private boolean userHasSufficientFunds(User user, Long amount) {
@@ -187,5 +151,15 @@ public class WalletService {
                 responsePage.getTotalPages(),
                 responsePage.hasNext()
         );
+    }
+
+    private void createTransaction(User user, Long amount, TransactionType transactionType, ContextType contextType, Long contextId) {
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setAmount(amount);
+        transaction.setTransactionType(transactionType);
+        transaction.setContextType(contextType);
+        transaction.setContextId(contextId);
+        transactionRepository.save(transaction);
     }
 }
