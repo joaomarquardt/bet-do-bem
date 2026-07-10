@@ -177,7 +177,7 @@ public class ActivityService {
         VotesByProof proofVotes = proofService.countVotesByProofId(activity.getProof().getId());
         long approvedVotes = proofVotes.approvedVotes();
         long rejectedVotes = proofVotes.rejectedVotes();
-        if (approvedVotes > rejectedVotes) {
+        if (approvedVotes >= rejectedVotes && (approvedVotes + rejectedVotes) > 0) {
             activity.setStatus(ActivityStatus.APPROVED);
             walletService.payActivityReward(activity);
         } else if (approvedVotes == 0 && rejectedVotes == 0) {
