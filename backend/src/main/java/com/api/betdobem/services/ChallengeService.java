@@ -234,7 +234,7 @@ public class ChallengeService {
     public void handleProofDecision(ProofDecidedEvent event) {
         if (event.contextType() != ContextType.CHALLENGE) return;
         Challenge challenge = challengeRepository.findByProofId(event.proofId()).orElseThrow(() -> new EntityNotFoundException("Challenge associated with proof ID " + event.proofId() + " not found."));
-        if (challenge.getStatus() != ChallengeStatus.IN_JUDGMENT && challenge.getStatus() != ChallengeStatus.IN_PROGRESS) return;
+        if (challenge.getStatus() != ChallengeStatus.IN_JUDGMENT) return;
         if (event.approved()) {
             walletService.payChallengeWinner(challenge.getChallenged(), challenge);
             challenge.setStatus(ChallengeStatus.SUCCESS);

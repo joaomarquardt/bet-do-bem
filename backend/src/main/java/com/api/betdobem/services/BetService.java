@@ -248,7 +248,7 @@ public class BetService {
     public void finishBetDraw(ProofDrawEvent event) {
         if (event.contextType() != ContextType.BET) return;
         Bet bet = betRepository.findByProofId(event.proofId()).orElseThrow(() -> new EntityNotFoundException("Bet associated with proof ID " + event.proofId() + " not found."));
-        if (bet.getStatus() != BetStatus.IN_JUDGMENT && bet.getStatus() != BetStatus.IN_PROGRESS) return;
+        if (bet.getStatus() != BetStatus.IN_JUDGMENT) return;
         bet.setStatus(BetStatus.FINISHED_DRAW);
         bet.setClosedAt(Timestamp.from(Instant.now()));
         betRepository.save(bet);
