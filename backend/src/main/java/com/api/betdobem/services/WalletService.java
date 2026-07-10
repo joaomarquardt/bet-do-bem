@@ -16,14 +16,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class WalletService {
     private TransactionRepository transactionRepository;
     private UserRepository userRepository;
+
     @Value("${app.activity.reward.amount}")
     private Long activityRewardAmount;
+
+    @Value("${app.challenge.buy-cost}")
+    private Long challengeBuyCost;
 
     public WalletService(TransactionRepository transactionRepository, UserRepository userRepository) {
         this.transactionRepository = transactionRepository;
@@ -74,9 +76,14 @@ public class WalletService {
     @Transactional
     public void returnsFundsForDeclinedChallenge(Challenge challenge) {
         if (transactionRepository.existsByTransactionTypeAndContextIdAndUserId(TransactionType.CHALLENGE_REFUND, challenge.getId(), challenge.getChallenger().getId())) return;
-        if (challenge.getStatus() != ChallengeStatus.DECLINED) return;
-        addAmountToUser(challenge.getChallenger(), challenge.getAmount());
-        createTransaction(challenge.getChallenger(), challenge.getAmount(), TransactionType.CHALLENGE_REFUND, ContextType.CHALLENGE, challenge.getId());
+        if (challenge.getStatus() != ChallengeStatus.DECLINED && challenge.getStatus() != ChallengeStatus.EXPIRED) return;
+        User challenger = challenge.getChallenger();
+        addAmountToUser(challenger, challenge.getAmount());
+        if (challenger.isHasBoughtChallenge()) {
+            addAmountToUser(challenger, challengeBuyCost);
+            createTransaction(challenger, challengeBuyCost, TransactionType.CHALLENGE_BUY_REFUND, ContextType.CHALLENGE, challenge.getId());
+        }
+        createTransaction(challenger, challenge.getAmount(), TransactionType.CHALLENGE_REFUND, ContextType.CHALLENGE, challenge.getId());
     }
 
     @Transactional
