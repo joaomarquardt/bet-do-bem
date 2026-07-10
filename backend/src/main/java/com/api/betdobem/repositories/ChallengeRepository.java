@@ -21,6 +21,8 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 
     List<Challenge> findByStatusAndDeadlineBefore(ChallengeStatus status, Timestamp now);
 
+    List<Challenge> findByStatusAndInviteExpiresAtBefore(ChallengeStatus status, Timestamp now);
+
     @Query("""
         SELECT c FROM Challenge c
         WHERE c.status = 'IN_JUDGMENT'

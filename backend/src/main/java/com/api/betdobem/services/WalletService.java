@@ -74,7 +74,7 @@ public class WalletService {
     }
 
     @Transactional
-    public void returnsFundsForDeclinedChallenge(Challenge challenge) {
+    public void returnsFundsForExpiredOrDeclinedChallenge(Challenge challenge) {
         if (transactionRepository.existsByTransactionTypeAndContextIdAndUserId(TransactionType.CHALLENGE_REFUND, challenge.getId(), challenge.getChallenger().getId())) return;
         if (challenge.getStatus() != ChallengeStatus.DECLINED && challenge.getStatus() != ChallengeStatus.EXPIRED) return;
         User challenger = challenge.getChallenger();

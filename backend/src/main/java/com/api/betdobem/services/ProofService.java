@@ -139,7 +139,7 @@ public class ProofService {
         long rejectedVotes = voteService.countVotesByProofIdAndApprovedValue(proofId, false);
         long totalMembers = groupService.countMembersByGroupId(groupId);
         long totalVotes = approvedVotes + rejectedVotes;
-        long majorityThreshold = contextType == ContextType.BET  || contextType == ContextType.CHALLENGE ? ((totalMembers - 2) / 2) + 1 : (totalMembers - 1) / 2 + 1;
+        long majorityThreshold = contextType == ContextType.BET  || contextType == ContextType.CHALLENGE ? (totalMembers - 2) / 2 + 1 : (totalMembers - 1) / 2 + 1;
 
         if (approvedVotes >= majorityThreshold) {
             eventPublisher.publishEvent(new ProofDecidedEvent(proofId, contextType, true));

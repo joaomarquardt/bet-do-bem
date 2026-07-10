@@ -26,12 +26,20 @@ public class ExpirationScheduler {
 
     @Scheduled(fixedRate = EXPIRATION_CHECK_INTERVAL) // Executes every minute
     public void closeExpiredChallenges() {
-        List<Challenge> expiredChallenges = challengeService.getAllExpiredChallenges();
-        for (Challenge challenge : expiredChallenges) {
+        List<Challenge> expiredInviteChallenges = challengeService.getAllExpiredInviteChallenges();
+        List<Challenge> expiredDeadlineChallenges = challengeService.getAllExpiredDeadlineChallenges();
+        for (Challenge challenge : expiredInviteChallenges) {
             try {
-                challengeService.handleExpiredChallenge(challenge);
+                challengeService.handleExpiredInviteChallenge(challenge);
             } catch (Exception e) {
-                System.err.println("Error handling expired challenge with ID " + challenge.getId() + ": " + e.getMessage());
+                System.err.println("Error handling expired invite challenge with ID " + challenge.getId() + ": " + e.getMessage());
+            }
+        }
+        for (Challenge challenge : expiredDeadlineChallenges) {
+            try {
+                challengeService.handleExpiredDeadlineChallenge(challenge);
+            } catch (Exception e) {
+                System.err.println("Error handling expired deadline challenge with ID " + challenge.getId() + ": " + e.getMessage());
             }
         }
     }

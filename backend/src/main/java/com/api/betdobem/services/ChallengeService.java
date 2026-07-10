@@ -57,9 +57,14 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponseList(challenges);
     }
 
-    public List<Challenge> getAllExpiredChallenges() {
+    public List<Challenge> getAllExpiredDeadlineChallenges() {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         return challengeRepository.findByStatusAndDeadlineBefore(ChallengeStatus.IN_PROGRESS, now);
+    }
+
+    public List<Challenge> getAllExpiredInviteChallenges() {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        return challengeRepository.findByStatusAndInviteExpiresAtBefore(ChallengeStatus.INVITED, now);
     }
 
     public boolean existsById(Long id) {
@@ -181,7 +186,7 @@ public class ChallengeService {
         challenge.setStatus(ChallengeStatus.DECLINED);
         challenge.setClosedAt(Timestamp.from(Instant.now()));
         challengeRepository.save(challenge);
-        walletService.returnsFundsForDeclinedChallenge(challenge);
+        walletService.returnsFundsForExpiredOrDeclinedChallenge(challenge);
         return challengeMapper.toChallengeResponse(challenge);
     }
 
@@ -242,11 +247,20 @@ public class ChallengeService {
     }
 
     @Transactional
-    public void handleExpiredChallenge(Challenge challenge) {
+    public void handleExpiredDeadlineChallenge(Challenge challenge) {
         if (challenge.getStatus() != ChallengeStatus.IN_PROGRESS) return;
-        walletService.payChallengeWinner(challenge.getChallenger(), challenge);
         challenge.setStatus(ChallengeStatus.EXPIRED);
         challenge.setClosedAt(Timestamp.from(Instant.now()));
         challengeRepository.save(challenge);
+        walletService.payChallengeWinner(challenge.getChallenger(), challenge);
+    }
+
+    @Transactional
+    public void handleExpiredInviteChallenge(Challenge challenge) {
+        if (challenge.getStatus() != ChallengeStatus.INVITED) return;
+        challenge.setStatus(ChallengeStatus.EXPIRED);
+        challenge.setClosedAt(Timestamp.from(Instant.now()));
+        challengeRepository.save(challenge);
+        walletService.returnsFundsForExpiredOrDeclinedChallenge(challenge);
     }
 }
