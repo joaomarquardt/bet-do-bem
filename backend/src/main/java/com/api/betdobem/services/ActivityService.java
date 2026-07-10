@@ -18,7 +18,7 @@ import com.api.betdobem.infra.exceptions.InvalidCommentException;
 import com.api.betdobem.mappers.ActivityMapper;
 import com.api.betdobem.repositories.ActivityRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Pageable;
@@ -68,6 +68,7 @@ public class ActivityService {
         return activityRepository.existsById(id);
     }
 
+    @Transactional
     public CommentResponse addComment(Long activityId, CreateCommentRequest comment, User loggedUser) {
         if (!activityRepository.existsById(activityId)) {
             throw new EntityNotFoundException("Activity with ID " + activityId + " not found.");
@@ -141,6 +142,7 @@ public class ActivityService {
         return activityMapper.toActivityResponse(activity);
     }
 
+    @Transactional
     public ActivityResponse updateActivity(Long id, UpdateActivityRequest activity) {
         Activity existingActivity = getActivityEntityById(id);
         activityMapper.updateActivityRequest(activity, existingActivity);
@@ -148,6 +150,7 @@ public class ActivityService {
         return activityMapper.toActivityResponse(updatedActivity);
     }
 
+    @Transactional
     public void deleteActivity(Long id) {
         activityRepository.deleteById(id);
     }
@@ -168,6 +171,7 @@ public class ActivityService {
         activityRepository.save(activity);
     }
 
+    @Transactional
     public void handleExpiredActivity(Activity activity) {
         if (activity.getStatus() != ActivityStatus.IN_JUDGMENT) return;
         VotesByProof proofVotes = proofService.countVotesByProofId(activity.getProof().getId());

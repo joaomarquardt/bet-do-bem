@@ -10,7 +10,7 @@ import com.api.betdobem.enums.TransactionType;
 import com.api.betdobem.infra.exceptions.InsufficientFundsException;
 import com.api.betdobem.repositories.TransactionRepository;
 import com.api.betdobem.repositories.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,27 +30,22 @@ public class WalletService {
         this.userRepository = userRepository;
     }
 
-    @Transactional
     public void holdsFundsForCreatedBet(Bet bet) {
         processHoldFunds(bet.getCreator(), bet.getBuyIn(), TransactionType.BET_ENTRY, ContextType.BET, bet.getId());
     }
 
-    @Transactional
     public void holdsFundsForAcceptedBet(Bet bet) {
         processHoldFunds(bet.getOpponent(), bet.getBuyIn(), TransactionType.BET_ENTRY, ContextType.BET, bet.getId());
     }
 
-    @Transactional
     public void holdsFundsForCreatedChallenge(Challenge challenge) {
         processHoldFunds(challenge.getChallenger(), challenge.getAmount(), TransactionType.CHALLENGE_ENTRY, ContextType.CHALLENGE, challenge.getId());
     }
 
-    @Transactional
     public void holdsFundsForAcceptedChallenge(Challenge challenge) {
         processHoldFunds(challenge.getChallenged(), challenge.getAmount(), TransactionType.CHALLENGE_ENTRY, ContextType.CHALLENGE, challenge.getId());
     }
 
-    @Transactional
     private void processHoldFunds(User user, Long amount, TransactionType transactionType, ContextType contextType, Long contextId) {
         if (!userHasSufficientFunds(user, amount)) {
             throw new InsufficientFundsException("User " + user.getUsername() + " does not have enough coins to perform this action.");
@@ -126,13 +121,11 @@ public class WalletService {
         }
     }
 
-    @Transactional
     private void subtractAmountFromUser(User user, Long amount) {
         user.setCoins(user.getCoins() - amount);
         userRepository.save(user);
     }
 
-    @Transactional
     private void addAmountToUser(User user, Long amount) {
         user.setCoins(user.getCoins() + amount);
         userRepository.save(user);

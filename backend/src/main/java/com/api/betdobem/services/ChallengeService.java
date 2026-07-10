@@ -13,7 +13,7 @@ import com.api.betdobem.infra.exceptions.*;
 import com.api.betdobem.mappers.ChallengeMapper;
 import com.api.betdobem.repositories.ChallengeRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Pageable;
@@ -66,6 +66,7 @@ public class ChallengeService {
         return challengeRepository.existsById(id);
     }
 
+    @Transactional
     public CommentResponse addComment(Long challengeId, CreateCommentRequest comment, User loggedUser) {
         if (!challengeRepository.existsById(challengeId)) {
             throw new EntityNotFoundException("Challenge with ID " + challengeId + " not found.");
@@ -153,6 +154,7 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponse(savedChallenge);
     }
 
+    @Transactional
     public ChallengeResponse acceptChallenge(Long id, Long userId) {
         Challenge challenge = getChallengeEntityById(id);
         if (!challenge.getChallenged().getId().equals(userId)) {
@@ -167,6 +169,7 @@ public class ChallengeService {
         return challengeMapper.toChallengeResponse(challenge);
     }
 
+    @Transactional
     public ChallengeResponse declineChallenge(Long id, Long userId) {
         Challenge challenge = getChallengeEntityById(id);
         if (!challenge.getChallenged().getId().equals(userId)) {
@@ -216,6 +219,7 @@ public class ChallengeService {
         return null;
     }
 
+    @Transactional
     public void deleteChallenge(Long id) {
         challengeRepository.deleteById(id);
     }

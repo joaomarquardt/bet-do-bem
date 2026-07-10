@@ -18,6 +18,7 @@ import com.api.betdobem.infra.exceptions.ForbiddenActionException;
 import com.api.betdobem.mappers.ProofMapper;
 import com.api.betdobem.repositories.ProofRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +59,7 @@ public class ProofService {
         return savedProof;
     }
 
+    @Transactional
     public VotePercentageResponse voteInProof(Long id, CreateVoteRequest vote, Long voterId) {
         Proof proof = getProofEntityById(id);
         if (!groupService.isUserMemberOfGroupLinkedToProof(voterId, id)) {

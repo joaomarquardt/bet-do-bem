@@ -17,7 +17,7 @@ import com.api.betdobem.infra.exceptions.ForbiddenActionException;
 import com.api.betdobem.mappers.BetMapper;
 import com.api.betdobem.repositories.BetRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Pageable;
@@ -67,6 +67,7 @@ public class BetService {
         return betRepository.existsById(id);
     }
 
+    @Transactional
     public CommentResponse addComment(Long betId, CreateCommentRequest comment, User loggedUser) {
         if (!betRepository.existsById(betId)) {
             throw new EntityNotFoundException("Bet with ID " + betId + " not found.");
@@ -111,6 +112,7 @@ public class BetService {
         return betMapper.toBetResponseList(bets);
     }
 
+    @Transactional
     public BetResponse createBet(CreateBetRequest bet, Long userId) {
         if (userId.equals(bet.opponentId())) {
             throw new SelfInteractionException("Creator and opponent cannot be the same user.");
@@ -135,6 +137,7 @@ public class BetService {
         return betMapper.toBetResponse(savedBet);
     }
 
+    @Transactional
     public BetResponse acceptBet(Long id, Long userId) {
         Bet bet = getBetEntityById(id);
         if (!bet.getOpponent().getId().equals(userId)) {
@@ -149,6 +152,7 @@ public class BetService {
         return betMapper.toBetResponse(bet);
     }
 
+    @Transactional
     public BetResponse declineBet(Long id, Long userId) {
         Bet bet = getBetEntityById(id);
         if (!bet.getOpponent().getId().equals(userId)) {
@@ -207,6 +211,7 @@ public class BetService {
         return null;
     }
 
+    @Transactional
     public void deleteBet(Long id) {
         betRepository.deleteById(id);
     }
