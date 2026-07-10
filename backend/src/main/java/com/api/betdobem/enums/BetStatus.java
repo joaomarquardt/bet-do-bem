@@ -7,6 +7,7 @@ public enum BetStatus {
     IN_JUDGMENT,
     FINISHED_WIN_CREATOR,
     FINISHED_WIN_OPPONENT,
-    FINISHED_DRAW
+    FINISHED_DRAW,
+    EXPIRED
 }
 

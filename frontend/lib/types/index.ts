@@ -12,7 +12,8 @@ export type BetStatus =
   | 'IN_JUDGMENT'
   | 'FINISHED_WIN_CREATOR'
   | 'FINISHED_WIN_OPPONENT'
-  | 'FINISHED_DRAW';
+  | 'FINISHED_DRAW'
+  | 'EXPIRED';
 
 export type ChallengeStatus =
   | 'INVITED'
@@ -29,6 +30,7 @@ export type TransactionType =
   | 'CHALLENGE_ENTRY'
   | 'CHALLENGE_WIN'
   | 'CHALLENGE_REFUND'
+  | 'CHALLENGE_BUY_REFUND'
   | 'BET_ENTRY'
   | 'BET_WIN'
   | 'BET_REFUND'
