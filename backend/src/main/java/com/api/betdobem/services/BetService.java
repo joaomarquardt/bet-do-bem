@@ -58,9 +58,14 @@ public class BetService {
         return betMapper.toBetResponseList(bets);
     }
 
-    public List<Bet> getAllExpiredBets() {
+    public List<Bet> getAllExpiredDeadlineBets() {
         Timestamp now = Timestamp.from(Instant.now());
-        return betRepository.findByStatusAndDeadlineBefore(BetStatus.IN_JUDGMENT, now);
+        return betRepository.findByStatusAndDeadlineBefore(BetStatus.IN_PROGRESS, now);
+    }
+
+    public List<Bet> getAllExpiredInviteBets() {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        return betRepository.findByStatusAndInviteExpiresAtBefore(BetStatus.INVITED, now);
     }
 
     public boolean existsById(Long id) {
@@ -162,8 +167,9 @@ public class BetService {
             throw new InvalidStatusException("Only bets with status 'INVITED' can be declined.");
         }
         bet.setStatus(BetStatus.DECLINED);
+        bet.setClosedAt(Timestamp.from(Instant.now()));
         betRepository.save(bet);
-        walletService.returnsFundsForDeclinedBet(bet);
+        walletService.returnsFundsForExpiredOrDeclinedBet(bet);
         return betMapper.toBetResponse(bet);
     }
 
@@ -250,39 +256,28 @@ public class BetService {
     }
 
     @Transactional
-    public void handleExpiredBet(Bet bet) {
-        if (bet.getStatus() != BetStatus.IN_PROGRESS && bet.getStatus() != BetStatus.IN_JUDGMENT) return;
-        Proof proofCreator = bet.getProofs().stream()
-                .filter(p -> p.getAuthor().getId().equals(bet.getCreator().getId()))
-                .findFirst()
-                .orElse(null);
-        Proof proofOpponent = bet.getProofs().stream()
-                .filter(p -> p.getAuthor().getId().equals(bet.getOpponent().getId()))
-                .findFirst()
-                .orElse(null);
-        long votesCreator = 0;
-        if (proofCreator != null) {
-            VotesByProof v = proofService.countVotesByProofId(proofCreator.getId());
-            votesCreator = v.approvedVotes();
-        }
-        long votesOpponent = 0;
-        if (proofOpponent != null) {
-            VotesByProof v = proofService.countVotesByProofId(proofOpponent.getId());
-            votesOpponent = v.approvedVotes();
-        }
-        if (votesCreator == votesOpponent) {
-            bet.setStatus(BetStatus.FINISHED_DRAW);
-            walletService.returnsFundsForDrawnBet(bet);
-        }
-        else if (votesCreator > votesOpponent) {
-            bet.setStatus(BetStatus.FINISHED_WIN_CREATOR);
-            walletService.payBetWinner(bet.getCreator(), bet);
-        }
-        else {
-            bet.setStatus(BetStatus.FINISHED_WIN_OPPONENT);
-            walletService.payBetWinner(bet.getOpponent(), bet);
-        }
+    public void handleExpiredInviteBet(Bet bet) {
+        if (bet.getStatus() != BetStatus.INVITED) return;
+        bet.setStatus(BetStatus.EXPIRED);
         bet.setClosedAt(Timestamp.from(Instant.now()));
         betRepository.save(bet);
+        walletService.returnsFundsForExpiredOrDeclinedBet(bet);
+    }
+
+    @Transactional
+    public void handleExpiredDeadlineBet(Bet bet) {
+        if (bet.getStatus() != BetStatus.IN_PROGRESS) return;
+        if (bet.getProofs().isEmpty()) {
+            bet.setStatus(BetStatus.EXPIRED);
+            bet.setClosedAt(Timestamp.from(Instant.now()));
+            betRepository.save(bet);
+            return;
+        }
+        User winner = bet.getProofs().getFirst().getAuthor();
+        if (winner.equals(bet.getCreator())) {
+            finishBetWinner(bet, BetStatus.FINISHED_WIN_CREATOR, winner);
+        } else {
+            finishBetWinner(bet, BetStatus.FINISHED_WIN_OPPONENT, winner);
+        }
     }
 }

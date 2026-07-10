@@ -66,9 +66,9 @@ public class WalletService {
     }
 
     @Transactional
-    public void returnsFundsForDeclinedBet(Bet bet) {
+    public void returnsFundsForExpiredOrDeclinedBet(Bet bet) {
         if (transactionRepository.existsByTransactionTypeAndContextIdAndUserId(TransactionType.BET_REFUND, bet.getId(), bet.getCreator().getId())) return;
-        if (bet.getStatus() != BetStatus.DECLINED) return;
+        if (bet.getStatus() != BetStatus.DECLINED && bet.getStatus() != BetStatus.EXPIRED) return;
         addAmountToUser(bet.getCreator(), bet.getBuyIn());
         createTransaction(bet.getCreator(), bet.getBuyIn(), TransactionType.BET_REFUND, ContextType.BET, bet.getId());
     }

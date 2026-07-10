@@ -21,6 +21,8 @@ public interface BetRepository extends JpaRepository<Bet, Long> {
 
     List<Bet> findByStatusAndDeadlineBefore(BetStatus status, Timestamp now);
 
+    List<Bet> findByStatusAndInviteExpiresAtBefore(BetStatus status, Timestamp now);
+
     @Query("""
         SELECT b FROM Bet b
         WHERE b.status = 'IN_JUDGMENT'
