@@ -30,7 +30,7 @@ function getExpirationText(expirationDateStr?: string) {
   const totalMinutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  return `Expira em ${hours}h e ${minutes}m`;
+  return `Convite expira em ${hours}h e ${minutes}m`;
 }
 
 export function AwaitingAcceptanceCard({
@@ -48,7 +48,7 @@ export function AwaitingAcceptanceCard({
 
   const rawItem = item as any;
   const inviteExpiresAt = rawItem.inviteExpiresAt || rawItem.expiresAt;
-  const deadline = isBet ? bet?.closedAt : challenge?.deadline;
+  const deadline = rawItem.deadline;
 
   // The logged in user created this invite, so they are waiting for the opponent.
   // We want to display the opponent's info (the challenged side).

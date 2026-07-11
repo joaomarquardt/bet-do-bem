@@ -33,7 +33,7 @@ function getExpirationText(expirationDateStr?: string) {
   const totalMinutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  return `Expira em ${hours}h e ${minutes}m`;
+  return `Convite expira em ${hours}h e ${minutes}m`;
 }
 
 export function PendingInviteCard({
@@ -53,7 +53,7 @@ export function PendingInviteCard({
 
   const rawItem = item as any;
   const inviteExpiresAt = rawItem.inviteExpiresAt || rawItem.expiresAt;
-  const deadline = isBet ? bet?.closedAt : challenge?.deadline;
+  const deadline = rawItem.deadline;
 
   const challengerSide = isBet ? (bet!.creator as ParticipantUser) : (challenge!.challenger as ParticipantUser);
   

@@ -72,20 +72,16 @@ export function mapFeedItemToBet(item: FeedItemResponse): Bet {
     description: (content.description ?? '') as string,
     proofs: proofs as Bet['proofs'],
     buyIn: Number(content.buyIn ?? content.buy_in ?? 0),
-    createdAt: content.createdAt
-      ? new Date(content.createdAt as string).toISOString()
-      : new Date().toISOString(),
-    closedAt: (content.closedAt ??
-      content.expiresAt ??
-      new Date().toISOString()) as string,
-    expiresAt: (content.expiresAt ??
-      content.deadline ??
-      new Date().toISOString()) as string,
+    createdAt: content.createdAt as string,
+    closedAt: content.closedAt as string,
+    expiresAt: content.expiresAt as string,
     status: status as Bet['status'],
     creator: safeUser(creator) as Bet['creator'],
     opponent: safeUser(opponent) as Bet['opponent'],
     group: content.group as Bet['group'],
-  };
+    deadline: content.deadline as string,
+    inviteExpiresAt: content.inviteExpiresAt as string,
+  } as Bet & { deadline?: string; inviteExpiresAt?: string };
 }
 
 export function mapFeedItemToChallenge(item: FeedItemResponse): Challenge {
