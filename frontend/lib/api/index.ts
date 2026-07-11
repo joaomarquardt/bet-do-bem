@@ -5,6 +5,7 @@ export * from './challenge.service';
 export * from './comment.service';
 export * from './feed.service';
 export * from './group.service';
+export * from './group-invite.service';
 export * from './proof-comment.service';
 export * from './proof.service';
 export * from './user.service';

@@ -119,6 +119,25 @@ export interface Group {
     members: User[];
 }
 
+export type GroupInviteStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'DECLINED'
+  | 'EXPIRED';
+
+export interface GroupInvite {
+    id: number;
+    groupId: number;
+    groupName: string;
+    groupDescription: string;
+    inviter: UserResponse;
+    invitee: UserResponse;
+    status: GroupInviteStatus;
+    createdAt: string;
+    expiresAt: string;
+    respondedAt: string | null;
+}
+
 export interface Activity {
     id: number;
     author: User;
@@ -202,8 +221,10 @@ export interface CreateChallengeRequest {
 export interface CreateGroupRequest {
     name: string;
     description: string;
-    creatorId: number;
-    memberIds: number[];
+}
+
+export interface CreateGroupInviteRequest {
+    inviteeIds: number[];
 }
 
 export interface CreateUserRequest {
