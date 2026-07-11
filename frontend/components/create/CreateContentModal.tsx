@@ -586,9 +586,6 @@ export function CreateContentModal({
                   <Text style={[localStyles.memberName, { color: c.text }]}>
                     {m.fullName}
                   </Text>
-                  <Text style={[localStyles.memberId, { color: c.textTertiary }]}>
-                    ID {m.id}
-                  </Text>
                 </View>
                 {selected ? (
                   <Ionicons name="checkmark-circle" size={22} color={c.accent} />
