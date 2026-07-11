@@ -14,6 +14,8 @@ import {
 import { uploadToPresignedUrl } from '@/lib/utils/uploadFileToAWS';
 import { TransactionItem, type ProfileTransaction } from '@/components/profile/TransactionItem';
 import { FullTransactionHistory } from '@/components/profile/FullTransactionHistory';
+import { GroupInvitesSection } from '@/components/profile/GroupInvitesSection';
+import { MyGroupsSection } from '@/components/profile/MyGroupsSection';
 import { useAuth } from '@/lib/contexts';
 import { userService } from '@/lib/api/user.service';
 import type { TransactionType } from '@/lib/types';
@@ -99,6 +101,7 @@ export default function ProfileScreen() {
   const [hasMoreThanPreview, setHasMoreThanPreview] = useState(false);
   const [showFullHistory, setShowFullHistory] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+  const [groupRefreshTrigger, setGroupRefreshTrigger] = useState(0);
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPadding = Platform.OS === 'web' ? 84 : insets.bottom + 90;
@@ -286,7 +289,10 @@ export default function ProfileScreen() {
         </View>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(300).duration(400)}>
+      <GroupInvitesSection onInviteResponded={() => setGroupRefreshTrigger((p) => p + 1)} />
+      <MyGroupsSection refreshTrigger={groupRefreshTrigger} />
+
+      <Animated.View entering={FadeInDown.delay(400).duration(400)}>
         <View style={styles.sectionHeaderRow}>
           <Text style={[styles.sectionTitle, { color: c.text }]}>Extrato</Text>
           <Text style={[styles.sectionCount, { color: c.textTertiary }]}>{totalTransactions} transações</Text>
