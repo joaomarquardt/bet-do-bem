@@ -5,7 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface GroupRepository extends JpaRepository<Group, Long> {
+
+    List<Group> findByMembersId(Long userId);
+
     @Query("""
             SELECT CASE WHEN COUNT(gm) > 0 THEN true ELSE false END
             FROM Group g
@@ -13,6 +18,33 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             WHERE g.id = :groupId AND gm.id = :userId
             """)
     boolean isUserMemberOfGroup(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END
+            FROM Bet b
+            WHERE b.group.id = :groupId
+            AND (b.creator.id = :userId OR b.opponent.id = :userId)
+            AND b.status IN ('INVITED', 'IN_PROGRESS', 'IN_JUDGMENT')
+            """)
+    boolean hasActiveBetsInGroup(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END
+            FROM Challenge c
+            WHERE c.group.id = :groupId
+            AND (c.challenger.id = :userId OR c.challenged.id = :userId)
+            AND c.status IN ('INVITED', 'IN_PROGRESS', 'IN_JUDGMENT')
+            """)
+    boolean hasActiveChallengesInGroup(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END
+            FROM Activity a
+            WHERE a.group.id = :groupId
+            AND a.author.id = :userId
+            AND a.status = 'IN_JUDGMENT'
+            """)
+    boolean hasActiveActivitiesInGroup(@Param("groupId") Long groupId, @Param("userId") Long userId);
 
     @Query("""
             SELECT CASE WHEN COUNT(gm) > 0 THEN true ELSE false END
