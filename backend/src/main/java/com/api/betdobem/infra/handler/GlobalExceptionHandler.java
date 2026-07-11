@@ -34,7 +34,10 @@ public class GlobalExceptionHandler {
             DifferentPasswordsException.class,
             InvalidStatusException.class,
             ActivityCreationLimitException.class,
-            InvalidCommentException.class
+            InvalidCommentException.class,
+            ActiveItemsInGroupException.class,
+            GroupCreatorCannotLeaveException.class,
+            InviteNotPendingException.class
     })
     public ResponseEntity<RestErrorResponse> handleBadRequestExceptions(RuntimeException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
@@ -45,7 +48,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             DuplicateActionException.class,
             EmailAlreadyExistsException.class,
-            UsernameAlreadyExistsException.class
+            UsernameAlreadyExistsException.class,
+            DuplicateGroupInviteException.class
     })
     public ResponseEntity<RestErrorResponse> handleConflictExceptions(RuntimeException ex) {
         HttpStatus status = HttpStatus.CONFLICT;
