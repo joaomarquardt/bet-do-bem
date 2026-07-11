@@ -5,6 +5,9 @@ import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateGroupRequest;
 import com.api.betdobem.dtos.requests.UpdateGroupRequest;
 import com.api.betdobem.dtos.responses.GroupResponse;
+import com.api.betdobem.infra.exceptions.ActiveItemsInGroupException;
+import com.api.betdobem.infra.exceptions.ForbiddenActionException;
+import com.api.betdobem.infra.exceptions.GroupCreatorCannotLeaveException;
 import com.api.betdobem.mappers.GroupMapper;
 import com.api.betdobem.repositories.GroupRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -36,12 +39,9 @@ public class GroupService {
     }
 
     public GroupResponse createGroup(CreateGroupRequest group, Long userId) {
-        if (!group.memberIds().contains(userId)) {
-            group.memberIds().add(userId);
-        }
         User creator = userService.getUserEntityById(userId);
-        List<User> membersList = userService.getUserEntitiesByIds(group.memberIds());
-        Set<User> membersSet = new HashSet<>(membersList);
+        Set<User> membersSet = new HashSet<>();
+        membersSet.add(creator);
         Group newGroup = groupMapper.toGroupEntity(group);
         newGroup.setMembers(membersSet);
         newGroup.setCreator(creator);
@@ -54,12 +54,65 @@ public class GroupService {
         return groupMapper.toGroupResponse(group);
     }
 
+    public List<GroupResponse> getGroupsByUserId(Long userId) {
+        List<Group> groups = groupRepository.findByMembersId(userId);
+        return groupMapper.toGroupResponseList(groups);
+    }
+
     public GroupResponse updateGroup(Long id, UpdateGroupRequest group) {
         Group existingGroup = getGroupEntityById(id);
         groupMapper.updateGroupRequest(group, existingGroup);
         Group updatedGroup = groupRepository.save(existingGroup);
         return groupMapper.toGroupResponse(updatedGroup);
     }
+
+    public void leaveGroup(Long groupId, Long userId) {
+        Group group = getGroupEntityById(groupId);
+        if (group.getCreator().getId().equals(userId)) {
+            throw new GroupCreatorCannotLeaveException("The group creator cannot leave the group.");
+        }
+        if (!groupRepository.isUserMemberOfGroup(groupId, userId)) {
+            throw new EntityNotFoundException("User is not a member of this group.");
+        }
+        if (groupRepository.hasActiveBetsInGroup(groupId, userId)) {
+            throw new ActiveItemsInGroupException("You cannot leave the group because you have active bets in progress.");
+        }
+        if (groupRepository.hasActiveChallengesInGroup(groupId, userId)) {
+            throw new ActiveItemsInGroupException("You cannot leave the group because you have active challenges in progress.");
+        }
+        if (groupRepository.hasActiveActivitiesInGroup(groupId, userId)) {
+            throw new ActiveItemsInGroupException("You cannot leave the group because you have active activities in judgment.");
+        }
+        User user = userService.getUserEntityById(userId);
+        group.getMembers().remove(user);
+        groupRepository.save(group);
+    }
+
+    public void removeMember(Long groupId, Long memberIdToRemove, Long requesterId) {
+        Group group = getGroupEntityById(groupId);
+        if (!group.getCreator().getId().equals(requesterId)) {
+            throw new ForbiddenActionException("Only the group creator can remove members.");
+        }
+        if (memberIdToRemove.equals(requesterId)) {
+            throw new GroupCreatorCannotLeaveException("The group creator cannot be removed from the group.");
+        }
+        if (!groupRepository.isUserMemberOfGroup(groupId, memberIdToRemove)) {
+            throw new EntityNotFoundException("User is not a member of this group.");
+        }
+        if (groupRepository.hasActiveBetsInGroup(groupId, memberIdToRemove)) {
+            throw new ActiveItemsInGroupException("Cannot remove member because they have active bets in progress.");
+        }
+        if (groupRepository.hasActiveChallengesInGroup(groupId, memberIdToRemove)) {
+            throw new ActiveItemsInGroupException("Cannot remove member because they have active challenges in progress.");
+        }
+        if (groupRepository.hasActiveActivitiesInGroup(groupId, memberIdToRemove)) {
+            throw new ActiveItemsInGroupException("Cannot remove member because they have active activities in judgment.");
+        }
+        User member = userService.getUserEntityById(memberIdToRemove);
+        group.getMembers().remove(member);
+        groupRepository.save(group);
+    }
+
 
     public void deleteGroup(Long id) {
         groupRepository.deleteById(id);
