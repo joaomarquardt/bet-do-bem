@@ -9,6 +9,7 @@ import { groupService } from '@/lib/api/group.service';
 import { useAuth } from '@/lib/contexts';
 import { CreateGroupModal } from './CreateGroupModal';
 import { InviteMembersModal } from './InviteMembersModal';
+import { RemoveMemberModal } from './RemoveMemberModal';
 import { groupStyles as styles } from './MyGroupsSection.styles';
 import type { GroupResponse, UserResponse } from '@/lib/types';
 
@@ -35,6 +36,9 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [inviteModalGroupId, setInviteModalGroupId] = useState<number | null>(null);
   const [leavingGroupId, setLeavingGroupId] = useState<number | null>(null);
+  const [removingMemberId, setRemovingMemberId] = useState<number | null>(null);
+  const [memberToRemove, setMemberToRemove] = useState<{groupId: number, memberId: number, memberName: string} | null>(null);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
 
   const loadGroups = useCallback(async () => {
     try {
@@ -71,7 +75,7 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               setGroups((prev) => prev.filter((g) => g.id !== groupId));
             } catch (e: any) {
-              Alert.alert('Erro', e?.message || 'Não foi possível sair do grupo.');
+              Alert.alert('Erro', e?.response?.data?.message || e?.message || 'Não foi possível sair do grupo.');
             } finally {
               setLeavingGroupId(null);
             }
@@ -79,6 +83,36 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
         },
       ],
     );
+  };
+
+  const handleRemoveMember = (groupId: number, memberId: number, memberName: string) => {
+    setMemberToRemove({ groupId, memberId, memberName });
+    setShowRemoveModal(true);
+  };
+
+  const confirmRemoveMember = async (groupId: number, memberId: number) => {
+    setRemovingMemberId(memberId);
+    try {
+      await groupService.removeMember(groupId, memberId);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setGroups((prev) =>
+        prev.map((g) => {
+          if (g.id === groupId) {
+            return {
+              ...g,
+              members: (g.members as UserResponse[]).filter((m) => m.id !== memberId),
+            };
+          }
+          return g;
+        })
+      );
+      setShowRemoveModal(false);
+    } catch (e: any) {
+      Alert.alert('Erro', e?.response?.data?.message || e?.message || 'Não foi possível remover o membro.');
+      setShowRemoveModal(false);
+    } finally {
+      setRemovingMemberId(null);
+    }
   };
 
   const inviteModalGroup = groups.find((g) => g.id === inviteModalGroupId);
@@ -169,6 +203,19 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
                             </Text>
                           )}
                         </View>
+                        {isCreator && !isMemberCreator && (
+                          <Pressable
+                            onPress={() => handleRemoveMember(group.id, member.id, member.fullName)}
+                            disabled={removingMemberId === member.id}
+                            style={{ padding: 4 }}
+                          >
+                            {removingMemberId === member.id ? (
+                              <ActivityIndicator size="small" color={c.textTertiary} />
+                            ) : (
+                              <Ionicons name="close" size={20} color={c.textTertiary} />
+                            )}
+                          </Pressable>
+                        )}
                       </View>
                     );
                   })}
@@ -228,6 +275,14 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
           existingMemberIds={((inviteModalGroup.members as UserResponse[]) || []).map((m) => m.id)}
         />
       )}
+
+      <RemoveMemberModal
+        visible={showRemoveModal}
+        onClose={() => setShowRemoveModal(false)}
+        onConfirm={() => memberToRemove && confirmRemoveMember(memberToRemove.groupId, memberToRemove.memberId)}
+        memberName={memberToRemove?.memberName}
+        isLoading={removingMemberId === memberToRemove?.memberId}
+      />
     </Animated.View>
   );
 }
