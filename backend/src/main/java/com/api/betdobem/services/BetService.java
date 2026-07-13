@@ -10,10 +10,7 @@ import com.api.betdobem.enums.BetStatus;
 import com.api.betdobem.enums.ContextType;
 import com.api.betdobem.events.ProofDecidedEvent;
 import com.api.betdobem.events.ProofDrawEvent;
-import com.api.betdobem.infra.exceptions.InvalidCommentException;
-import com.api.betdobem.infra.exceptions.InvalidStatusException;
-import com.api.betdobem.infra.exceptions.SelfInteractionException;
-import com.api.betdobem.infra.exceptions.ForbiddenActionException;
+import com.api.betdobem.infra.exceptions.*;
 import com.api.betdobem.mappers.BetMapper;
 import com.api.betdobem.repositories.BetRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -182,7 +179,9 @@ public class BetService {
         if (bet.getStatus() != BetStatus.IN_PROGRESS) {
             throw new InvalidStatusException("Cannot add proof to a bet that is not in progress.");
         }
-        // TODO: Check if user already posted a proof in this bet
+        if (bet.getProofs().stream().anyMatch(p -> p.getAuthor().getId().equals(userId))) {
+            throw new ProofAlreadySentException("User has already submitted a proof for this bet.");
+        }
         String uniqueObjectKey = String.format("proofs/bets/user_%d_%d_%s",
                 userId,
                 System.currentTimeMillis(),

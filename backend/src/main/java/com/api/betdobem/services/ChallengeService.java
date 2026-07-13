@@ -199,7 +199,9 @@ public class ChallengeService {
         if (!challenge.getChallenged().getId().equals(userId)) {
             throw new ForbiddenActionException("Only the challenged user can add proof to this challenge.");
         }
-        // TODO: Check if user already posted a proof in this challenge
+        if (challenge.getProof() != null) {
+            throw new ProofAlreadySentException("A proof has already been submitted for this challenge.");
+        }
         String uniqueObjectKey = String.format("proofs/challenges/user_%d_%d_%s",
                 userId,
                 System.currentTimeMillis(),
