@@ -128,6 +128,7 @@ export default function ProfileScreen() {
         case 'CHALLENGE_ENTRY': description = 'Entrada em desafio'; break;
         case 'CHALLENGE_WIN': description = 'Vitória em desafio'; break;
         case 'CHALLENGE_REFUND': description = 'Reembolso de desafio'; break;
+        case 'CHALLENGE_BUY_REFUND': description = 'Reembolso de resgate de direito de desafiar'; break;
         case 'BET_ENTRY': description = 'Entrada em aposta'; break;
         case 'BET_WIN': description = 'Vitória em aposta'; break;
         case 'BET_REFUND': description = 'Reembolso de aposta'; break;
