@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/contexts';
 import { CreateGroupModal } from './CreateGroupModal';
 import { InviteMembersModal } from './InviteMembersModal';
 import { RemoveMemberModal } from './RemoveMemberModal';
+import { ActionFeedbackModal } from '@/components/ui/ActionFeedbackModal';
 import { groupStyles as styles } from './MyGroupsSection.styles';
 import type { GroupResponse, UserResponse } from '@/lib/types';
 
@@ -23,6 +24,35 @@ function stringToColor(input: string) {
   const h = Math.abs(hash) % 360;
   return `hsl(${h},60%,50%)`;
 }
+
+const mapGroupError = (message: string): string => {
+  if (!message) return 'Ocorreu um erro inesperado. Tente novamente.';
+  if (message.includes('cannot leave the group because you have active bets')) {
+    return 'Você não pode sair do grupo porque possui apostas ativas em andamento.';
+  }
+  if (message.includes('cannot leave the group because you have active challenges')) {
+    return 'Você não pode sair do grupo porque possui desafios ativos em andamento.';
+  }
+  if (message.includes('cannot leave the group because you have active activities')) {
+    return 'Você não pode sair do grupo porque possui atividades ativas em julgamento.';
+  }
+  if (message.includes('Cannot remove member because they have active bets')) {
+    return 'Não é possível remover o membro pois ele possui apostas ativas em andamento neste grupo.';
+  }
+  if (message.includes('Cannot remove member because they have active challenges')) {
+    return 'Não é possível remover o membro pois ele possui desafios ativos em andamento neste grupo.';
+  }
+  if (message.includes('Cannot remove member because they have active activities')) {
+    return 'Não é possível remover o membro pois ele possui atividades ativas em julgamento neste grupo.';
+  }
+  if (message.includes('group creator cannot leave')) {
+    return 'O criador do grupo não pode sair. Você deve excluir o grupo ou transferir a posse (se suportado).';
+  }
+  if (message.includes('group creator cannot be removed')) {
+    return 'O criador do grupo não pode ser removido.';
+  }
+  return message;
+};
 
 interface MyGroupsSectionProps {
   refreshTrigger?: number;
@@ -39,6 +69,7 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
   const [removingMemberId, setRemovingMemberId] = useState<number | null>(null);
   const [memberToRemove, setMemberToRemove] = useState<{groupId: number, memberId: number, memberName: string} | null>(null);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [feedback, setFeedback] = useState<{ visible: boolean, title: string, message: string, type: 'error' | 'success' | 'warning' }>({ visible: false, title: '', message: '', type: 'error' });
 
   const loadGroups = useCallback(async () => {
     try {
@@ -75,7 +106,8 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               setGroups((prev) => prev.filter((g) => g.id !== groupId));
             } catch (e: any) {
-              Alert.alert('Erro', e?.response?.data?.message || e?.message || 'Não foi possível sair do grupo.');
+              const errorMsg = e?.response?.data?.message || e?.message || '';
+              setFeedback({ visible: true, title: 'Ação Bloqueada', message: mapGroupError(errorMsg), type: 'error' });
             } finally {
               setLeavingGroupId(null);
             }
@@ -108,7 +140,8 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
       );
       setShowRemoveModal(false);
     } catch (e: any) {
-      Alert.alert('Erro', e?.response?.data?.message || e?.message || 'Não foi possível remover o membro.');
+      const errorMsg = e?.response?.data?.message || e?.message || '';
+      setFeedback({ visible: true, title: 'Ação Bloqueada', message: mapGroupError(errorMsg), type: 'error' });
       setShowRemoveModal(false);
     } finally {
       setRemovingMemberId(null);
@@ -282,6 +315,14 @@ export function MyGroupsSection({ refreshTrigger }: MyGroupsSectionProps) {
         onConfirm={() => memberToRemove && confirmRemoveMember(memberToRemove.groupId, memberToRemove.memberId)}
         memberName={memberToRemove?.memberName}
         isLoading={removingMemberId === memberToRemove?.memberId}
+      />
+
+      <ActionFeedbackModal
+        visible={feedback.visible}
+        title={feedback.title}
+        message={feedback.message}
+        type={feedback.type}
+        onClose={() => setFeedback((prev) => ({ ...prev, visible: false }))}
       />
     </Animated.View>
   );
