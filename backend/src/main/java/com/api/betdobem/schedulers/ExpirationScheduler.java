@@ -1,13 +1,7 @@
 package com.api.betdobem.schedulers;
 
-import com.api.betdobem.domain.Activity;
-import com.api.betdobem.domain.Bet;
-import com.api.betdobem.domain.Challenge;
-import com.api.betdobem.domain.GroupInvite;
-import com.api.betdobem.services.ActivityService;
-import com.api.betdobem.services.BetService;
-import com.api.betdobem.services.ChallengeService;
-import com.api.betdobem.services.GroupInviteService;
+import com.api.betdobem.domain.*;
+import com.api.betdobem.services.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +14,14 @@ public class ExpirationScheduler {
     private final ActivityService activityService;
     private final BetService betService;
     private final GroupInviteService groupInviteService;
+    private final FriendInviteService friendInviteService;
 
-    public ExpirationScheduler(ChallengeService challengeService, ActivityService activityService, BetService betService, GroupInviteService groupInviteService) {
+    public ExpirationScheduler(ChallengeService challengeService, ActivityService activityService, BetService betService, GroupInviteService groupInviteService, FriendInviteService friendInviteService) {
         this.challengeService = challengeService;
         this.activityService = activityService;
         this.betService = betService;
         this.groupInviteService = groupInviteService;
+        this.friendInviteService = friendInviteService;
     }
 
     @Scheduled(fixedRate = EXPIRATION_CHECK_INTERVAL) // Executes every minute
@@ -88,6 +84,18 @@ public class ExpirationScheduler {
                 groupInviteService.handleExpiredInvite(invite);
             } catch (Exception e) {
                 System.err.println("Error handling expired group invite with ID " + invite.getId() + ": " + e.getMessage());
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = EXPIRATION_CHECK_INTERVAL) // Executes every minute
+    public void closeExpiredFriendInvites() {
+        List<FriendInvite> expiredInvites = friendInviteService.getAllExpiredPendingInvites();
+        for (FriendInvite invite : expiredInvites) {
+            try {
+                friendInviteService.handleExpiredInvite(invite);
+            } catch (Exception e) {
+                System.err.println("Error handling expired friend invite with ID " + invite.getId() + ": " + e.getMessage());
             }
         }
     }
