@@ -73,15 +73,16 @@ export function ActivityCard({ activity, index, commentsData, hideVotingControls
               <Text style={[styles.statusText, { color: statusBadge.color }]}>{statusBadge.label}</Text>
             </View>
           ) : (
-            <View style={[styles.statusBadge, { backgroundColor: c.accentDim }]}>
-              <MaterialCommunityIcons name="image" size={12} color={c.accent} />
-              <Text style={[styles.statusText, { color: c.accent }]}>Atividade</Text>
+            <View style={[styles.statusBadge, { backgroundColor: 'rgba(171,71,188,0.15)' }]}>
+              <Ionicons name="people-outline" size={12} color="#AB47BC" />
+              <Text style={[styles.statusText, { color: '#AB47BC' }]}>Em Julgamento</Text>
             </View>
           )}
           <Text style={[styles.timeAgo, { color: c.textTertiary }]}>{formatTimeAgo(activity.createdAt)}</Text>
         </View>
-        <View style={[styles.buyInBadge, { backgroundColor: c.surfaceHighlight }]}>
-          <Text style={[styles.buyInText, { color: c.textTertiary }]}>ACTIVITY</Text>
+        <View style={[styles.statusBadge, { backgroundColor: c.accentDim }]}>
+          <MaterialCommunityIcons name="image" size={12} color={c.accent} />
+          <Text style={[styles.statusText, { color: c.accent }]}>Atividade</Text>
         </View>
       </View>
 
