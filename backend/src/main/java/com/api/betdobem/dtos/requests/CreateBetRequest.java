@@ -15,8 +15,10 @@ public record CreateBetRequest(
         @NotNull(message = "Buy-in amount cannot be null")
         @Min(value = 1, message = "Buy-in amount must be greater than zero")
         Long buyIn,
+        @NotNull(message = "Invite expiration cannot be null")
         @Future(message = "Invite expiration must be a future date and time")
         Timestamp inviteExpiresAt,
+        @NotNull(message = "Deadline cannot be null")
         @Future(message = "Deadline must be a future date and time")
         Timestamp deadline,
         @NotNull(message = "Opponent ID cannot be null")
