@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
-import { View, Image as RNImage } from 'react-native';
+import { View, Image as RNImage, Pressable } from 'react-native';
 import { Image, ImageLoadEventData as ExpoImageLoadEventData } from 'expo-image';
 import { styles } from './BetCard.styles';
+import { ImageModal } from '@/components/ui/ImageModal';
 
 const ASPECT_MIN = 0.5;
 const ASPECT_MAX = 2.25;
@@ -29,6 +30,7 @@ export function ProofMediaFrame({
 }: ProofMediaFrameProps) {
   const defaultAspect = isVideo ? 16 / 9 : 3 / 4;
   const [aspectRatio, setAspectRatio] = useState(defaultAspect);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     setAspectRatio(defaultAspect);
@@ -62,20 +64,28 @@ export function ProofMediaFrame({
   );
 
   return (
-    <View
-      style={[
-        styles.proofMediaPlaceholder,
-        { backgroundColor, marginTop, aspectRatio },
-      ]}
-    >
-      <Image
-        source={{ uri }}
-        style={styles.proofImage}
-        contentFit="cover"
-        onLoad={onLoad}
-        transition={200}
+    <>
+      <Pressable
+        style={[
+          styles.proofMediaPlaceholder,
+          { backgroundColor, marginTop, aspectRatio },
+        ]}
+        onPress={() => setModalVisible(true)}
+      >
+        <Image
+          source={{ uri }}
+          style={styles.proofImage}
+          contentFit="cover"
+          onLoad={onLoad}
+          transition={200}
+        />
+        {overlay}
+      </Pressable>
+      <ImageModal
+        visible={modalVisible}
+        uri={uri}
+        onClose={() => setModalVisible(false)}
       />
-      {overlay}
-    </View>
+    </>
   );
 }

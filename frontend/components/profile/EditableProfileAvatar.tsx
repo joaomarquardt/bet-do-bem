@@ -1,10 +1,11 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar';
+import { ImageModal } from '@/components/ui/ImageModal';
 import { styles } from '@/styles/tabs/profile.styles';
 
 const c = Colors.dark;
@@ -32,6 +33,7 @@ export function EditableProfileAvatar({
   onImageSelected,
   disabled = false,
 }: EditableProfileAvatarProps) {
+  const [modalVisible, setModalVisible] = useState(false);
   const pickProfileImage = useCallback(async () => {
     if (disabled) return;
 
@@ -70,7 +72,14 @@ export function EditableProfileAvatar({
 
   return (
     <View style={[styles.avatarContainer, { width: size, height: size }]}>
-      <Avatar name={name} color={color} size={size} imageUri={imageUri} />
+      <Pressable onPress={() => { if (imageUri) setModalVisible(true); }}>
+        <Avatar name={name} color={color} size={size} imageUri={imageUri} />
+      </Pressable>
+      <ImageModal
+        visible={modalVisible}
+        uri={imageUri ?? null}
+        onClose={() => setModalVisible(false)}
+      />
       <Pressable
         style={({ pressed }) => [
           styles.editBadge,

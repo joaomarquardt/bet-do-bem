@@ -8,6 +8,7 @@ import Colors from '@/constants/colors';
 import { Image } from 'expo-image';
 import { Avatar } from '@/components/ui/Avatar';
 import { CommentSection } from '@/components/feed/CommentSection';
+import { ImageModal } from '@/components/ui/ImageModal';
 import { Bet, Proof, PaginatedResponse, CommentResponse, VotePercentageResponse, VotePercentageItemResponse } from '@/lib/types';
 import { formatTimeAgo, formatDeadline } from '@/lib/utils/formatters';
 import { useBets } from '@/lib/contexts';
@@ -57,6 +58,7 @@ export function BetCard({ bet, index, commentsData, hideVotingControls, statusBa
   const [votedFor, setVotedFor] = useState<string | null>(null);
   const [voteData, setVoteData] = useState<VotePercentageResponse | null>(initialVoteData || null);
   const [isVoting, setIsVoting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const c = Colors.dark;
   const creatorName = bet.creator?.fullName ?? (bet.creator as any)?.username ?? '...';
   const opponentName = bet.opponent?.fullName ?? (bet.opponent as any)?.username ?? '...';
@@ -159,41 +161,41 @@ export function BetCard({ bet, index, commentsData, hideVotingControls, statusBa
         <View style={styles.mediaRow}>
           {creatorMedia.uri && opponentMedia.uri ? (
             <>
-              <View style={styles.mediaWrapper}>
+              <Pressable style={styles.mediaWrapper} onPress={() => setSelectedImage(creatorMedia.uri)}>
                 <Image source={{ uri: creatorMedia.uri }} style={styles.mediaImageHalf} />
                 {creatorMedia.isVideo && (
                   <View style={styles.proofMediaOverlay}>
                     <Ionicons name="play" size={20} color="#fff" />
                   </View>
                 )}
-              </View>
-              <View style={styles.mediaWrapper}>
+              </Pressable>
+              <Pressable style={styles.mediaWrapper} onPress={() => setSelectedImage(opponentMedia.uri)}>
                 <Image source={{ uri: opponentMedia.uri }} style={styles.mediaImageHalf} />
                 {opponentMedia.isVideo && (
                   <View style={styles.proofMediaOverlay}>
                     <Ionicons name="play" size={20} color="#fff" />
                   </View>
                 )}
-              </View>
+              </Pressable>
             </>
           ) : creatorMedia.uri ? (
-            <View style={styles.mediaWrapper}>
+            <Pressable style={styles.mediaWrapper} onPress={() => setSelectedImage(creatorMedia.uri)}>
               <Image source={{ uri: creatorMedia.uri }} style={styles.mediaImageLarge} />
               {creatorMedia.isVideo && (
                 <View style={styles.proofMediaOverlay}>
                   <Ionicons name="play" size={20} color="#fff" />
                 </View>
               )}
-            </View>
+            </Pressable>
           ) : (
-            <View style={styles.mediaWrapper}>
+            <Pressable style={styles.mediaWrapper} onPress={() => setSelectedImage(opponentMedia.uri)}>
               <Image source={{ uri: opponentMedia.uri }} style={styles.mediaImageLarge} />
               {opponentMedia.isVideo && (
                 <View style={styles.proofMediaOverlay}>
                   <Ionicons name="play" size={20} color="#fff" />
                 </View>
               )}
-            </View>
+            </Pressable>
           )}
         </View>
       )}
@@ -262,6 +264,11 @@ export function BetCard({ bet, index, commentsData, hideVotingControls, statusBa
           commentsData={commentsData}
         />
       )}
+      <ImageModal
+        visible={!!selectedImage}
+        uri={selectedImage}
+        onClose={() => setSelectedImage(null)}
+      />
     </Animated.View>
   );
 }
