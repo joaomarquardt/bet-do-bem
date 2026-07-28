@@ -184,4 +184,16 @@ export const styles = StyleSheet.create({
     marginBottom: -14,
     marginTop: 4,
   },
+  awaitingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+    paddingTop: 4,
+  },
+  awaitingText: {
+    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+  },
 });
+

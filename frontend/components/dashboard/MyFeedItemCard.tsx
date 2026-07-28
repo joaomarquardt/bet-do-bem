@@ -138,12 +138,16 @@ function getStatusConfig(item: FeedItemResponse | (Bet | Activity | Challenge) &
     case 'CHALLENGE': {
       const challenge = data as ChallengeResponse;
       const isChallenger = challenge.challenger?.id === currentUserId;
+      const isChallenged = challenge.challenged?.id === currentUserId;
 
       switch (challenge.status) {
         case 'INVITED':
           return { label: 'Convite Pendente', color: c.warning, bg: c.warningDim, icon: 'mail-outline' };
         case 'IN_PROGRESS': {
           if (challenge.proof) return { label: 'Prova Enviada', color: c.accent, bg: c.accentDim, icon: 'checkmark-circle-outline' };
+          if (!isChallenged) {
+            return { label: 'Aguardando Prova', color: c.warning, bg: c.warningDim, icon: 'time-outline' };
+          }
           return { label: 'Enviar Prova', color: c.warning, bg: c.warningDim, icon: 'camera-outline' };
         }
         case 'IN_JUDGMENT':
@@ -283,6 +287,7 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
   if (item.feedItemType === 'CHALLENGE') {
     const challenge = ((item as any).content || item) as ChallengeResponse;
     const isChallenger = challenge.challenger?.id === currentUserId;
+    const isChallenged = challenge.challenged?.id === currentUserId;
     const otherPlayer = isChallenger ? challenge.challenged : challenge.challenger;
     const proofMedia = getMediaInfo(challenge.proof);
 
@@ -351,19 +356,28 @@ export function MyFeedItemCard({ item, index, onAccept, onDecline, onSendProof }
         )}
 
         {challenge.status === 'IN_PROGRESS' && !challenge.proof && (
-          <View style={styles.actionRow}>
-            <Pressable
-              style={({ pressed }) => [styles.acceptBtn, { backgroundColor: c.warning, opacity: pressed ? 0.8 : 1 }]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                if (onSendProof) onSendProof();
-                else console.warn('onSendProof not provided for MyChallengeCard', item.id);
-              }}
-            >
-              <Ionicons name="camera-outline" size={18} color="#000" />
-              <Text style={[styles.actionText, { color: '#000' }]}>Enviar Prova</Text>
-            </Pressable>
-          </View>
+          isChallenged ? (
+            <View style={styles.actionRow}>
+              <Pressable
+                style={({ pressed }) => [styles.acceptBtn, { backgroundColor: c.warning, opacity: pressed ? 0.8 : 1 }]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  if (onSendProof) onSendProof();
+                  else console.warn('onSendProof not provided for MyChallengeCard', item.id);
+                }}
+              >
+                <Ionicons name="camera-outline" size={18} color="#000" />
+                <Text style={[styles.actionText, { color: '#000' }]}>Enviar Prova</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.awaitingRow}>
+              <Ionicons name="time-outline" size={16} color={c.textSecondary} />
+              <Text style={[styles.awaitingText, { color: c.textSecondary }]}>
+                Aguardando prova do desafiado
+              </Text>
+            </View>
+          )
         )}
 
 
