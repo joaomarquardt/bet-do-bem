@@ -14,7 +14,6 @@ import {
 import { uploadToPresignedUrl } from '@/lib/utils/uploadFileToAWS';
 import { TransactionItem, type ProfileTransaction } from '@/components/profile/TransactionItem';
 import { FullTransactionHistory } from '@/components/profile/FullTransactionHistory';
-import { GroupInvitesSection } from '@/components/profile/GroupInvitesSection';
 import { MyGroupsSection } from '@/components/profile/MyGroupsSection';
 import { useAuth } from '@/lib/contexts';
 import { userService } from '@/lib/api/user.service';
@@ -290,7 +289,7 @@ export default function ProfileScreen() {
         </View>
       </Animated.View>
 
-      <GroupInvitesSection onInviteResponded={() => setGroupRefreshTrigger((p) => p + 1)} />
+
       <MyGroupsSection refreshTrigger={groupRefreshTrigger} />
 
       <Animated.View entering={FadeInDown.delay(400).duration(400)}>
