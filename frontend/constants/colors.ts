@@ -15,6 +15,8 @@ const Colors = {
     dangerDim: 'rgba(255, 71, 87, 0.15)',
     warning: '#FFA726',
     warningDim: 'rgba(255, 167, 38, 0.15)',
+    info: '#38BDF8',
+    infoDim: 'rgba(56, 189, 248, 0.15)',
     win: '#00E676',
     winDim: 'rgba(0, 230, 118, 0.15)',
     loss: '#FF4757',

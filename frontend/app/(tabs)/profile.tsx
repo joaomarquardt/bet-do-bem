@@ -257,14 +257,14 @@ export default function ProfileScreen() {
 
       {profileStats ? (
         <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: c.winDim }]}>
-            <Ionicons name="trophy" size={20} color={c.win} />
-            <Text style={[styles.statValue, { color: c.win }]}>{profileStats.winningBets}</Text>
+          <View style={[styles.statCard, { backgroundColor: c.accentDim }]}>
+            <Ionicons name="trophy" size={20} color={c.accent} />
+            <Text style={[styles.statValue, { color: c.accent }]}>{profileStats.winningBets}</Text>
             <Text style={[styles.statLabel, { color: c.textSecondary }]}>Apostas Ganhas</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: c.accentDim }]}>
-            <Ionicons name="fitness-outline" size={20} color={c.accent} />
-            <Text style={[styles.statValue, { color: c.accent }]}>{profileStats.registeredActivities}</Text>
+          <View style={[styles.statCard, { backgroundColor: c.infoDim }]}>
+            <Ionicons name="fitness-outline" size={20} color={c.info} />
+            <Text style={[styles.statValue, { color: c.info }]}>{profileStats.registeredActivities}</Text>
             <Text style={[styles.statLabel, { color: c.textSecondary }]}>Atividades</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: c.warningDim }]}>
