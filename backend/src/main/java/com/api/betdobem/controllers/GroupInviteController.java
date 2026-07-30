@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/group-invites")
+@RequestMapping("/api/me/group-invites")
 public class GroupInviteController {
     private final GroupInviteService groupInviteService;
 

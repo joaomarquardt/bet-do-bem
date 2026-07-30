@@ -7,7 +7,7 @@ const ENDPOINTS = {
 
 export const groupInviteService = {
   getMyPendingInvites(): Promise<GroupInvite[]> {
-    return apiClient.get(`${ENDPOINTS.GROUP_INVITES}/pending`);
+    return apiClient.get(`${ENDPOINTS.GROUP_INVITES}/me/pending`);
   },
 
   acceptInvite(inviteId: number): Promise<GroupInvite> {
