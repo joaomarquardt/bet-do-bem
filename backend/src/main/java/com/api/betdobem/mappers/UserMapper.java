@@ -3,15 +3,13 @@ package com.api.betdobem.mappers;
 import com.api.betdobem.domain.User;
 import com.api.betdobem.dtos.requests.CreateUserRequest;
 import com.api.betdobem.dtos.requests.UpdateUserRequest;
+import com.api.betdobem.dtos.responses.FriendResponse;
 import com.api.betdobem.dtos.responses.UserProfileResponse;
 import com.api.betdobem.dtos.responses.UserResponse;
-import com.api.betdobem.services.S3StorageService;
-import jdk.jfr.Name;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
@@ -31,6 +29,9 @@ public abstract class UserMapper {
 
     @Mapping(source = "profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "imagePathToCdnUrl")
     public abstract List<UserResponse> toUserResponseList(List<User> users);
+
+    @Mapping(source = "profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "imagePathToCdnUrl")
+    public abstract List<FriendResponse> toFriendResponseList(List<User> users);
 
     @Mapping(target = "id", ignore = true)
     public abstract void updateUserRequest(UpdateUserRequest request, @MappingTarget User user);

@@ -74,6 +74,13 @@ public class UserController {
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
+    @GetMapping("/{id}/friends")
+    public ResponseEntity<PagedResponse<FriendResponse>> getUserFriends(@PathVariable Long id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        PagedResponse<FriendResponse> friends = userService.getUserFriends(id, pageable);
+        return new ResponseEntity<>(friends, HttpStatus.OK);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserRequest user) {
         UserResponse updatedUser = userService.updateUser(id, user);

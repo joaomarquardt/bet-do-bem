@@ -9,6 +9,7 @@ import com.api.betdobem.enums.UserRole;
 import com.api.betdobem.mappers.UserMapper;
 import com.api.betdobem.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -89,6 +90,20 @@ public class UserService {
         long computedVotes = voteRepository.countByVoterId(id);
         long friendsCount = friendshipRepository.countByUserIdOrFriendId(id, id);
         return userMapper.toUserProfileResponse(user, winningBets, registeredActivities, computedVotes, friendsCount);
+    }
+
+    public PagedResponse<FriendResponse> getUserFriends(Long id, Pageable pageable) {
+        User user = getUserEntityById(id);
+        Page<User> friends = friendshipRepository.findFriendsByUserId(user.getId(), pageable);
+        List<FriendResponse> friendsList = userMapper.toFriendResponseList(friends.getContent());
+        return new PagedResponse<>(
+                friendsList,
+                friends.getNumber(),
+                friends.getSize(),
+                friends.getTotalElements(),
+                friends.getTotalPages(),
+                friends.hasNext()
+        );
     }
 
     public UserResponse updateUser(Long id, UpdateUserRequest user) {
