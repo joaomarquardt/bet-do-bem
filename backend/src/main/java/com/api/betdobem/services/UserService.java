@@ -7,10 +7,7 @@ import com.api.betdobem.dtos.requests.UpdateUserRequest;
 import com.api.betdobem.dtos.responses.*;
 import com.api.betdobem.enums.UserRole;
 import com.api.betdobem.mappers.UserMapper;
-import com.api.betdobem.repositories.ActivityRepository;
-import com.api.betdobem.repositories.BetRepository;
-import com.api.betdobem.repositories.UserRepository;
-import com.api.betdobem.repositories.VoteRepository;
+import com.api.betdobem.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,8 +24,9 @@ public class UserService {
     private BetRepository betRepository;
     private ActivityRepository activityRepository;
     private VoteRepository voteRepository;
+    private FriendshipRepository friendshipRepository;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, WalletService walletService, S3StorageService s3StorageService, BetRepository betRepository, ActivityRepository activityRepository, VoteRepository voteRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, WalletService walletService, S3StorageService s3StorageService, BetRepository betRepository, ActivityRepository activityRepository, VoteRepository voteRepository, FriendshipRepository friendshipRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.walletService = walletService;
@@ -36,6 +34,7 @@ public class UserService {
         this.betRepository = betRepository;
         this.activityRepository = activityRepository;
         this.voteRepository = voteRepository;
+        this.friendshipRepository = friendshipRepository;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -88,7 +87,8 @@ public class UserService {
         long winningBets = betRepository.countWinningBetsByUserId(id);
         long registeredActivities = activityRepository.countByAuthorId(id);
         long computedVotes = voteRepository.countByVoterId(id);
-        return userMapper.toUserProfileResponse(user, winningBets, registeredActivities, computedVotes);
+        long friendsCount = friendshipRepository.countByUserIdOrFriendId(id, id);
+        return userMapper.toUserProfileResponse(user, winningBets, registeredActivities, computedVotes, friendsCount);
     }
 
     public UserResponse updateUser(Long id, UpdateUserRequest user) {

@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, Platform, Alert, Modal, RefreshControl, DeviceEventEmitter } from 'react-native';
+import { View, Text, ScrollView, Pressable, Platform, Alert, Modal, RefreshControl, DeviceEventEmitter, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -89,7 +89,7 @@ export default function ProfileScreen() {
     },
     [updateUser, user?.profilePictureUrl],
   );
-  const [profileStats, setProfileStats] = useState<{ winningBets: number; registeredActivities: number; computedVotes: number } | null>(null);
+  const [profileStats, setProfileStats] = useState<{ winningBets: number; registeredActivities: number; computedVotes: number; friendsCount: number } | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [walletError, setWalletError] = useState<string | null>(null);
@@ -102,6 +102,8 @@ export default function ProfileScreen() {
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [groupRefreshTrigger, setGroupRefreshTrigger] = useState(0);
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const statCardWidth = (width - 32 - 16) / 3;
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPadding = Platform.OS === 'web' ? 84 : insets.bottom + 90;
 
@@ -173,6 +175,7 @@ export default function ProfileScreen() {
         winningBets: profile.winningBets ?? 0,
         registeredActivities: profile.registeredActivities ?? 0,
         computedVotes: profile.computedVotes ?? 0,
+        friendsCount: profile.friendsCount ?? 0,
       });
       setWallet({ balance: profile.coins ?? 0, transactions: [] });
 
@@ -250,9 +253,20 @@ export default function ProfileScreen() {
           disabled={isUploadingPicture}
         />
         <View style={{ flex: 1, justifyContent: 'center', marginLeft: 16 }}>
-          <Text style={[styles.displayName, { color: c.text, textAlign: 'left' }]}>{displayName}</Text>
-          <Text style={[styles.username, { color: c.textSecondary, textAlign: 'left' }]}>{username ? `@${username}` : ''}</Text>
+          <Text style={[styles.displayName, { color: c.text, textAlign: 'left', marginTop: 0 }]}>{displayName}</Text>
+          <Text style={[styles.username, { color: c.textSecondary, textAlign: 'left', marginTop: -6 }]}>{username ? `@${username}` : ''}</Text>
         </View>
+        <Pressable 
+          style={{ alignItems: 'center', justifyContent: 'center', width: statCardWidth }}
+          onPress={() => setIsFriendsSidebarVisible(true)}
+        >
+          <Text style={{ color: c.accent, fontFamily: 'Inter_700Bold', fontSize: 42, lineHeight: 46 }}>
+            {profileStats ? profileStats.friendsCount : (user?.friendsCount ?? 0)}
+          </Text>
+          <Text style={{ color: c.textSecondary, fontFamily: 'Inter_400Regular', fontSize: 13, marginTop: -4 }}>
+            amigos
+          </Text>
+        </Pressable>
       </View>
 
       {profileStats ? (

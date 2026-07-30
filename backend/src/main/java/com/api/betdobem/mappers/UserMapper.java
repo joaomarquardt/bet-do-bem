@@ -27,7 +27,7 @@ public abstract class UserMapper {
     public abstract UserResponse toUserResponse(User user);
 
     @Mapping(source = "user.profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "imagePathToCdnUrl")
-    public abstract UserProfileResponse toUserProfileResponse(User user, Long winningBets, Long registeredActivities, Long computedVotes);
+    public abstract UserProfileResponse toUserProfileResponse(User user, Long winningBets, Long registeredActivities, Long computedVotes, Long friendsCount);
 
     @Mapping(source = "profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "imagePathToCdnUrl")
     public abstract List<UserResponse> toUserResponseList(List<User> users);

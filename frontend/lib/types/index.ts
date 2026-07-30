@@ -56,6 +56,7 @@ export interface User {
   winningBets?: number;
   registeredActivities?: number;
   computedVotes?: number;
+  friendsCount?: number;
 }
 
 export interface Proof {

@@ -7,6 +7,7 @@ public record UserProfileResponse(
         String email,
         String profilePictureUrl,
         Long coins,
+        Long friendsCount,
         Long winningBets,
         Long registeredActivities,
         Long computedVotes
