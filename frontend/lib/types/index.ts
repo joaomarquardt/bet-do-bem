@@ -397,6 +397,7 @@ export interface UserResponse {
     email: string;
     coins: number;
     profilePictureUrl?: string | null;
+    friendsCount?: number;
 }
 
 export interface UploadPictureResponse {

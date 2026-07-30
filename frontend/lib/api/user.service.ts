@@ -63,6 +63,17 @@ export const userService = {
     return apiClient.get(`${ENDPOINTS.USERS}/me/transactions${qs ? `?${qs}` : ''}`);
   },
 
+  getUserFriends(
+    id: string | number,
+    params?: { page?: number; size?: number },
+  ): Promise<PaginatedResponse<User>> {
+    const query = new URLSearchParams();
+    if (params?.page !== undefined) query.set('page', String(params.page));
+    if (params?.size !== undefined) query.set('size', String(params.size));
+    const qs = query.toString();
+    return apiClient.get(`${ENDPOINTS.USERS}/${id}/friends${qs ? `?${qs}` : ''}`);
+  },
+
   updateUser(id: string, data: UpdateUserRequest): Promise<User> {
     return apiClient.put(`${ENDPOINTS.USERS}/${id}`, data);
   },

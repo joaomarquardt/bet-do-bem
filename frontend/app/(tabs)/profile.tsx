@@ -15,6 +15,7 @@ import { uploadToPresignedUrl } from '@/lib/utils/uploadFileToAWS';
 import { TransactionItem, type ProfileTransaction } from '@/components/profile/TransactionItem';
 import { FullTransactionHistory } from '@/components/profile/FullTransactionHistory';
 import { MyGroupsSection } from '@/components/profile/MyGroupsSection';
+import { FriendsSidebar } from '@/components/ui/FriendsSidebar';
 import { useAuth } from '@/lib/contexts';
 import { userService } from '@/lib/api/user.service';
 import type { TransactionType } from '@/lib/types';
@@ -100,6 +101,7 @@ export default function ProfileScreen() {
   const [hasMoreThanPreview, setHasMoreThanPreview] = useState(false);
   const [showFullHistory, setShowFullHistory] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+  const [isFriendsSidebarVisible, setIsFriendsSidebarVisible] = useState(false);
   const [groupRefreshTrigger, setGroupRefreshTrigger] = useState(0);
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -439,6 +441,12 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      <FriendsSidebar 
+        visible={isFriendsSidebarVisible} 
+        onClose={() => setIsFriendsSidebarVisible(false)} 
+        userId={user.id} 
+      />
     </ScrollView>
   );
 }
