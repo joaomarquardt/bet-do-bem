@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from 'react';
-import { View, Text, FlatList, RefreshControl, Platform } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { View, Text, FlatList, RefreshControl, Platform, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/colors';
@@ -9,6 +9,7 @@ import { ChallengeCard } from '@/components/feed/ChallengeCard';
 import { useBets, useActivity, useChallenge } from '@/lib/contexts';
 import { Bet, Activity, Challenge, PaginatedResponse, CommentResponse } from '@/lib/types';
 import { styles } from '@/styles/tabs/feed.styles';
+import { NotificationsSidebar } from '@/components/ui/NotificationsSidebar';
 
 const c = Colors.dark;
 
@@ -23,6 +24,7 @@ export default function GroupFeedScreen() {
   const { challenges, challengeCommentsMap, isLoading: challengesLoading, refreshData: refreshChallenges } = useChallenge();
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   const feed = useMemo<FeedItemWithType[]>(() => {
     const betsWithFeedType: FeedItemWithType[] = feedBets.map((bet) => ({
@@ -80,10 +82,9 @@ export default function GroupFeedScreen() {
             Julgue as apostas da comunidade
           </Text>
         </View>
-        <View style={[styles.liveBadge, { backgroundColor: c.accentDim }]}>
-          <View style={[styles.liveDot, { backgroundColor: c.accent }]} />
-          <Text style={[styles.liveText, { color: c.accent }]}>AO VIVO</Text>
-        </View>
+        <TouchableOpacity style={[styles.liveBadge, { backgroundColor: c.surface }]} onPress={() => setIsSidebarVisible(true)}>
+          <Ionicons name="notifications-outline" size={24} color={c.text} />
+        </TouchableOpacity>
       </View>
       <FlatList
         data={feed}
@@ -115,10 +116,11 @@ export default function GroupFeedScreen() {
             <Text style={[styles.emptyText, { color: c.textTertiary }]}>
               Volte mais tarde para novas apostas
             </Text>
+            <View style={{ height: 100 }} />
           </View>
         }
       />
+      <NotificationsSidebar visible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
     </View>
   );
 }
-
