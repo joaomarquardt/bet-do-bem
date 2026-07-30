@@ -138,6 +138,23 @@ export interface GroupInvite {
     respondedAt: string | null;
 }
 
+export type FriendInviteStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'DECLINED'
+  | 'CANCELED'
+  | 'EXPIRED';
+
+export interface FriendInvite {
+    id: number;
+    inviter: UserResponse;
+    invitee: UserResponse;
+    status: FriendInviteStatus;
+    createdAt: string;
+    expiresAt: string;
+    respondedAt?: string;
+}
+
 export interface Activity {
     id: number;
     author: User;
