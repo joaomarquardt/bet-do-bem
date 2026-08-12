@@ -1,9 +1,9 @@
 package com.api.betdobem.dtos.requests;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public record CreateFriendInviteRequest(
-        @NotNull(message = "Invitee ID cannot be null")
-        Long inviteeId
+        @NotBlank(message = "Username cannot be blank")
+        String username
 ) {
 }

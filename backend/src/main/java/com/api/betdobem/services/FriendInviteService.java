@@ -43,7 +43,8 @@ public class FriendInviteService {
     }
 
     public FriendInviteResponse createInvite(CreateFriendInviteRequest request, Long inviterId) {
-        Long inviteeId = request.inviteeId();
+        User invitee = userService.getUserEntityByUsername(request.username());
+        Long inviteeId = invitee.getId();
         if (inviteeId.equals(inviterId)) {
             throw new SelfInteractionException("You cannot send a friend request to yourself.");
         }
@@ -57,7 +58,6 @@ public class FriendInviteService {
             throw new DuplicateActionException("This user has already sent you a pending friend request.");
         }
         User inviter = userService.getUserEntityById(inviterId);
-        User invitee = userService.getUserEntityById(inviteeId);
         Timestamp expiresAt = Timestamp.from(Instant.now().plus(INVITE_EXPIRATION_DAYS, ChronoUnit.DAYS));
 
         FriendInvite invite = new FriendInvite(inviter, invitee, expiresAt);
