@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, SafeAreaView, Animated, Dimensions } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, SafeAreaView, Animated, Dimensions, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/colors';
 import { groupInviteService } from '@/lib/api';
@@ -140,6 +140,7 @@ export function NotificationsSidebar({ visible, onClose }: NotificationsSidebarP
   return (
     <Modal visible={showModal} animationType="fade" transparent={true} onRequestClose={onClose}>
       <View style={styles.overlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <Animated.View style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}>
           <SafeAreaView style={{ flex: 1 }}>
             <View style={styles.header}>
