@@ -205,19 +205,19 @@ export default function ProfileScreen() {
       setIsLoadingWallet(false);
       setIsLoadingTransactions(false);
     }
-  }, [updateUser]);
+  }, [updateUser, user?.id]);
 
   useEffect(() => {
     let mounted = true;
 
-    if (mounted) {
+    if (mounted && user?.id) {
       loadProfileAndTransactions();
     }
 
     return () => {
       mounted = false;
     };
-  }, [loadProfileAndTransactions]);
+  }, [loadProfileAndTransactions, user?.id]);
 
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener('onSessionRefreshed', () => {
