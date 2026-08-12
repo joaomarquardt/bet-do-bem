@@ -1,12 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, FlatList, RefreshControl, Platform, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/colors';
 import { BetCard } from '@/components/feed/BetCard';
 import { ActivityCard } from '@/components/feed/ActivityCard';
 import { ChallengeCard } from '@/components/feed/ChallengeCard';
 import { useBets, useActivity, useChallenge } from '@/lib/contexts';
+import { friendInviteService, groupInviteService } from '@/lib/api';
 import { Bet, Activity, Challenge, PaginatedResponse, CommentResponse } from '@/lib/types';
 import { styles } from '@/styles/tabs/feed.styles';
 import { NotificationsSidebar } from '@/components/ui/NotificationsSidebar';
@@ -25,6 +27,33 @@ export default function GroupFeedScreen() {
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'web' ? 67 : insets.top;
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadPendingInvites = async () => {
+        try {
+          const [friends, groups] = await Promise.all([
+            friendInviteService.getMyPendingInvites(),
+            groupInviteService.getMyPendingInvites()
+          ]);
+          if (isActive) {
+            setPendingInvitesCount(friends.length + groups.length);
+          }
+        } catch (e) {
+          console.error('Failed to load pending invites for badge', e);
+        }
+      };
+
+      loadPendingInvites();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   const feed = useMemo<FeedItemWithType[]>(() => {
     const betsWithFeedType: FeedItemWithType[] = feedBets.map((bet) => ({
@@ -82,8 +111,27 @@ export default function GroupFeedScreen() {
             Julgue as apostas da comunidade
           </Text>
         </View>
-        <TouchableOpacity style={[styles.liveBadge, { backgroundColor: c.surface }]} onPress={() => setIsSidebarVisible(true)}>
+        <TouchableOpacity style={[styles.liveBadge, { backgroundColor: c.surface, position: 'relative' }]} onPress={() => setIsSidebarVisible(true)}>
           <Ionicons name="notifications-outline" size={24} color={c.text} />
+          {pendingInvitesCount > 0 && (
+            <View style={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              backgroundColor: c.danger,
+              borderRadius: 10,
+              minWidth: 18,
+              height: 18,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderWidth: 2,
+              borderColor: c.background
+            }}>
+              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                {pendingInvitesCount > 99 ? '99+' : pendingInvitesCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
       <FlatList
