@@ -38,6 +38,12 @@ public class UserController {
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<PagedResponse<UserResponse>> searchUsers(@RequestParam String query, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        PagedResponse<UserResponse> users = userService.searchUsers(query, page, size);
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         UserResponse user = userService.getUserById(id);
@@ -91,11 +97,5 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<PagedResponse<UserResponse>> searchUsers(@RequestParam String query, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        PagedResponse<UserResponse> users = userService.searchUsers(query, page, size);
-        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 }
