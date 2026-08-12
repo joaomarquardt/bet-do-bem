@@ -5,6 +5,7 @@ import Colors from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar';
 import { userService } from '@/lib/api/user.service';
 import { groupService } from '@/lib/api/group.service';
+import { useAuth } from '@/lib/contexts';
 import { groupStyles as styles } from './MyGroupsSection.styles';
 import type { UserResponse } from '@/lib/types';
 
@@ -25,6 +26,7 @@ export function InviteMembersModal({
   groupId,
   existingMemberIds,
 }: InviteMembersModalProps) {
+  const { user } = useAuth();
   const [allUsers, setAllUsers] = useState<UserResponse[]>([]);
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -40,12 +42,13 @@ export function InviteMembersModal({
   }, [visible]);
 
   const loadUsers = async () => {
+    if (!user) return;
     setIsLoading(true);
     try {
-      const users = await userService.getAllUsers();
-      setAllUsers(users as UserResponse[]);
+      const friendsPage = await userService.getUserFriends(user.id, { size: 1000 });
+      setAllUsers(friendsPage.content as UserResponse[]);
     } catch (e) {
-      console.error('Error loading users', e);
+      console.error('Error loading friends', e);
     } finally {
       setIsLoading(false);
     }
