@@ -23,10 +23,11 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
   const [hasNext, setHasNext] = useState(false);
 
   const [usernameToAdd, setUsernameToAdd] = useState('');
-  const [isAddingFriend, setIsAddingFriend] = useState(false);
+  const [isAddingFriend, setIsAddingFriend] = useState<number | null>(null);
   const [suggestions, setSuggestions] = useState<UserResponse[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [sentInvites, setSentInvites] = useState<Set<number>>(new Set());
 
   const [showModal, setShowModal] = useState(visible);
   const slideAnim = useRef(new Animated.Value(Dimensions.get('window').width)).current;
@@ -82,9 +83,15 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
     setIsLoading(true);
     setPage(0);
     try {
-      const response = await userService.getUserFriends(userId, { page: 0, size: 10 });
+      const [response, sentInvitesResponse] = await Promise.all([
+        userService.getUserFriends(userId, { page: 0, size: 10 }),
+        friendInviteService.getMySentPendingInvites()
+      ]);
       setFriends(response.content);
       setHasNext(response.hasNext);
+      
+      const sentIds = new Set(sentInvitesResponse.map(i => i.invitee.id));
+      setSentInvites(sentIds);
     } catch (error) {
       console.error('Failed to load friends', error);
     } finally {
@@ -127,24 +134,23 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
     );
   };
 
-  const handleAddFriend = async () => {
-    const trimmed = usernameToAdd.trim();
-    if (!trimmed) return;
-    setIsAddingFriend(true);
+  const handleSendInvite = async (username: string, targetUserId: number) => {
+    setIsAddingFriend(targetUserId);
     try {
-      await friendInviteService.createInvite(trimmed);
+      await friendInviteService.createInvite(username);
+      setSentInvites(prev => new Set(prev).add(targetUserId));
       Alert.alert('Sucesso', 'Convite de amizade enviado!');
-      setUsernameToAdd('');
     } catch (error: any) {
       if (error?.response?.status === 404) {
         Alert.alert('Erro', 'Usuário não foi encontrado.');
       } else if (error?.response?.status === 409 || error?.response?.status === 400) {
         Alert.alert('Erro', error.response.data?.message || 'Já há uma solicitação pendente ou vocês já são amigos.');
+        setSentInvites(prev => new Set(prev).add(targetUserId));
       } else {
         Alert.alert('Erro', 'Não foi possível enviar o convite.');
       }
     } finally {
-      setIsAddingFriend(false);
+      setIsAddingFriend(null);
     }
   };
 
@@ -163,40 +169,40 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
             <View style={styles.addFriendContainer}>
               <TextInput
                 style={styles.searchInput}
-                placeholder="Adicionar por username..."
+                placeholder="Buscar usuário para adicionar..."
                 placeholderTextColor={c.textTertiary}
                 value={usernameToAdd}
                 onChangeText={setUsernameToAdd}
                 autoCapitalize="none"
                 returnKeyType="search"
-                onSubmitEditing={handleAddFriend}
               />
-              <TouchableOpacity
-                style={[styles.addBtn, !usernameToAdd.trim() && { opacity: 0.5 }]}
-                onPress={handleAddFriend}
-                disabled={!usernameToAdd.trim() || isAddingFriend}
-              >
-                {isAddingFriend ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Ionicons name="person-add" size={18} color="#fff" />
-                )}
-              </TouchableOpacity>
             </View>
 
             {showSuggestions && suggestions.length > 0 && (
               <View style={styles.suggestionsContainer}>
                 {suggestions.map(s => (
-                  <TouchableOpacity key={s.id} style={styles.suggestionItem} onPress={() => {
-                    setUsernameToAdd(s.username);
-                    setShowSuggestions(false);
-                  }}>
+                  <View key={s.id} style={styles.suggestionItem}>
                     <Avatar name={s.fullName} imageUri={s.profilePictureUrl} size={30} color="#555" />
-                    <View style={{ marginLeft: 10 }}>
+                    <View style={{ marginLeft: 10, flex: 1 }}>
                       <Text style={{ color: c.text, fontWeight: 'bold' }}>{s.fullName}</Text>
                       <Text style={{ color: c.textSecondary, fontSize: 12 }}>@{s.username}</Text>
                     </View>
-                  </TouchableOpacity>
+                    {sentInvites.has(s.id) ? (
+                      <Ionicons name="time" size={20} color={c.textTertiary} />
+                    ) : (
+                      <TouchableOpacity 
+                        style={styles.suggestionAddBtn}
+                        onPress={() => handleSendInvite(s.username, s.id)}
+                        disabled={isAddingFriend === s.id}
+                      >
+                        {isAddingFriend === s.id ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <Ionicons name="person-add" size={16} color="#fff" />
+                        )}
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 ))}
               </View>
             )}
@@ -340,5 +346,13 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: c.surface,
+  },
+  suggestionAddBtn: {
+    width: 32,
+    height: 32,
+    backgroundColor: c.accent,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

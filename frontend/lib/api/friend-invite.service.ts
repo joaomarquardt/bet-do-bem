@@ -14,6 +14,10 @@ export const friendInviteService = {
     return apiClient.get(`${ENDPOINTS.FRIEND_INVITES}/me/pending`);
   },
 
+  getMySentPendingInvites(): Promise<FriendInvite[]> {
+    return apiClient.get(`${ENDPOINTS.FRIEND_INVITES}/me/sent`);
+  },
+
   acceptInvite(inviteId: number): Promise<FriendInvite> {
     return apiClient.put(`${ENDPOINTS.FRIEND_INVITES}/${inviteId}/accept`, {});
   },

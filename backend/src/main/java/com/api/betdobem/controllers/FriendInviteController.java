@@ -33,6 +33,12 @@ public class FriendInviteController {
         return new ResponseEntity<>(invites, HttpStatus.OK);
     }
 
+    @GetMapping("/me/sent")
+    public ResponseEntity<List<FriendInviteResponse>> getMySentPendingInvites(@AuthenticationPrincipal User loggedUser) {
+        List<FriendInviteResponse> invites = friendInviteService.getMySentPendingInvites(loggedUser.getId());
+        return new ResponseEntity<>(invites, HttpStatus.OK);
+    }
+
     @PutMapping("/{id}/accept")
     public ResponseEntity<FriendInviteResponse> acceptInvite(@PathVariable Long id, @AuthenticationPrincipal User loggedUser) {
         FriendInviteResponse invite = friendInviteService.acceptInvite(id, loggedUser.getId());

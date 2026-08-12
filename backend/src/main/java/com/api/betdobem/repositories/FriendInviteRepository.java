@@ -13,4 +13,5 @@ public interface FriendInviteRepository extends JpaRepository<FriendInvite, Long
     List<FriendInvite> findByStatusAndExpiresAtBefore(FriendInviteStatus status, Timestamp now);
 
     boolean existsByInviterIdAndInviteeIdAndStatus(Long inviterId, Long inviteeId, FriendInviteStatus status);
+    List<FriendInvite> findByInviterIdAndStatus(Long inviterId, FriendInviteStatus status);
 }

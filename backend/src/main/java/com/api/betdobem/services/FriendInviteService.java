@@ -42,6 +42,11 @@ public class FriendInviteService {
         return friendInviteMapper.toFriendInviteResponseList(pendingInvites);
     }
 
+    public List<FriendInviteResponse> getMySentPendingInvites(Long userId) {
+        List<FriendInvite> pendingInvites = friendInviteRepository.findByInviterIdAndStatus(userId, FriendInviteStatus.PENDING);
+        return friendInviteMapper.toFriendInviteResponseList(pendingInvites);
+    }
+
     public FriendInviteResponse createInvite(CreateFriendInviteRequest request, Long inviterId) {
         User invitee = userService.getUserEntityByUsername(request.username());
         Long inviteeId = invitee.getId();
