@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/me/group-invites")
+@RequestMapping("/api/group-invites")
 public class GroupInviteController {
     private final GroupInviteService groupInviteService;
 
@@ -19,7 +19,7 @@ public class GroupInviteController {
         this.groupInviteService = groupInviteService;
     }
 
-    @GetMapping("/pending")
+    @GetMapping("me/pending")
     public ResponseEntity<List<GroupInviteResponse>> getMyPendingInvites(@AuthenticationPrincipal User loggedUser) {
         List<GroupInviteResponse> invites = groupInviteService.getMyPendingInvites(loggedUser.getId());
         return new ResponseEntity<>(invites, HttpStatus.OK);
