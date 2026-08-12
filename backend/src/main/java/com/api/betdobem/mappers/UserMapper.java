@@ -31,6 +31,9 @@ public abstract class UserMapper {
     public abstract List<UserResponse> toUserResponseList(List<User> users);
 
     @Mapping(source = "profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "imagePathToCdnUrl")
+    public abstract FriendResponse toFriendResponse(User user);
+
+@Mapping(source = "profilePictureUrl", target = "profilePictureUrl", qualifiedByName = "imagePathToCdnUrl")
     public abstract List<FriendResponse> toFriendResponseList(List<User> users);
 
     @Mapping(target = "id", ignore = true)
