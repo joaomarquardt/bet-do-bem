@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, SafeAreaView, Animated, Dimensions } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, SafeAreaView, Animated, Dimensions, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/colors';
 import { userService } from '@/lib/api/user.service';
 import { User } from '@/lib/types';
+import { friendInviteService } from '@/lib/api/friend-invite.service';
 import { Avatar } from './Avatar';
 
 interface FriendsSidebarProps {
@@ -20,6 +21,9 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasNext, setHasNext] = useState(false);
+
+  const [usernameToAdd, setUsernameToAdd] = useState('');
+  const [isAddingFriend, setIsAddingFriend] = useState(false);
 
   const [showModal, setShowModal] = useState(visible);
   const slideAnim = useRef(new Animated.Value(Dimensions.get('window').width)).current;
@@ -95,6 +99,27 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
     );
   };
 
+  const handleAddFriend = async () => {
+    const trimmed = usernameToAdd.trim();
+    if (!trimmed) return;
+    setIsAddingFriend(true);
+    try {
+      await friendInviteService.createInvite(trimmed);
+      Alert.alert('Sucesso', 'Convite de amizade enviado!');
+      setUsernameToAdd('');
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        Alert.alert('Erro', 'Usuário não foi encontrado.');
+      } else if (error?.response?.status === 409 || error?.response?.status === 400) {
+        Alert.alert('Erro', error.response.data?.message || 'Já há uma solicitação pendente ou vocês já são amigos.');
+      } else {
+        Alert.alert('Erro', 'Não foi possível enviar o convite.');
+      }
+    } finally {
+      setIsAddingFriend(false);
+    }
+  };
+
   return (
     <Modal visible={showModal} animationType="fade" transparent={true} onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -104,6 +129,30 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
               <Text style={styles.headerTitle}>Amigos</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
                 <Ionicons name="close" size={24} color={c.text} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.addFriendContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Adicionar por username..."
+                placeholderTextColor={c.textTertiary}
+                value={usernameToAdd}
+                onChangeText={setUsernameToAdd}
+                autoCapitalize="none"
+                returnKeyType="search"
+                onSubmitEditing={handleAddFriend}
+              />
+              <TouchableOpacity
+                style={[styles.addBtn, !usernameToAdd.trim() && { opacity: 0.5 }]}
+                onPress={handleAddFriend}
+                disabled={!usernameToAdd.trim() || isAddingFriend}
+              >
+                {isAddingFriend ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="person-add" size={18} color="#fff" />
+                )}
               </TouchableOpacity>
             </View>
 
@@ -204,5 +253,28 @@ const styles = StyleSheet.create({
   friendUsername: {
     fontSize: 14,
     color: c.textSecondary,
+  },
+  addFriendContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: c.surface,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    backgroundColor: c.surface,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    color: c.text,
+  },
+  addBtn: {
+    width: 40,
+    height: 40,
+    backgroundColor: c.accent,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

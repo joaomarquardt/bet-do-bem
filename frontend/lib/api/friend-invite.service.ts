@@ -6,6 +6,10 @@ const ENDPOINTS = {
 } as const;
 
 export const friendInviteService = {
+  createInvite(username: string): Promise<FriendInvite> {
+    return apiClient.post(`${ENDPOINTS.FRIEND_INVITES}`, { username });
+  },
+
   getMyPendingInvites(): Promise<FriendInvite[]> {
     return apiClient.get(`${ENDPOINTS.FRIEND_INVITES}/me/pending`);
   },
