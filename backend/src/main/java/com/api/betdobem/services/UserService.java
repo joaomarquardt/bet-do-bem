@@ -128,4 +128,17 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+
+    public PagedResponse<UserResponse> searchUsers(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> usersPage = userRepository.searchUsers(query, pageable);
+        return new PagedResponse<>(
+                userMapper.toUserResponseList(usersPage.getContent()),
+                usersPage.getNumber(),
+                usersPage.getSize(),
+                usersPage.getTotalElements(),
+                usersPage.getTotalPages(),
+                usersPage.hasNext()
+        );
+    }
 }

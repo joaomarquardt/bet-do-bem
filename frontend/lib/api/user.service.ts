@@ -7,6 +7,7 @@ import {
   PaginatedResponse,
   UploadPictureRequest,
   UploadPictureResponse,
+  UserResponse,
 } from '@/lib/types';
 
 const ENDPOINTS = {
@@ -80,5 +81,16 @@ export const userService = {
 
   deleteUser(id: string): Promise<void> {
     return apiClient.delete(`${ENDPOINTS.USERS}/${id}`);
+  },
+
+  searchUsers(
+    query: string,
+    params?: { page?: number; size?: number }
+  ): Promise<PaginatedResponse<UserResponse>> {
+    const qs = new URLSearchParams();
+    qs.set('query', query);
+    if (params?.page !== undefined) qs.set('page', String(params.page));
+    if (params?.size !== undefined) qs.set('size', String(params.size));
+    return apiClient.get(`${ENDPOINTS.USERS}/search?${qs.toString()}`);
   },
 };

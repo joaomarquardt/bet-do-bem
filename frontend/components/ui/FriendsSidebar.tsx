@@ -3,7 +3,7 @@ import { View, Text, Modal, TouchableOpacity, StyleSheet, FlatList, ActivityIndi
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/colors';
 import { userService } from '@/lib/api/user.service';
-import { User } from '@/lib/types';
+import { User, UserResponse } from '@/lib/types';
 import { friendInviteService } from '@/lib/api/friend-invite.service';
 import { Avatar } from './Avatar';
 
@@ -24,6 +24,9 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
 
   const [usernameToAdd, setUsernameToAdd] = useState('');
   const [isAddingFriend, setIsAddingFriend] = useState(false);
+  const [suggestions, setSuggestions] = useState<UserResponse[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [showModal, setShowModal] = useState(visible);
   const slideAnim = useRef(new Animated.Value(Dimensions.get('window').width)).current;
@@ -49,6 +52,31 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
       });
     }
   }, [visible, userId]);
+
+  useEffect(() => {
+    const query = usernameToAdd.trim();
+    if (!query || query.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    const timeout = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const resp = await userService.searchUsers(query, { size: 5 });
+        const filtered = resp.content.filter(u => u.id.toString() !== userId.toString());
+        setSuggestions(filtered);
+        setShowSuggestions(true);
+      } catch (e) {
+        console.error('Search error', e);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timeout);
+  }, [usernameToAdd, userId]);
 
   const loadInitialData = async () => {
     setIsLoading(true);
@@ -155,6 +183,27 @@ export function FriendsSidebar({ visible, onClose, userId }: FriendsSidebarProps
                 )}
               </TouchableOpacity>
             </View>
+
+            {showSuggestions && suggestions.length > 0 && (
+              <View style={styles.suggestionsContainer}>
+                {suggestions.map(s => (
+                  <TouchableOpacity key={s.id} style={styles.suggestionItem} onPress={() => {
+                    setUsernameToAdd(s.username);
+                    setShowSuggestions(false);
+                  }}>
+                    <Avatar name={s.fullName} imageUri={s.profilePictureUrl} size={30} color="#555" />
+                    <View style={{ marginLeft: 10 }}>
+                      <Text style={{ color: c.text, fontWeight: 'bold' }}>{s.fullName}</Text>
+                      <Text style={{ color: c.textSecondary, fontSize: 12 }}>@{s.username}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {isSearching && (
+              <ActivityIndicator size="small" color={c.accent} style={{ marginTop: 10 }} />
+            )}
 
             {isLoading ? (
               <ActivityIndicator size="large" color={c.accent} style={{ marginTop: 20 }} />
@@ -276,5 +325,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  suggestionsContainer: {
+    backgroundColor: c.surfaceElevated,
+    marginHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: c.border,
+    maxHeight: 150,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: c.surface,
   },
 });
