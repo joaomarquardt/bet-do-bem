@@ -35,8 +35,11 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
     @Query("""
         SELECT a FROM Activity a
+        JOIN a.group g
+        JOIN g.members u
         WHERE a.status = 'IN_JUDGMENT'
         AND a.author.id != :userId
+        AND u.id = :userId
         AND NOT EXISTS (
             SELECT v FROM Vote v
             WHERE v.voter.id = :userId

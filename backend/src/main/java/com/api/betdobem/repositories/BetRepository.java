@@ -25,9 +25,12 @@ public interface BetRepository extends JpaRepository<Bet, Long> {
 
     @Query("""
         SELECT b FROM Bet b
+        JOIN b.group g
+        JOIN g.members u
         WHERE b.status = 'IN_JUDGMENT'
         AND b.creator.id != :userId
         AND b.opponent.id != :userId
+        AND u.id = :userId
         AND NOT EXISTS (
             SELECT v FROM Vote v
             WHERE v.voter.id = :userId

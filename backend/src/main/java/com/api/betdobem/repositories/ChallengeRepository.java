@@ -25,9 +25,12 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 
     @Query("""
         SELECT c FROM Challenge c
+        JOIN c.group g
+        JOIN g.members u
         WHERE c.status = 'IN_JUDGMENT'
         AND c.challenger.id != :userId
         AND c.challenged.id != :userId
+        AND u.id = :userId
         AND NOT EXISTS (
             SELECT v FROM Vote v
             WHERE v.voter.id = :userId
