@@ -256,7 +256,7 @@ export default function ProfileScreen() {
         />
         <View style={{ flex: 1, justifyContent: 'center', marginLeft: 16 }}>
           <Text style={[styles.displayName, { color: c.text, textAlign: 'left', marginTop: 0 }]}>{displayName}</Text>
-          <Text style={[styles.username, { color: c.textSecondary, textAlign: 'left', marginTop: -6 }]}>{username ? `@${username}` : ''}</Text>
+          <Text style={[styles.username, { color: c.textSecondary, textAlign: 'left', marginTop: 2 }]}>{username ? `@${username}` : ''}</Text>
         </View>
         <Pressable 
           style={{ alignItems: 'center', justifyContent: 'center', width: statCardWidth }}
